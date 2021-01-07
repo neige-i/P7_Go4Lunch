@@ -7,4 +7,5 @@
     <color name="lime_dark">#FF12BA69</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray_dark">#FF424242</color>
 </resources>

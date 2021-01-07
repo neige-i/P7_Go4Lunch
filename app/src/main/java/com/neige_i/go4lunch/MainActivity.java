@@ -2,6 +2,7 @@ package com.neige_i.go4lunch;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -15,24 +16,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Config layout and toolbar
         setContentView(R.layout.activity_main);
         setSupportActionBar(findViewById(R.id.toolbar));
 
-        ((BottomNavigationView) findViewById(R.id.bottom_navigation)).setOnNavigationItemSelectedListener(item -> {
-            final int id = item.getItemId();
-            final String whichScreen;
-            if (id == R.id.action_map) {
-                whichScreen = "map";
-            } else if (id == R.id.action_list) {
-                whichScreen = "list";
-            } else if (id == R.id.action_workmates) {
-                whichScreen = "workmates";
-            } else {
-                whichScreen = "null";
-            }
-            Log.d("Neige", "MainActivity::onNavigationItemSelected: " + whichScreen);
-            return true;
-        });
+        // Config which screen to show
+        final BottomNavigationView bottomNavigationView = ((BottomNavigationView) findViewById(R.id.bottom_navigation));
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> showFragment(item.getItemId()));
+        bottomNavigationView.setSelectedItemId(R.id.action_map);
     }
 
     @Override
@@ -48,5 +40,33 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean showFragment(int itemId) {
+        final Fragment fragmentToShow;
+        final int titleId;
+        if (itemId == R.id.action_map) {
+            fragmentToShow = new MapFragment();
+            titleId = R.string.title_restaurant;
+        } else if (itemId == R.id.action_list) {
+            fragmentToShow = ListFragment.newInstance(ListFragment.RESTAURANT);
+            titleId = R.string.title_restaurant;
+        } else if (itemId == R.id.action_workmates) {
+            fragmentToShow = ListFragment.newInstance(ListFragment.WORKMATE);
+            titleId = R.string.title_workmates;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + itemId);
+        }
+
+        // Show the correct fragment
+        getSupportFragmentManager().beginTransaction()
+            // ASKME: fragment navigation back stack, what happens if in workmate list and press back (exit or not?)
+            .replace(R.id.fragment_container, fragmentToShow)
+            .commit();
+
+        // Update the toolbar title accordingly
+        setTitle(titleId);
+
+        return true;
     }
 }
