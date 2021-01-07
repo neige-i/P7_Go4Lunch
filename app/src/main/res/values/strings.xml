@@ -16,4 +16,9 @@
     <string name="description_person_icon">Person icon</string>
     <string name="description_star_icon">Star icon</string>
     <string name="description_profile_image">Profile image</string>
+
+    <!-- Button text -->
+    <string name="button_call">Call</string>
+    <string name="button_like">Like</string>
+    <string name="button_website">Website</string>
 </resources>

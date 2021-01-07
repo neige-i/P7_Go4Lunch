@@ -96,7 +96,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/ic_rate"
         app:layout_constraintBottom_toBottomOf="@id/profile_img"
         app:layout_constraintEnd_toStartOf="@id/barrier"
         />
@@ -106,7 +106,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/ic_rate"
         app:layout_constraintBottom_toBottomOf="@id/profile_img"
         app:layout_constraintEnd_toStartOf="@id/star3"
         />
@@ -116,7 +116,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/ic_rate"
         app:layout_constraintBottom_toBottomOf="@id/profile_img"
         app:layout_constraintEnd_toStartOf="@id/star2"
         />
