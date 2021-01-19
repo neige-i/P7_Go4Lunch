@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch;
+package com.neige_i.go4lunch.view.map;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -25,6 +25,7 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.neige_i.go4lunch.R;
 
 import java.util.Arrays;
 import java.util.List;

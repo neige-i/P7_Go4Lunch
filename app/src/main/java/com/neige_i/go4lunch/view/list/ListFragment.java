@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch;
+package com.neige_i.go4lunch.view.list;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.neige_i.go4lunch.R;
 
 public class ListFragment extends Fragment {
 
