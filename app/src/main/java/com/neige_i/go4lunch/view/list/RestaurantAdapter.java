@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch;
+package com.neige_i.go4lunch.view.list;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.neige_i.go4lunch.R;
 
 public class RestaurantAdapter extends ListAdapter<Object, RestaurantAdapter.RestaurantViewHolder> {
 
