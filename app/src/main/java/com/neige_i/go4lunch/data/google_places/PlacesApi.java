@@ -9,12 +9,12 @@ import retrofit2.http.GET;
 
 public interface PlacesApi {
 
-    @GET("json?location=48.856614,2.3522219&radius=2000&type=restaurant&key=AIzaSyDdc24VwRd5iGQjd46ygpOIcVGhiDnD4gs")
+    @GET("maps/api/place/nearbysearch/json?location=48.856614,2.3522219&radius=2000&type=restaurant&key=AIzaSyDdc24VwRd5iGQjd46ygpOIcVGhiDnD4gs")
     Call<NearbyResponse> getNearbyRestaurants();
 
     static PlacesApi getInstance() {
         return new Retrofit.Builder()
-            .baseUrl("https://maps.googleapis.com/maps/api/place/nearbysearch/")
+            .baseUrl("https://maps.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PlacesApi.class);
