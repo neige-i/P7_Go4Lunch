@@ -1,10 +1,13 @@
 package com.neige_i.go4lunch.view.home;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.google_places.PlacesRepository;
+import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_RESTAURANT;
@@ -12,16 +15,25 @@ import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_WORKMATE;
 
 public class HomeViewModel extends ViewModel {
 
+    @NonNull
+    private final PlacesRepository placesRepository;
+
     private final MutableLiveData<HomeUiModel> uiState = new MutableLiveData<>();
     private String fragmentToHide = TAG_FRAGMENT_MAP;
 
-    public HomeViewModel() {
+    public HomeViewModel(@NonNull PlacesRepository placesRepository) {
+        this.placesRepository = placesRepository;
+
         // Set the map fragment as the default one
         onFragmentSelected(R.id.action_map);
     }
 
     public LiveData<HomeUiModel> getUiState() {
         return uiState;
+    }
+
+    public LiveData<NearbyResponse> getNearbyRestaurants() {
+        return placesRepository.getNearbyRestaurants();
     }
 
     public void onFragmentSelected(int menuItemId) {

@@ -15,6 +15,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        // Required when setting minSdkVersion to 20 or lower (for desugaring)
+        multiDexEnabled true
+
         // ASKME: local.properties gradle.properties
         // Set the properties within `local.properties` into a `Properties` class so that values
         // within `local.properties` (e.g. Maps API key) are accessible in this file.
@@ -34,12 +37,19 @@ android {
         }
     }
     compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
+    def retrofit_version = "2.9.0"
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
+
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -47,6 +57,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.1.0'
     implementation 'com.google.android.libraries.places:places:2.4.0'
+
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     testImplementation 'junit:junit:4.13.1'
 
