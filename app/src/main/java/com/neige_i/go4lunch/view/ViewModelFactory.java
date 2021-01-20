@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 
+import java.util.concurrent.Executors;
+
 public class ViewModelFactory implements ViewModelProvider.Factory {
 
     // -------------------------------------  CLASS VARIABLES --------------------------------------
@@ -36,7 +38,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel(new PlacesRepository());
+            return (T) new HomeViewModel(new PlacesRepository(Executors.newSingleThreadExecutor()));
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
