@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 
 public class ViewModelFactory implements ViewModelProvider.Factory {
@@ -14,17 +15,6 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Nullable
     private static ViewModelFactory factory;
 
-    // ----------------------------------- INJECTED DEPENDENCIES -----------------------------------
-
-//    @NonNull
-//    private final TaskRepository taskRepository;
-
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
-
-//    private ViewModelFactory(@NonNull TaskRepository taskRepository) {
-//        this.taskRepository = taskRepository;
-//    }
-
     // -------------------------------------- FACTORY METHODS --------------------------------------
 
     @NonNull
@@ -32,12 +22,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         if (factory == null) {
             synchronized (ViewModelFactory.class) {
                 if (factory == null) {
-                    factory = new ViewModelFactory(
-//                        new TaskRepository(
-//                            TaskDatabase.getInstance(MainApplication.getInstance()).taskDao(),
-//                            Executors.newSingleThreadExecutor()
-//                        )
-                    );
+                    factory = new ViewModelFactory();
                 }
             }
         }
@@ -51,12 +36,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel();
-//            return (T) new ListViewModel(taskRepository);
+            return (T) new HomeViewModel(new PlacesRepository());
         }
-//        } else if (modelClass.isAssignableFrom(AddTaskViewModel.class)) {
-//            return (T) new AddTaskViewModel(taskRepository, Clock.systemDefaultZone());
-//        }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
 }

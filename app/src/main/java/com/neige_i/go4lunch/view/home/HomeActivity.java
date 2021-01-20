@@ -13,12 +13,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.list.ListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -58,6 +60,13 @@ public class HomeActivity extends AppCompatActivity {
             // Update the toolbar title accordingly
             setTitle(homeUiModel.getTitleId());
         });
+
+        viewModel.getNearbyRestaurants().observe(this, nearbyResponse ->
+            Log.d("Neige", "observe nearby restaurants: " + nearbyResponse.getResults()
+                .stream()
+                .map(NearbyResponse.Result::getName)
+                .collect(Collectors.toList()) +
+                "\nadditional entries: " + (nearbyResponse.getNextPageToken() != null)));
     }
 
     @Override
