@@ -21,10 +21,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
-import com.google.android.libraries.places.api.net.PlacesClient;
+//import com.google.android.libraries.places.api.Places;
+//import com.google.android.libraries.places.api.model.Place;
+//import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+//import com.google.android.libraries.places.api.net.PlacesClient;
 import com.neige_i.go4lunch.R;
 
 import java.util.Arrays;
@@ -36,7 +36,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
     private FusedLocationProviderClient fusedLocationClient;
-    private PlacesClient placesClient;
+//    private PlacesClient placesClient;
 
     @Nullable
     @Override
@@ -54,8 +54,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         // Get fused location to retrieve current user position (latitude and longitude)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
-        Places.initialize(requireContext(), BuildConfig.MAPS_API_KEY);
-        placesClient = Places.createClient(requireContext());
+//        Places.initialize(requireContext(), BuildConfig.MAPS_API_KEY);
+//        placesClient = Places.createClient(requireContext());
 
         requireView().findViewById(R.id.location_btn).setOnClickListener(v -> centerCameraToCurrentLocation());
     }
@@ -107,12 +107,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     ));
                     Log.d("Neige", "last location: " + location.getLatitude() + " " + location.getLongitude());
 
-                    final List<Place.Field> placeFields = Arrays.asList(Place.Field.TYPES);//Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
-                    placesClient.findCurrentPlace(FindCurrentPlaceRequest.newInstance(placeFields))
-                        .addOnSuccessListener(requireActivity(), findCurrentPlaceResponse -> {
-                            Log.d("Neige", "place count: " +
-                                findCurrentPlaceResponse.getPlaceLikelihoods().size());
-                    });
+//                    final List<Place.Field> placeFields = Arrays.asList(Place.Field.TYPES);//Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
+//                    placesClient.findCurrentPlace(FindCurrentPlaceRequest.newInstance(placeFields))
+//                        .addOnSuccessListener(requireActivity(), findCurrentPlaceResponse -> {
+//                            Log.d("Neige", "place count: " +
+//                                findCurrentPlaceResponse.getPlaceLikelihoods().size());
+//                    });
                 }
             });
         }
