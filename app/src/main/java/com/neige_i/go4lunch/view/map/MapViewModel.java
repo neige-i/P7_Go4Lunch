@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.Observer;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
@@ -15,22 +15,41 @@ import java.util.List;
 
 public class MapViewModel extends ViewModel {
 
-    private MediatorLiveData<List<MapViewState>> mapViewStateMediatorLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<List<MapViewState>> mapViewStateMediatorLiveData = new MediatorLiveData<>();
+
+    private final MediatorLiveData<Boolean> isLocationLayerEnabled = new MediatorLiveData<>();
+
+    private final MutableLiveData<Boolean> isMapAvailable = new MutableLiveData<>();
 
     public MapViewModel(@NonNull PlacesRepository placesRepository) {
+        mapViewStateMediatorLiveData.addSource(placesRepository.getNearbyRestaurants(), this::combine);
 
-        LiveData<NearbyResponse> nearbyRestaurantsLiveData = placesRepository.getNearbyRestaurants();
-
-        mapViewStateMediatorLiveData.addSource(nearbyRestaurantsLiveData, new Observer<NearbyResponse>() {
-            @Override
-            public void onChanged(NearbyResponse nearbyResponse) {
-                combine(nearbyResponse);
-            }
-        });
+        isMapAvailable.setValue(false);
+        isLocationLayerEnabled.addSource(
+            placesRepository.isLocationPermissionGranted(),
+            isPermissionGranted -> combineGoogleMap(isMapAvailable.getValue(), isPermissionGranted)
+        );
+        isLocationLayerEnabled.addSource(
+            isMapAvailable,
+            mapAvailable -> combineGoogleMap(mapAvailable, placesRepository.isLocationPermissionGranted().getValue())
+        );
     }
 
     public LiveData<List<MapViewState>> getMapViewStateLiveData() {
         return mapViewStateMediatorLiveData;
+    }
+
+    public LiveData<Boolean> isLocationLayerEnabled() {
+        return isLocationLayerEnabled;
+    }
+
+    public void onMapAvailable() {
+        isMapAvailable.setValue(true);
+    }
+
+    private void combineGoogleMap(boolean isMapAvailable, boolean isPermissionEnabled) {
+        if (isMapAvailable)
+            isLocationLayerEnabled.setValue(isPermissionEnabled);
     }
 
     private void combine(@Nullable NearbyResponse nearbyResponse) {

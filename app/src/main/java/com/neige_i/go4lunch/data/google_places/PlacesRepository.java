@@ -14,6 +14,8 @@ public class PlacesRepository {
     @NonNull
     private final ExecutorService executorService;
 
+    private final MutableLiveData<Boolean> isLocationPermissionGranted = new MutableLiveData<>();
+
     public PlacesRepository(@NonNull ExecutorService executorService) {
         this.executorService = executorService;
     }
@@ -32,5 +34,13 @@ public class PlacesRepository {
         });
 
         return nearbyResponse;
+    }
+
+    public LiveData<Boolean> isLocationPermissionGranted() {
+        return isLocationPermissionGranted;
+    }
+
+    public void setLocationPermissionGranted(boolean locationPermissionGranted) {
+        isLocationPermissionGranted.setValue(locationPermissionGranted);
     }
 }

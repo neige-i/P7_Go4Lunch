@@ -36,6 +36,11 @@ public class HomeViewModel extends ViewModel {
         return placesRepository.getNearbyRestaurants();
     }
 
+    public void onLocationPermissionGranted(boolean isLocationPermissionGranted) {
+        // Update repository value
+        placesRepository.setLocationPermissionGranted(isLocationPermissionGranted);
+    }
+
     public void onFragmentSelected(int menuItemId) {
         final String fragmentToShow;
         final int titleId;

@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.view.home;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -7,6 +9,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
@@ -24,9 +27,13 @@ import java.util.stream.Collectors;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
     static final String TAG_FRAGMENT_MAP = "map";
     static final String TAG_FRAGMENT_RESTAURANT = "restaurant";
     static final String TAG_FRAGMENT_WORKMATE = "workmate";
+
+    private HomeViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +44,7 @@ public class HomeActivity extends AppCompatActivity {
         setSupportActionBar(findViewById(R.id.toolbar));
 
         // Init ViewModel
-        final HomeViewModel viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(HomeViewModel.class);
+        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(HomeViewModel.class);
 
         // Config BottomNavigationView listener
         ((BottomNavigationView) findViewById(R.id.bottom_navigation)).setOnNavigationItemSelectedListener(item -> {
@@ -70,6 +77,32 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Request location permission if not granted yet
+        // If the user manually disables permission in device settings, the activity is recreated
+        // But, if the user enables it, the activity is only restarted
+        // Then, to better handle actions according to location permission, check it here inside onStart()
+        // ASKME: can keep if statement here or replace it by SingleLiveEvent
+        final boolean isLocationPermissionGranted;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            isLocationPermissionGranted = false;
+        } else {
+            isLocationPermissionGranted = true;
+        }
+        viewModel.onLocationPermissionGranted(isLocationPermissionGranted);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        viewModel.onLocationPermissionGranted(requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
+                                                  grantResults.length > 0 &&
+                                                  grantResults[0] == PackageManager.PERMISSION_GRANTED);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
         return true;
@@ -92,6 +125,7 @@ public class HomeActivity extends AppCompatActivity {
         fragments.put(TAG_FRAGMENT_WORKMATE, ListFragment.newInstance(ListFragment.WORKMATE));
 
         // Add all fragments to the fragment manager and hide them
+        // TODO: add restaurant and workmate fragments only when clicked on the BottomNavigationView to avoid unnecessary initializations
         final FragmentManager fragmentManager = getSupportFragmentManager();
         for (Map.Entry<String, Fragment> mapEntry : fragments.entrySet()) {
             fragmentManager.beginTransaction()
