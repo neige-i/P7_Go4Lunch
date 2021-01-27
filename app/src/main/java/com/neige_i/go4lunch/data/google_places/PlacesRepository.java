@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.data.google_places;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -14,7 +16,9 @@ public class PlacesRepository {
     @NonNull
     private final ExecutorService executorService;
 
+    // TODO: move these LiveData to another repository
     private final MutableLiveData<Boolean> isLocationPermissionGranted = new MutableLiveData<>();
+    private final MutableLiveData<Location> currentLocation = new MutableLiveData<>();
 
     public PlacesRepository(@NonNull ExecutorService executorService) {
         this.executorService = executorService;
@@ -42,5 +46,13 @@ public class PlacesRepository {
 
     public void setLocationPermissionGranted(boolean locationPermissionGranted) {
         isLocationPermissionGranted.setValue(locationPermissionGranted);
+    }
+
+    public LiveData<Location> getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public void setCurrentLocation(@NonNull Location newLocation) {
+        currentLocation.setValue(newLocation);
     }
 }

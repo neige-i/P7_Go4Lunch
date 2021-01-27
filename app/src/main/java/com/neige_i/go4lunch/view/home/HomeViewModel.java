@@ -1,13 +1,18 @@
 package com.neige_i.go4lunch.view.home;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.google.android.gms.location.LocationResult;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_RESTAURANT;
@@ -19,6 +24,7 @@ public class HomeViewModel extends ViewModel {
     private final PlacesRepository placesRepository;
 
     private final MutableLiveData<HomeUiModel> uiState = new MutableLiveData<>();
+    private final SingleLiveEvent<Void> startLocationUpdatesEvent = new SingleLiveEvent<>();
     private String fragmentToHide = TAG_FRAGMENT_MAP;
 
     public HomeViewModel(@NonNull PlacesRepository placesRepository) {
@@ -36,9 +42,27 @@ public class HomeViewModel extends ViewModel {
         return placesRepository.getNearbyRestaurants();
     }
 
+    public LiveData<Void> getStartLocationUpdatesEvent() {
+        return startLocationUpdatesEvent;
+    }
+
     public void onLocationPermissionGranted(boolean isLocationPermissionGranted) {
         // Update repository value
         placesRepository.setLocationPermissionGranted(isLocationPermissionGranted);
+
+        // If location permission is granted, turn on location updates
+        if (isLocationPermissionGranted)
+            startLocationUpdatesEvent.call();
+    }
+
+    public void onCurrentLocationUpdated(@Nullable LocationResult locationResult) {
+        if (locationResult != null) {
+            final Location lastLocation = locationResult.getLastLocation();
+            if (lastLocation != null) {
+                // Update current user location
+                placesRepository.setCurrentLocation(lastLocation);
+            }
+        }
     }
 
     public void onFragmentSelected(int menuItemId) {
