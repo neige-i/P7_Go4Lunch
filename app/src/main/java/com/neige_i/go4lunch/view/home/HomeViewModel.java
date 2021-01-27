@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel;
 import com.google.android.gms.location.LocationResult;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
-import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
@@ -36,10 +35,6 @@ public class HomeViewModel extends ViewModel {
 
     public LiveData<HomeUiModel> getUiState() {
         return uiState;
-    }
-
-    public LiveData<NearbyResponse> getNearbyRestaurants() {
-        return placesRepository.getNearbyRestaurants();
     }
 
     public LiveData<Void> getStartLocationUpdatesEvent() {

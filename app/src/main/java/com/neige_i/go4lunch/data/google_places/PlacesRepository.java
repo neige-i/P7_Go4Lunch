@@ -16,7 +16,9 @@ public class PlacesRepository {
     @NonNull
     private final ExecutorService executorService;
 
-    // TODO: move these LiveData to another repository
+    @NonNull
+    private final MutableLiveData<NearbyResponse> nearbyResponse = new MutableLiveData<>();
+
     private final MutableLiveData<Boolean> isLocationPermissionGranted = new MutableLiveData<>();
     private final MutableLiveData<Location> currentLocation = new MutableLiveData<>();
 
@@ -25,18 +27,6 @@ public class PlacesRepository {
     }
 
     public LiveData<NearbyResponse> getNearbyRestaurants() {
-        final MutableLiveData<NearbyResponse> nearbyResponse = new MutableLiveData<>();
-
-        // Use ExecutorService instead of AsyncTask because of its depreciation for background tasks
-        executorService.execute(() -> {
-            try {
-                // Fetch nearby restaurants from Google Places API asynchronously, then update LiveData
-                nearbyResponse.postValue(PlacesApi.getInstance().getNearbyRestaurants().execute().body());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
         return nearbyResponse;
     }
 
@@ -54,5 +44,17 @@ public class PlacesRepository {
 
     public void setCurrentLocation(@NonNull Location newLocation) {
         currentLocation.setValue(newLocation);
+
+        // Use ExecutorService instead of AsyncTask because of its depreciation for background tasks
+        executorService.execute(() -> {
+            try {
+                // Fetch nearby restaurants from Google Places API asynchronously, then update LiveData
+                nearbyResponse.postValue(PlacesApi.getInstance().getNearbyRestaurants(
+                    newLocation.getLatitude() + "," + newLocation.getLongitude()
+                ).execute().body());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

@@ -2,6 +2,7 @@ package com.neige_i.go4lunch.view.map;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.ViewModelFactory;
+
+import java.util.stream.Collectors;
 
 public class MapFragment extends Fragment {
 
@@ -52,6 +55,10 @@ public class MapFragment extends Fragment {
             googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Disabled, replaced by FAB
             googleMap.setMyLocationEnabled(isEnabled);
             fab.setVisibility(isEnabled ? View.VISIBLE : View.GONE);
+        });
+
+        viewModel.getMapViewStateLiveData().observe(requireActivity(), mapViewStates -> {
+            Log.d("Neige", "MapFragment::onViewCreated: " + mapViewStates.stream().map(MapViewState::getName).collect(Collectors.toList()));
         });
 
         // Move camera to current user location
