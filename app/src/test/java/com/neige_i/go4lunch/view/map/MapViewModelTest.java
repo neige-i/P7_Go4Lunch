@@ -26,6 +26,8 @@ public class MapViewModelTest {
 
     private final String EXPECTED_PLACE_ID = "EXPECTED_PLACE_ID";
     private final String EXPECTED_NAME = "EXPECTED_NAME";
+    private final double EXPECTED_LAT = 1.0;
+    private final double EXPECTED_LNG = 2.0;
 
     private final MutableLiveData<NearbyResponse> nearbyResponseMutableLiveData = new MutableLiveData<>();
 
@@ -106,7 +108,9 @@ public class MapViewModelTest {
     private MapViewState getDefaultMapViewState(int index) {
         return new MapViewState(
             EXPECTED_PLACE_ID + index,
-            EXPECTED_NAME + index
+            EXPECTED_NAME + index,
+            EXPECTED_LAT + index,
+            EXPECTED_LNG + index
         );
     }
     // endregion

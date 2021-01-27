@@ -6,13 +6,16 @@ public class MapViewState {
 
     private final String placeId;
     private final String name;
-    // location
+    private final double latitude;
+    private final double longitude;
     // image
 
 
-    public MapViewState(String placeId, String name) {
+    public MapViewState(String placeId, String name, double latitude, double longitude) {
         this.placeId = placeId;
         this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getPlaceId() {
@@ -21,6 +24,14 @@ public class MapViewState {
 
     public String getName() {
         return name;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 
     @Override
