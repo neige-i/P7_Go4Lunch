@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.view.map;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -9,19 +11,27 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MapViewModel extends ViewModel {
 
+    @NonNull
+    private final PlacesRepository placesRepository;
+
     private final MediatorLiveData<List<MapViewState>> mapViewStateMediatorLiveData = new MediatorLiveData<>();
 
     private final MediatorLiveData<Boolean> isLocationLayerEnabled = new MediatorLiveData<>();
 
+    private final SingleLiveEvent<Location> zoomMapToCurrentLocationEvent = new SingleLiveEvent<>();
+
     private final MutableLiveData<Boolean> isMapAvailable = new MutableLiveData<>();
 
     public MapViewModel(@NonNull PlacesRepository placesRepository) {
+        this.placesRepository = placesRepository;
+
         mapViewStateMediatorLiveData.addSource(placesRepository.getNearbyRestaurants(), this::combine);
 
         isMapAvailable.setValue(false);
@@ -43,8 +53,19 @@ public class MapViewModel extends ViewModel {
         return isLocationLayerEnabled;
     }
 
+    public LiveData<Location> getZoomMapToCurrentLocationEvent() {
+        return zoomMapToCurrentLocationEvent;
+    }
+
     public void onMapAvailable() {
         isMapAvailable.setValue(true);
+    }
+
+    public void onCurrentLocationQueried() {
+        final Location currentLocation = placesRepository.getCurrentLocation().getValue();
+        if (placesRepository.isLocationPermissionGranted().getValue() && currentLocation != null) {
+            zoomMapToCurrentLocationEvent.setValue(currentLocation);
+        }
     }
 
     private void combineGoogleMap(boolean isMapAvailable, boolean isPermissionEnabled) {

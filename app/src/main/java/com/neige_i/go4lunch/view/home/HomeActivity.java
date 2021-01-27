@@ -1,8 +1,10 @@
 package com.neige_i.go4lunch.view.home;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,16 +16,19 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.list.ListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -34,7 +39,10 @@ public class HomeActivity extends AppCompatActivity {
     static final String TAG_FRAGMENT_WORKMATE = "workmate";
 
     private HomeViewModel viewModel;
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationCallback locationCallback;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,12 +76,40 @@ public class HomeActivity extends AppCompatActivity {
             setTitle(homeUiModel.getTitleId());
         });
 
-        viewModel.getNearbyRestaurants().observe(this, nearbyResponse ->
-            Log.d("Neige", "observe nearby restaurants: " + nearbyResponse.getResults()
-                .stream()
-                .map(NearbyResponse.Result::getName)
-                .collect(Collectors.toList()) +
-                "\nadditional entries: " + (nearbyResponse.getNextPageToken() != null)));
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                viewModel.onCurrentLocationUpdated(locationResult);
+            }
+        };
+        viewModel.getStartLocationUpdatesEvent().observe(this, aVoid -> {
+            // ASKME: is last known location really useful
+//            fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+//                if (location != null) {
+//
+//                }
+//            });
+
+            // ASKME: com.google.android.gms.location better than android.location
+//            ((LocationManager) getSystemService(Context.LOCATION_SERVICE)).requestLocationUpdates(
+//                LocationManager.GPS_PROVIDER,
+//                5000,
+//                10,
+//                location -> {}
+//            );
+
+            // TODO: handle when gps is disabled
+            fusedLocationClient.requestLocationUpdates(
+                LocationRequest.create()
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setInterval(5000)
+                    .setFastestInterval(5000)
+                    .setSmallestDisplacement(10),
+                locationCallback,
+                Looper.getMainLooper()
+            );
+        });
     }
 
     @Override
@@ -93,6 +129,12 @@ public class HomeActivity extends AppCompatActivity {
             isLocationPermissionGranted = true;
         }
         viewModel.onLocationPermissionGranted(isLocationPermissionGranted);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     @Override

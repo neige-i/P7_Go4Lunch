@@ -7,11 +7,12 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public interface PlacesApi {
 
-    @GET("maps/api/place/nearbysearch/json?location=48.856614,2.3522219&radius=2000&type=restaurant&key=" + BuildConfig.MAPS_API_KEY)
-    Call<NearbyResponse> getNearbyRestaurants();
+    @GET("maps/api/place/nearbysearch/json?radius=2000&type=restaurant&key=" + BuildConfig.MAPS_API_KEY)
+    Call<NearbyResponse> getNearbyRestaurants(@Query("location") String location);
 
     static PlacesApi getInstance() {
         return new Retrofit.Builder()
