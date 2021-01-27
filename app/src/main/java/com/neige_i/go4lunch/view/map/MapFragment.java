@@ -1,6 +1,8 @@
 package com.neige_i.go4lunch.view.map;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,13 +11,17 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.ViewModelFactory;
@@ -43,6 +49,10 @@ public class MapFragment extends Fragment {
         // When the map is ready to be used, set the GoogleMap object and notify the ViewModel
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(googleMap -> {
             this.googleMap = googleMap;
+            googleMap.setOnMarkerClickListener(marker -> {
+                marker.showInfoWindow();
+                return false;
+            });
             viewModel.onMapAvailable();
         });
 
@@ -58,7 +68,23 @@ public class MapFragment extends Fragment {
         });
 
         viewModel.getMapViewStateLiveData().observe(requireActivity(), mapViewStates -> {
-            Log.d("Neige", "MapFragment::onViewCreated: " + mapViewStates.stream().map(MapViewState::getName).collect(Collectors.toList()));
+            // Change the size of the marker
+            final Bitmap smallMarker = Bitmap.createScaledBitmap(
+                ((BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_marker_orange, null)).getBitmap(),
+                100,
+                100,
+                false
+            );
+
+            // Add markers for all nearby restaurants
+            for (MapViewState mapViewState : mapViewStates) {
+                googleMap.addMarker(
+                    new MarkerOptions()
+                        .position(new LatLng(mapViewState.getLatitude(), mapViewState.getLongitude()))
+                        .title(mapViewState.getName())
+                        .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+                );
+            }
         });
 
         // Move camera to current user location

@@ -84,10 +84,13 @@ public class MapViewModel extends ViewModel {
             List<MapViewState> viewStates = new ArrayList<>();
 
             for (NearbyResponse.Result result : nearbyResponse.getResults()) {
+                final NearbyResponse.Location location = result.getGeometry().getLocation();
                 viewStates.add(
                     new MapViewState(
                         result.getPlaceId(),
-                        result.getName()
+                        result.getName(),
+                        location.getLat(),
+                        location.getLng()
                     )
                 );
             }
