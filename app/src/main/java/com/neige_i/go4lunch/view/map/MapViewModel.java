@@ -9,7 +9,8 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
+import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class MapViewModel extends ViewModel {
 
     @NonNull
-    private final PlacesRepository placesRepository;
+    private final LocationRepository locationRepository;
 
     private final MediatorLiveData<List<MapViewState>> mapViewStateMediatorLiveData = new MediatorLiveData<>();
 
@@ -28,20 +29,21 @@ public class MapViewModel extends ViewModel {
     private final SingleLiveEvent<Location> zoomMapToCurrentLocationEvent = new SingleLiveEvent<>();
 
     private final MutableLiveData<Boolean> isMapAvailable = new MutableLiveData<>();
+    private final LiveData<Boolean> isLocationPermissionGranted;
 
-    public MapViewModel(@NonNull PlacesRepository placesRepository) {
-        this.placesRepository = placesRepository;
+    public MapViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
+        this.locationRepository = locationRepository;
 
-        mapViewStateMediatorLiveData.addSource(placesRepository.getNearbyRestaurants(), this::combine);
+        mapViewStateMediatorLiveData.addSource(nearbyRepository.getNearbyRestaurants(), this::combine);
 
-        isMapAvailable.setValue(false);
+        isLocationPermissionGranted = locationRepository.isLocationPermissionGranted();
         isLocationLayerEnabled.addSource(
-            placesRepository.isLocationPermissionGranted(),
+            isLocationPermissionGranted,
             isPermissionGranted -> combineGoogleMap(isMapAvailable.getValue(), isPermissionGranted)
         );
         isLocationLayerEnabled.addSource(
             isMapAvailable,
-            mapAvailable -> combineGoogleMap(mapAvailable, placesRepository.isLocationPermissionGranted().getValue())
+            mapAvailable -> combineGoogleMap(mapAvailable, isLocationPermissionGranted.getValue())
         );
     }
 
@@ -62,13 +64,16 @@ public class MapViewModel extends ViewModel {
     }
 
     public void onCurrentLocationQueried() {
-        final Location currentLocation = placesRepository.getCurrentLocation().getValue();
-        if (placesRepository.isLocationPermissionGranted().getValue() && currentLocation != null) {
+        final Location currentLocation = locationRepository.getCurrentLocation().getValue();
+        if (isLocationPermissionGranted.getValue() && currentLocation != null) {
             zoomMapToCurrentLocationEvent.setValue(currentLocation);
         }
     }
 
-    private void combineGoogleMap(boolean isMapAvailable, boolean isPermissionEnabled) {
+    private void combineGoogleMap(Boolean isMapAvailable, Boolean isPermissionEnabled) {
+        if (isMapAvailable == null || isPermissionEnabled == null)
+            return;
+
         if (isMapAvailable)
             isLocationLayerEnabled.setValue(isPermissionEnabled);
     }

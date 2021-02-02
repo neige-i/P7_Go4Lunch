@@ -1,17 +1,14 @@
 package com.neige_i.go4lunch.view.home;
 
-import android.location.Location;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.android.gms.location.LocationResult;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
-import com.neige_i.go4lunch.view.SingleLiveEvent;
+import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_RESTAURANT;
@@ -20,14 +17,21 @@ import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_WORKMATE;
 public class HomeViewModel extends ViewModel {
 
     @NonNull
-    private final PlacesRepository placesRepository;
+    private final LocationRepository locationRepository;
 
     private final MutableLiveData<HomeUiModel> uiState = new MutableLiveData<>();
-    private final SingleLiveEvent<Void> startLocationUpdatesEvent = new SingleLiveEvent<>();
+    private final MediatorLiveData<Void> requestLocationPermissionEvent = new MediatorLiveData<>();
     private String fragmentToHide = TAG_FRAGMENT_MAP;
 
-    public HomeViewModel(@NonNull PlacesRepository placesRepository) {
-        this.placesRepository = placesRepository;
+    public HomeViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
+        this.locationRepository = locationRepository;
+
+        requestLocationPermissionEvent.addSource(locationRepository.isLocationPermissionGranted(), isPermissionGranted -> {
+            if (!isPermissionGranted)
+                requestLocationPermissionEvent.setValue(null);
+        });
+        // TODO: change this addSource()
+        requestLocationPermissionEvent.addSource(locationRepository.getCurrentLocation(), nearbyRepository::executeNearbyRestaurantsRequest);
 
         // Set the map fragment as the default one
         onFragmentSelected(R.id.action_map);
@@ -37,27 +41,20 @@ public class HomeViewModel extends ViewModel {
         return uiState;
     }
 
-    public LiveData<Void> getStartLocationUpdatesEvent() {
-        return startLocationUpdatesEvent;
+    public LiveData<Void> getRequestLocationPermissionEvent() {
+        return requestLocationPermissionEvent;
     }
 
     public void onLocationPermissionGranted(boolean isLocationPermissionGranted) {
-        // Update repository value
-        placesRepository.setLocationPermissionGranted(isLocationPermissionGranted);
-
-        // If location permission is granted, turn on location updates
-        if (isLocationPermissionGranted)
-            startLocationUpdatesEvent.call();
+        locationRepository.setLocationPermissionGranted(isLocationPermissionGranted);
     }
 
-    public void onCurrentLocationUpdated(@Nullable LocationResult locationResult) {
-        if (locationResult != null) {
-            final Location lastLocation = locationResult.getLastLocation();
-            if (lastLocation != null) {
-                // Update current user location
-                placesRepository.setCurrentLocation(lastLocation);
-            }
-        }
+    public void onLocationPermissionChecked() {
+        locationRepository.checkLocationPermission();
+    }
+
+    public void onLocationUpdatesRemoved() {
+        locationRepository.removeLocationUpdates();
     }
 
     public void onFragmentSelected(int menuItemId) {
