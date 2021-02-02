@@ -3,7 +3,8 @@ package com.neige_i.go4lunch.view.map;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
+import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
 import org.junit.Before;
@@ -31,15 +32,15 @@ public class MapViewModelTest {
 
     private final MutableLiveData<NearbyResponse> nearbyResponseMutableLiveData = new MutableLiveData<>();
 
-    private final PlacesRepository placesRepository = Mockito.mock(PlacesRepository.class);
+    private final NearbyRepository nearbyRepository = Mockito.mock(NearbyRepository.class);
 
     private MapViewModel mapViewModel;
 
     @Before
     public void setUp() {
-        Mockito.doReturn(nearbyResponseMutableLiveData).when(placesRepository).getNearbyRestaurants();
+        Mockito.doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).getNearbyRestaurants();
 
-        mapViewModel = new MapViewModel(placesRepository);
+        mapViewModel = new MapViewModel(nearbyRepository, Mockito.mock(LocationRepository.class));
     }
 
     @Test
