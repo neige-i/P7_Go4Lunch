@@ -1,10 +1,10 @@
 package com.neige_i.go4lunch.view.map;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,17 +20,23 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.view.OnDetailQueriedCallback;
 import com.neige_i.go4lunch.view.ViewModelFactory;
-
-import java.util.stream.Collectors;
 
 public class MapFragment extends Fragment {
 
     private GoogleMap googleMap;
+    private OnDetailQueriedCallback onDetailQueriedCallback;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        onDetailQueriedCallback = (OnDetailQueriedCallback) context;
+    }
 
     @Nullable
     @Override
@@ -53,6 +59,7 @@ public class MapFragment extends Fragment {
                 marker.showInfoWindow();
                 return false;
             });
+            googleMap.setOnInfoWindowClickListener(marker -> onDetailQueriedCallback.onDetailQueried((String) marker.getTag()));
             viewModel.onMapAvailable();
         });
 
@@ -63,6 +70,7 @@ public class MapFragment extends Fragment {
         // Update my-location layer
         viewModel.isLocationLayerEnabled().observe(requireActivity(), isEnabled -> {
             googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Disabled, replaced by FAB
+            googleMap.getUiSettings().setMapToolbarEnabled(false); // Disable navigation options
             googleMap.setMyLocationEnabled(isEnabled);
             fab.setVisibility(isEnabled ? View.VISIBLE : View.GONE);
         });
@@ -82,8 +90,9 @@ public class MapFragment extends Fragment {
                     new MarkerOptions()
                         .position(new LatLng(mapViewState.getLatitude(), mapViewState.getLongitude()))
                         .title(mapViewState.getName())
+                        .snippet(mapViewState.getVicinity())
                         .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
-                );
+                ).setTag(mapViewState.getPlaceId());
             }
         });
 

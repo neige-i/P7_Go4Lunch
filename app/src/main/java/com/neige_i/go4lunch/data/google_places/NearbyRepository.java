@@ -1,8 +1,10 @@
 package com.neige_i.go4lunch.data.google_places;
 
 import android.location.Location;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -19,6 +21,9 @@ public class NearbyRepository {
     @NonNull
     private final MutableLiveData<NearbyResponse> nearbyResponse = new MutableLiveData<>();
 
+    @NonNull
+    private final LruCache<String, NearbyResponse> nearbyResponseCache = new LruCache<>(4 * 1024 * 1024); // 4MB cache size
+
     public NearbyRepository(@NonNull ExecutorService executorService) {
         this.executorService = executorService;
     }
@@ -28,16 +33,32 @@ public class NearbyRepository {
     }
 
     public void executeNearbyRestaurantsRequest(@NonNull Location newLocation) {
-        // Use ExecutorService instead of AsyncTask because of its depreciation for background tasks
-        executorService.execute(() -> {
-            try {
-                // Fetch nearby restaurants from Google Places API asynchronously, then update LiveData
-                nearbyResponse.postValue(PlacesApi.getInstance().getNearbyRestaurants(
-                    newLocation.getLatitude() + "," + newLocation.getLongitude()
-                ).execute().body());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        final String stringLocation = newLocation.getLatitude() + "," + newLocation.getLongitude();
+
+        // Check if the request has already been executed for this location
+        final NearbyResponse cachedNearby = nearbyResponseCache.get(stringLocation);
+        if (cachedNearby != null) {
+            // TODO: use cache also if new location is close enough (say 100m)
+            nearbyResponse.setValue(cachedNearby);
+        } else {
+            // Use ExecutorService instead of AsyncTask because of its depreciation for background tasks
+            executorService.execute(() -> {
+                try {
+                    // Fetch nearby restaurants from Google Places API asynchronously
+                    final NearbyResponse newNearbyResponse = PlacesApi.getInstance()
+                        .getNearbyRestaurants(stringLocation)
+                        .execute()
+                        .body();
+
+                    // Add NearbyResponse to cache and update LiveData
+                    if (newNearbyResponse != null) {
+                        nearbyResponseCache.put(stringLocation, newNearbyResponse);
+                        nearbyResponse.postValue(newNearbyResponse);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 }

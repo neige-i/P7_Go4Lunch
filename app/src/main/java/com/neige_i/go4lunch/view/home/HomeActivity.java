@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.view.home;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,20 +17,23 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.view.OnDetailQueriedCallback;
 import com.neige_i.go4lunch.view.ViewModelFactory;
+import com.neige_i.go4lunch.view.detail.DetailActivity;
 import com.neige_i.go4lunch.view.list.ListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements OnDetailQueriedCallback {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     static final String TAG_FRAGMENT_MAP = "map";
     static final String TAG_FRAGMENT_RESTAURANT = "restaurant";
     static final String TAG_FRAGMENT_WORKMATE = "workmate";
+    public static final String EXTRA_PLACE_ID = "EXTRA_PLACE_ID";
 
     private HomeViewModel viewModel;
 
@@ -130,5 +134,12 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return fragmentManager;
+    }
+
+    @Override
+    public void onDetailQueried(String placeId) {
+        final Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra(EXTRA_PLACE_ID, placeId);
+        startActivity(intent);
     }
 }
