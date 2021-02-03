@@ -82,6 +82,7 @@ public class MapFragment extends Fragment {
                     new MarkerOptions()
                         .position(new LatLng(mapViewState.getLatitude(), mapViewState.getLongitude()))
                         .title(mapViewState.getName())
+                        .snippet(mapViewState.getVicinity())
                         .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
                 );
             }

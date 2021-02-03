@@ -95,7 +95,8 @@ public class MapViewModel extends ViewModel {
                         result.getPlaceId(),
                         result.getName(),
                         location.getLat(),
-                        location.getLng()
+                        location.getLng(),
+                        result.getVicinity()
                     )
                 );
             }
