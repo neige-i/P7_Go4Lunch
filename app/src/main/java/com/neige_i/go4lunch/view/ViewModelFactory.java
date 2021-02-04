@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
@@ -17,16 +18,16 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     // -------------------------------------  CLASS VARIABLES --------------------------------------
 
     @NonNull
-    private final NearbyRepository nearbyRepository;
+    private final BaseRepository nearbyRepository;
     @NonNull
     private final LocationRepository locationRepository;
     @NonNull
-    private final DetailsRepository detailsRepository;
+    private final BaseRepository detailsRepository;
 
     @Nullable
     private static ViewModelFactory factory;
 
-    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository) {
+    public ViewModelFactory(@NonNull BaseRepository nearbyRepository, @NonNull LocationRepository locationRepository, @NonNull BaseRepository detailsRepository) {
         this.nearbyRepository = nearbyRepository;
         this.locationRepository = locationRepository;
         this.detailsRepository = detailsRepository;

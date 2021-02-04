@@ -5,20 +5,20 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.neige_i.go4lunch.data.google_places.DetailsRepository;
+import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 
 public class DetailViewModel extends ViewModel {
 
-    private final DetailsRepository detailsRepository;
+    private final BaseRepository detailsRepository;
 
-    public DetailViewModel(DetailsRepository detailsRepository) {
+    public DetailViewModel(BaseRepository detailsRepository) {
         this.detailsRepository = detailsRepository;
     }
 
     public LiveData<DetailViewState> getViewState(@NonNull String placeId) {
         return Transformations.map(detailsRepository.executeDetailsRequest(placeId), detailsResponse -> {
-            final DetailsResponse.Result result = detailsResponse.getResult();
+            final DetailsResponse.Result result = ((DetailsResponse) detailsResponse).getResult();
 
             // Shorten the address: "8 Rue du Fouarre, 75005 Paris, France" -> "8 Rue du Fouarre"
             final String shortAddress = result.getFormattedAddress().substring(0, result.getFormattedAddress().indexOf(','));
