@@ -15,19 +15,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        // Required when setting minSdkVersion to 20 or lower (for desugaring)
-        multiDexEnabled true
-
-        // ASKME: local.properties gradle.properties
-        // Set the properties within `local.properties` into a `Properties` class so that values
-        // within `local.properties` (e.g. Maps API key) are accessible in this file.
-        Properties properties = new Properties()
-        if (rootProject.file("local.properties").exists()) {
-            properties.load(rootProject.file("local.properties").newDataInputStream())
-        }
-
-        // Inject the Maps API key into the manifest
-        manifestPlaceholders = [mapsApiKey: properties.getProperty("MAPS_API_KEY", "")]
+        // Retrieve Maps API key from gradle.properties file
+        buildConfigField "String", "MAPS_API_KEY", MapsApiKey
+        resValue "string", "MAPS_API_KEY", MapsApiKey
     }
 
     buildTypes {
@@ -37,9 +27,6 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for the new language APIs
-        coreLibraryDesugaringEnabled true
-
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -48,23 +35,18 @@ android {
 dependencies {
     def retrofit_version = "2.9.0"
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
-
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.1.0'
-//    implementation 'com.google.android.libraries.places:places:2.4.0'
 
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     testImplementation 'junit:junit:4.13.1'
-    // Helps testing livedata : InstantTaskExecutorRule, for example
-    testImplementation 'android.arch.core:core-testing:1.1.1'
-    // Helps mocking objects (Mockito.mock() or Mockito.spy())
+    testImplementation 'android.arch.core:core-testing:1.1.1' // Helps testing LiveData
     testImplementation 'org.mockito:mockito-core:3.3.3'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
