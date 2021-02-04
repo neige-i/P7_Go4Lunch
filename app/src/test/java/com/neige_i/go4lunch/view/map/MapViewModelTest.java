@@ -1,8 +1,11 @@
 package com.neige_i.go4lunch.view.map;
 
+import android.location.Location;
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
+import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
@@ -18,6 +21,7 @@ import java.util.List;
 
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 
 public class MapViewModelTest {
@@ -33,15 +37,15 @@ public class MapViewModelTest {
 
     private final MutableLiveData<NearbyResponse> nearbyResponseMutableLiveData = new MutableLiveData<>();
 
-    private final NearbyRepository nearbyRepository = Mockito.mock(NearbyRepository.class);
+    private final BaseRepository nearbyRepository = mock(NearbyRepository.class);
 
     private MapViewModel mapViewModel;
 
     @Before
     public void setUp() {
-        Mockito.doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).getNearbyRestaurants();
+        Mockito.doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).executeDetailsRequest(mock(Location.class));
 
-        mapViewModel = new MapViewModel(nearbyRepository, Mockito.mock(LocationRepository.class));
+        mapViewModel = new MapViewModel(nearbyRepository, mock(LocationRepository.class));
     }
 
     @Test
@@ -55,7 +59,7 @@ public class MapViewModelTest {
         );
 
         // When
-        List<MapViewState> result = getOrAwaitValue(mapViewModel.getMapViewStateLiveData());
+        List<MapViewState> result = getOrAwaitValue(mapViewModel.getViewState());
 
         // Then
         assertEquals(
@@ -73,7 +77,7 @@ public class MapViewModelTest {
         nearbyResponseMutableLiveData.setValue(getDefaultNearbyResponse());
 
         // When
-        List<MapViewState> result = getOrAwaitValue(mapViewModel.getMapViewStateLiveData());
+        List<MapViewState> result = getOrAwaitValue(mapViewModel.getViewState());
 
         // Then
         assertEquals(

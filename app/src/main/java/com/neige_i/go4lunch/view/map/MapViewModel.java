@@ -3,14 +3,14 @@ package com.neige_i.go4lunch.view.map;
 import android.location.Location;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
-import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
@@ -21,8 +21,7 @@ public class MapViewModel extends ViewModel {
 
     @NonNull
     private final LocationRepository locationRepository;
-
-    private final MediatorLiveData<List<MapViewState>> mapViewStateMediatorLiveData = new MediatorLiveData<>();
+    private final BaseRepository nearbyRepository;
 
     private final MediatorLiveData<Boolean> isLocationLayerEnabled = new MediatorLiveData<>();
 
@@ -31,10 +30,9 @@ public class MapViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isMapAvailable = new MutableLiveData<>();
     private final LiveData<Boolean> isLocationPermissionGranted;
 
-    public MapViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
+    public MapViewModel(@NonNull BaseRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
-
-        mapViewStateMediatorLiveData.addSource(nearbyRepository.getNearbyRestaurants(), this::combine);
+        this.nearbyRepository = nearbyRepository;
 
         isLocationPermissionGranted = locationRepository.isLocationPermissionGranted();
         isLocationLayerEnabled.addSource(
@@ -47,8 +45,26 @@ public class MapViewModel extends ViewModel {
         );
     }
 
-    public LiveData<List<MapViewState>> getMapViewStateLiveData() {
-        return mapViewStateMediatorLiveData;
+    public LiveData<List<MapViewState>> getViewState() {
+        return Transformations.switchMap(locationRepository.getCurrentLocation(), location ->
+            Transformations.map(nearbyRepository.executeDetailsRequest(location), nearbyResponse -> {
+                final List<MapViewState> viewStates = new ArrayList<>();
+
+                final List<NearbyResponse.Result> resultList = ((NearbyResponse) nearbyResponse).getResults();
+                if (resultList != null) {
+                    for (NearbyResponse.Result result : resultList) {
+                        final NearbyResponse.Location nearbyLocation = result.getGeometry().getLocation();
+                        viewStates.add(new MapViewState(
+                            result.getPlaceId(),
+                            result.getName(),
+                            nearbyLocation.getLat(),
+                            nearbyLocation.getLng(),
+                            result.getVicinity()
+                        ));
+                    }
+                }
+                return viewStates;
+            }));
     }
 
     public LiveData<Boolean> isLocationLayerEnabled() {
@@ -76,32 +92,5 @@ public class MapViewModel extends ViewModel {
 
         if (isMapAvailable)
             isLocationLayerEnabled.setValue(isPermissionEnabled);
-    }
-
-    private void combine(@Nullable NearbyResponse nearbyResponse) {
-        if (nearbyResponse != null) {
-            map(nearbyResponse);
-        }
-    }
-
-    private void map(@NonNull NearbyResponse nearbyResponse) {
-        if (nearbyResponse.getResults() != null) {
-            List<MapViewState> viewStates = new ArrayList<>();
-
-            for (NearbyResponse.Result result : nearbyResponse.getResults()) {
-                final NearbyResponse.Location location = result.getGeometry().getLocation();
-                viewStates.add(
-                    new MapViewState(
-                        result.getPlaceId(),
-                        result.getName(),
-                        location.getLat(),
-                        location.getLng(),
-                        result.getVicinity()
-                    )
-                );
-            }
-
-            mapViewStateMediatorLiveData.setValue(viewStates);
-        }
     }
 }

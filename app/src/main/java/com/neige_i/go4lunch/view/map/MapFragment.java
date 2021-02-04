@@ -75,7 +75,7 @@ public class MapFragment extends Fragment {
             fab.setVisibility(isEnabled ? View.VISIBLE : View.GONE);
         });
 
-        viewModel.getMapViewStateLiveData().observe(requireActivity(), mapViewStates -> {
+        viewModel.getViewState().observe(requireActivity(), mapViewStates -> {
             // Change the size of the marker
             final Bitmap smallMarker = Bitmap.createScaledBitmap(
                 ((BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_marker_orange, null)).getBitmap(),
