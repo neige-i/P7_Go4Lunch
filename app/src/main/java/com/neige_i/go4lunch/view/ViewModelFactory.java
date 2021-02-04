@@ -12,8 +12,6 @@ import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 import com.neige_i.go4lunch.view.map.MapViewModel;
 
-import java.util.concurrent.Executors;
-
 public class ViewModelFactory implements ViewModelProvider.Factory {
 
     // -------------------------------------  CLASS VARIABLES --------------------------------------
@@ -43,9 +41,9 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 if (factory == null) {
                     factory = new ViewModelFactory(
                         // Instantiate repositories here to make sure only one instance of them exists
-                        new NearbyRepository(Executors.newSingleThreadExecutor()),
+                        new NearbyRepository(),
                         new LocationRepository(),
-                        new DetailsRepository(Executors.newSingleThreadExecutor())
+                        new DetailsRepository()
                     );
                 }
             }
