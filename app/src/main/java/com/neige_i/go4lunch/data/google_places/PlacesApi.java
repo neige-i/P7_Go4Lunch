@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.data.google_places;
 
+import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
@@ -22,13 +23,13 @@ public interface PlacesApi {
     @GET("maps/api/place/nearbysearch/json?" +
         "radius=2000" +
         "&type=restaurant" +
-        "&key=AIzaSyDdc24VwRd5iGQjd46ygpOIcVGhiDnD4gs"
+        "&key=" + BuildConfig.MAPS_API_KEY
     )
     Call<NearbyResponse> getNearbyRestaurants(@Query("location") String location);
 
     @GET("maps/api/place/details/json?" +
         "fields=formatted_address,formatted_phone_number,geometry/location,name,opening_hours,photos,place_id,rating,website" +
-        "&key=AIzaSyDdc24VwRd5iGQjd46ygpOIcVGhiDnD4gs"
+        "&key=" + BuildConfig.MAPS_API_KEY
     )
     Call<DetailsResponse> getRestaurantDetails(@Query("place_id") String placeId);
 }
