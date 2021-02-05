@@ -59,7 +59,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel(nearbyRepository, locationRepository);
+            return (T) new HomeViewModel(locationRepository);
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(nearbyRepository, locationRepository);
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
