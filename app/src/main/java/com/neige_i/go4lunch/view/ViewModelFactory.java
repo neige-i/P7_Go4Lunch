@@ -11,6 +11,7 @@ import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
+import com.neige_i.go4lunch.view.list.ListViewModel;
 import com.neige_i.go4lunch.view.map.MapViewModel;
 
 public class ViewModelFactory implements ViewModelProvider.Factory {
@@ -64,6 +65,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new MapViewModel(nearbyRepository, locationRepository);
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
             return (T) new DetailViewModel(detailsRepository);
+        } else if (modelClass.isAssignableFrom(ListViewModel.class)) {
+            return (T) new ListViewModel(locationRepository, nearbyRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
