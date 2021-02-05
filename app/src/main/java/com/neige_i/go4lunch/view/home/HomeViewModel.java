@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
@@ -21,17 +20,21 @@ public class HomeViewModel extends ViewModel {
 
     private final MutableLiveData<HomeUiModel> uiState = new MutableLiveData<>();
     private final MediatorLiveData<Void> requestLocationPermissionEvent = new MediatorLiveData<>();
+    private boolean isLocationPermissionRequested;
     private String fragmentToHide = TAG_FRAGMENT_MAP;
 
-    public HomeViewModel(@NonNull BaseRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
+    public HomeViewModel(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
 
+        // ASKME: replace the MediatorLiveData by SingleLiveEvent and put a condition in HomeActivity
         requestLocationPermissionEvent.addSource(locationRepository.isLocationPermissionGranted(), isPermissionGranted -> {
-            if (!isPermissionGranted)
+            if (isPermissionGranted) {
+                isLocationPermissionRequested = false;
+            } else if (!isLocationPermissionRequested) {
+                isLocationPermissionRequested = true;
                 requestLocationPermissionEvent.setValue(null);
+            }
         });
-        // TODO: change this addSource()
-        requestLocationPermissionEvent.addSource(locationRepository.getCurrentLocation(), nearbyRepository::executeDetailsRequest);
 
         // Set the map fragment as the default one
         onFragmentSelected(R.id.action_map);
