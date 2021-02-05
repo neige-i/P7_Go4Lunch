@@ -22,4 +22,8 @@
     <string name="button_call">Call</string>
     <string name="button_like">Like</string>
     <string name="button_website">Website</string>
+
+    <!-- Placeholders -->
+    <string name="workmate_count">(%d)</string>
+    <string name="distance">%dm</string>
 </resources>
