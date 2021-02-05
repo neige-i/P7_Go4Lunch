@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -55,27 +55,27 @@ public class MapFragment extends Fragment {
         // When the map is ready to be used, set the GoogleMap object and notify the ViewModel
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(googleMap -> {
             this.googleMap = googleMap;
+
+            googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Disabled, replaced by FAB
+            googleMap.getUiSettings().setMapToolbarEnabled(false); // Disable navigation options
+
             googleMap.setOnMarkerClickListener(marker -> {
                 marker.showInfoWindow();
                 return false;
             });
             googleMap.setOnInfoWindowClickListener(marker -> onDetailQueriedCallback.onDetailQueried((String) marker.getTag()));
-            viewModel.onMapAvailable();
+            viewModel.onMapAvailable(googleMap.getCameraPosition());
         });
 
         // Config FAB
         final FloatingActionButton fab = requireView().findViewById(R.id.location_btn);
-        fab.setOnClickListener(v -> viewModel.onCurrentLocationQueried());
+        fab.setOnClickListener(v -> viewModel.onCameraCentered(googleMap.getCameraPosition().zoom));
 
-        // Update my-location layer
-        viewModel.isLocationLayerEnabled().observe(requireActivity(), isEnabled -> {
-            googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Disabled, replaced by FAB
-            googleMap.getUiSettings().setMapToolbarEnabled(false); // Disable navigation options
-            googleMap.setMyLocationEnabled(isEnabled);
-            fab.setVisibility(isEnabled ? View.VISIBLE : View.GONE);
-        });
+        viewModel.getViewState().observe(requireActivity(), mapViewState -> {
+            Log.d("Neige", "MapFragment::onViewCreated: observe view state");
+            googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
+            fab.setVisibility(mapViewState.isLocationLayerEnabled() ? View.VISIBLE : View.GONE);
 
-        viewModel.getViewState().observe(requireActivity(), mapViewStates -> {
             // Change the size of the marker
             final Bitmap smallMarker = Bitmap.createScaledBitmap(
                 ((BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_marker_orange, null)).getBitmap(),
@@ -85,25 +85,17 @@ public class MapFragment extends Fragment {
             );
 
             // Add markers for all nearby restaurants
-            for (MapViewState mapViewState : mapViewStates) {
+            for (MarkerViewState markerViewState : mapViewState.getMarkerViewStates()) {
                 googleMap.addMarker(
                     new MarkerOptions()
-                        .position(new LatLng(mapViewState.getLatitude(), mapViewState.getLongitude()))
-                        .title(mapViewState.getName())
-                        .snippet(mapViewState.getVicinity())
+                        .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
+                        .title(markerViewState.getName())
+                        .snippet(markerViewState.getVicinity())
                         .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
-                ).setTag(mapViewState.getPlaceId());
+                ).setTag(markerViewState.getPlaceId());
             }
-        });
 
-        // Move camera to current user location
-        viewModel.getZoomMapToCurrentLocationEvent().observe(requireActivity(), location ->
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(
-                    location.getLatitude(),
-                    location.getLongitude()
-                ),
-                15 // TODO: original behaviour zooms in only if current zoom level is lower than 15
-            )));
+            googleMap.animateCamera(mapViewState.getMapCamera());
+        });
     }
 }
