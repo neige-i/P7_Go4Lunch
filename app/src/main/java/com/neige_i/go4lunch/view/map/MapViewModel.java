@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.view.map;
 
-import android.location.Location;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -9,10 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.neige_i.go4lunch.data.google_places.BaseRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
@@ -31,10 +26,9 @@ public class MapViewModel extends ViewModel {
     private final MediatorLiveData<MapViewState> viewState = new MediatorLiveData<>();
 
     private boolean isLocationPermissionGranted;
-    @Nullable
-    private Location currentLocation;
-    @Nullable
-    private CameraUpdate mapCamera;
+    private double mapLatitude;
+    private double mapLongitude;
+    private float mapZoom = ZOOM_LEVEL_STREETS;
     private static final float ZOOM_LEVEL_STREETS = 15f; // Zoom levels: 1-world, 5-continent, 10-city, 15-streets, 20-buildings
 
     public MapViewModel(@NonNull BaseRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
@@ -46,14 +40,25 @@ public class MapViewModel extends ViewModel {
         return viewState;
     }
 
-    public void onMapAvailable(CameraPosition cameraPosition) {
-        mapCamera = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom);
+    /**
+     * {@link MapViewState} holds data that will be used by a {@link com.google.android.gms.maps.GoogleMap GoogleMap} object.<br />
+     * This method must be called inside
+     * {@link com.google.android.gms.maps.SupportMapFragment#getMapAsync(OnMapReadyCallback) SupportMapFragment.getMapAsync()}
+     * when the {@link com.google.android.gms.maps.GoogleMap GoogleMap} object is ready to be used.
+     */
+    public void onMapAvailable(double mapLat, double mapLng) {
+        // Init map location
+        mapLatitude = mapLat;
+        mapLongitude = mapLng;
 
         final LiveData<Boolean> isLocationPermissionGranted = locationRepository.isLocationPermissionGranted();
         final LiveData<NearbyResponse> nearbyResponse = Transformations.switchMap(
             locationRepository.getCurrentLocation(),
             location -> {
-                currentLocation = location;
+                // Update map location
+                mapLatitude = location.getLatitude();
+                mapLongitude = location.getLongitude();
+
                 return Transformations.map(
                     nearbyRepository.executeDetailsRequest(location),
                     response -> (NearbyResponse) response
@@ -72,30 +77,31 @@ public class MapViewModel extends ViewModel {
     }
 
     public void onCameraCentered(float currentMapZoom) {
-        if (isLocationPermissionGranted && currentLocation != null) {
-            mapCamera = CameraUpdateFactory.newLatLngZoom(
-                new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
-                Math.max(currentMapZoom, ZOOM_LEVEL_STREETS) // Zoom to 'streets' level if current zoom is higher
-            );
+        if (isLocationPermissionGranted) {
+            // Update current map zoom if it is higher from the ground that 'streets' level
+            mapZoom = Math.max(currentMapZoom, ZOOM_LEVEL_STREETS);
 
             final MapViewState currentViewState = viewState.getValue(); // ASKME: check nullability
             viewState.setValue(new MapViewState(
                 currentViewState.isLocationLayerEnabled(),
                 currentViewState.getMarkerViewStates(),
-                mapCamera
+                mapLatitude,
+                mapLongitude,
+                mapZoom
             ));
         }
     }
 
     private void combine(@Nullable Boolean isPermissionEnabled, @Nullable NearbyResponse nearbyResponse) {
-        if (isPermissionEnabled == null)
+        // ASKME: remove nearbyResponse from condition
+        if (isPermissionEnabled == null || nearbyResponse == null)
             return;
 
         isLocationPermissionGranted = isPermissionEnabled;
 
         final List<MarkerViewState> markerViewStates = new ArrayList<>();
         if (nearbyResponse != null) {
-            final List<NearbyResponse.Result> resultList = ((NearbyResponse) nearbyResponse).getResults();
+            final List<NearbyResponse.Result> resultList = nearbyResponse.getResults();
             if (resultList != null) {
                 for (NearbyResponse.Result result : resultList) {
                     final NearbyResponse.Location nearbyLocation = result.getGeometry().getLocation();
@@ -113,7 +119,9 @@ public class MapViewModel extends ViewModel {
         viewState.setValue(new MapViewState(
             isPermissionEnabled,
             markerViewStates,
-            mapCamera
+            mapLatitude,
+            mapLongitude,
+            mapZoom
         ));
     }
 }
