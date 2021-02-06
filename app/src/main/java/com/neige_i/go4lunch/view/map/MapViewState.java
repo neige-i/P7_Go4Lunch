@@ -1,20 +1,25 @@
 package com.neige_i.go4lunch.view.map;
 
-import com.google.android.gms.maps.CameraUpdate;
+import androidx.annotation.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 public class MapViewState {
 
     private final boolean locationLayerEnabled;
     private final List<MarkerViewState> markerViewStates;
-    private final CameraUpdate mapCamera;
+    private final double mapLatitude;
+    private final double mapLongitude;
+    private final float mapZoom;
 
 
-    public MapViewState(boolean locationLayerEnabled, List<MarkerViewState> markerViewStates, CameraUpdate mapCamera) {
+    public MapViewState(boolean locationLayerEnabled, List<MarkerViewState> markerViewStates, double mapLatitude, double mapLongitude, float mapZoom) {
         this.locationLayerEnabled = locationLayerEnabled;
         this.markerViewStates = markerViewStates;
-        this.mapCamera = mapCamera;
+        this.mapLatitude = mapLatitude;
+        this.mapLongitude = mapLongitude;
+        this.mapZoom = mapZoom;
     }
 
     public boolean isLocationLayerEnabled() {
@@ -25,7 +30,44 @@ public class MapViewState {
         return markerViewStates;
     }
 
-    public CameraUpdate getMapCamera() {
-        return mapCamera;
+    public double getMapLatitude() {
+        return mapLatitude;
+    }
+
+    public double getMapLongitude() {
+        return mapLongitude;
+    }
+
+    public float getMapZoom() {
+        return mapZoom;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MapViewState that = (MapViewState) o;
+        return locationLayerEnabled == that.locationLayerEnabled &&
+            Double.compare(that.mapLatitude, mapLatitude) == 0 &&
+            Double.compare(that.mapLongitude, mapLongitude) == 0 &&
+            Float.compare(that.mapZoom, mapZoom) == 0 &&
+            Objects.equals(markerViewStates, that.markerViewStates);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(locationLayerEnabled, markerViewStates, mapLatitude, mapLongitude, mapZoom);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "MapViewState{" +
+            "location " + (locationLayerEnabled ? "enabled" : "disabled") +
+            " " + markerViewStates +
+            ", map(" + mapLatitude +
+            "," + mapLongitude +
+            "," + mapZoom + ')' +
+            '}';
     }
 }

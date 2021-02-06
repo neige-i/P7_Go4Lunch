@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -64,7 +64,9 @@ public class MapFragment extends Fragment {
                 return false;
             });
             googleMap.setOnInfoWindowClickListener(marker -> onDetailQueriedCallback.onDetailQueried((String) marker.getTag()));
-            viewModel.onMapAvailable(googleMap.getCameraPosition());
+
+            final LatLng target = googleMap.getCameraPosition().target;
+            viewModel.onMapAvailable(target.latitude, target.longitude);
         });
 
         // Config FAB
@@ -72,7 +74,6 @@ public class MapFragment extends Fragment {
         fab.setOnClickListener(v -> viewModel.onCameraCentered(googleMap.getCameraPosition().zoom));
 
         viewModel.getViewState().observe(requireActivity(), mapViewState -> {
-            Log.d("Neige", "MapFragment::onViewCreated: observe view state");
             googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
             fab.setVisibility(mapViewState.isLocationLayerEnabled() ? View.VISIBLE : View.GONE);
 
@@ -95,7 +96,10 @@ public class MapFragment extends Fragment {
                 ).setTag(markerViewState.getPlaceId());
             }
 
-            googleMap.animateCamera(mapViewState.getMapCamera());
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mapViewState.getMapLatitude(), mapViewState.getMapLongitude()),
+                mapViewState.getMapZoom()
+            ));
         });
     }
 }
