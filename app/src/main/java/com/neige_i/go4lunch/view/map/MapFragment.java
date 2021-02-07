@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.util.Util;
 import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class MapFragment extends Fragment {
@@ -91,7 +92,7 @@ public class MapFragment extends Fragment {
                     new MarkerOptions()
                         .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
                         .title(markerViewState.getName())
-                        .snippet(markerViewState.getVicinity())
+                        .snippet(Util.getShortAddress(markerViewState.getVicinity()))
                         .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
                 ).setTag(markerViewState.getPlaceId());
             }

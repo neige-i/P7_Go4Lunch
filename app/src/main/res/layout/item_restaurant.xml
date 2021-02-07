@@ -9,7 +9,7 @@
     >
 
     <ImageView
-        android:id="@+id/profile_img"
+        android:id="@+id/thumbnail_img"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:contentDescription="@string/description_restaurant_image"
@@ -24,101 +24,110 @@
         android:layout_height="wrap_content"
         app:barrierDirection="left"
         app:barrierMargin="-10dp"
-        app:constraint_referenced_ids="profile_img"
+        app:constraint_referenced_ids="thumbnail_img"
         />
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/name_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
         android:textSize="18sp"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintEnd_toStartOf="@id/distance_lbl"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/profile_img"
+        app:layout_constraintBottom_toTopOf="@id/address_lbl"
+        app:layout_constraintTop_toTopOf="@id/thumbnail_img"
         tools:text="Le Zinc"
         />
 
     <TextView
-        android:id="@+id/distance"
+        android:id="@+id/distance_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toStartOf="@id/barrier"
-        app:layout_constraintTop_toTopOf="@id/profile_img"
+        app:layout_constraintTop_toTopOf="@id/thumbnail_img"
         tools:text="120m"
         />
 
     <TextView
-        android:id="@+id/type_address"
+        android:id="@+id/address_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/gray_dark"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/opening_hours_lbl"
+        app:layout_constraintEnd_toStartOf="@id/coworker_ic"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/profile_img"
-        tools:text="French - 12 rue du Faubourg Poissonière"
+        app:layout_constraintTop_toBottomOf="@id/name_lbl"
+        tools:text="French - 2 Rue du Vivienne"
         />
 
     <ImageView
-        android:id="@+id/person_icon"
+        android:id="@+id/coworker_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_person_icon"
         android:src="@drawable/ic_person"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
-        app:layout_constraintEnd_toStartOf="@id/person_count"
-        app:layout_constraintTop_toTopOf="@id/profile_img"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
+        app:layout_constraintEnd_toStartOf="@id/coworker_count_lbl"
+        app:layout_constraintTop_toTopOf="@id/thumbnail_img"
         />
 
     <TextView
-        android:id="@+id/person_count"
+        android:id="@+id/coworker_count_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/gray_dark"
-        app:layout_constraintBottom_toBottomOf="@id/person_icon"
+        app:layout_constraintBottom_toBottomOf="@id/coworker_ic"
         app:layout_constraintEnd_toStartOf="@id/barrier"
         tools:text="(2)"
         />
 
     <TextView
-        android:id="@+id/opening_hours"
+        android:id="@+id/opening_hours_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/gray_dark"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/type_address"
+        app:layout_constraintTop_toBottomOf="@id/address_lbl"
         tools:text="Open until 7pm"
         />
 
     <ImageView
-        android:id="@+id/star3"
+        android:id="@+id/star3_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
         app:layout_constraintEnd_toStartOf="@id/barrier"
         />
 
     <ImageView
-        android:id="@+id/star2"
+        android:id="@+id/star2_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
-        app:layout_constraintEnd_toStartOf="@id/star3"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
+        app:layout_constraintEnd_toStartOf="@id/star3_ic"
         />
 
     <ImageView
-        android:id="@+id/star1"
+        android:id="@+id/star1_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintBottom_toBottomOf="@id/profile_img"
-        app:layout_constraintEnd_toStartOf="@id/star2"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
+        app:layout_constraintEnd_toStartOf="@id/star2_ic"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

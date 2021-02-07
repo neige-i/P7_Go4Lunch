@@ -7,12 +7,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.view.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,9 +22,9 @@ public class ListViewModel extends ViewModel {
     private final LocationRepository locationRepository;
     private final NearbyRepository nearbyRepository;
 
-    public ListViewModel(LocationRepository locationRepository, PlacesRepository nearbyRepository) {
+    public ListViewModel(LocationRepository locationRepository, NearbyRepository nearbyRepository) {
         this.locationRepository = locationRepository;
-        this.nearbyRepository = (NearbyRepository) nearbyRepository;
+        this.nearbyRepository = nearbyRepository;
     }
 
     public LiveData<List<RestaurantViewState>> getViewState() {
@@ -40,6 +39,7 @@ public class ListViewModel extends ViewModel {
                         final List<NearbyResponse.Result> resultList = ((NearbyResponse) nearbyResponse).getResults();
                         if (resultList != null) {
                             for (NearbyResponse.Result result : resultList) {
+
                                 final NearbyResponse.Location restaurantLocation = result.getGeometry().getLocation();
                                 final float[] distances = new float[3];
                                 Location.distanceBetween(
@@ -50,31 +50,26 @@ public class ListViewModel extends ViewModel {
                                     distances
                                 );
 
-                                final List<NearbyResponse.Photo> photoList = result.getPhotos();
-                                final String photoUrl;
-                                if (photoList != null && !photoList.isEmpty())
-                                    photoUrl = photoList.get(0).getPhotoReference();
-                                else
-                                    photoUrl = "";
+                                // TODO: handle opening hours
 
                                 viewStates.add(new RestaurantViewState(
                                     result.getPlaceId(),
                                     result.getName(),
-                                    (int) distances[0],
-                                    result.getVicinity(),
+                                    distances[0],
+                                    Util.getFormattedDistance(distances[0]),
+                                    Util.getShortAddress(result.getVicinity()),
                                     Typeface.BOLD_ITALIC,
                                     R.color.lime,
                                     "Open",
                                     true,
                                     2,
-                                    2,
-                                    "https://maps.googleapis.com/maps/api/place/photo?maxheight=1080&key=" + BuildConfig.MAPS_API_KEY +
-                                        "&photoreference=" + photoUrl
+                                    Util.getRating(result.getRating()),
+                                    Util.getPhotoUrl(result.getPhotos())
                                 ));
 
                                 Collections.sort(
                                     viewStates,
-                                    (viewState1, viewState2) -> viewState1.getDistance() - viewState2.getDistance()
+                                    (viewState1, viewState2) -> (int) (viewState1.getDistance() - viewState2.getDistance())
                                 );
                             }
                         }

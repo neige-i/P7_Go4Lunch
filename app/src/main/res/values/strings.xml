@@ -25,5 +25,9 @@
 
     <!-- Placeholders -->
     <string name="workmate_count">(%d)</string>
-    <string name="distance">%dm</string>
+    <string name="open_until">Open until %s</string>
+
+    <string name="always_open">Open 24/7</string>
+    <string name="closing_soon">Closing soon</string>
+    <string name="closed">Closed</string>
 </resources>

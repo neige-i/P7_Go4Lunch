@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.view.util.Util;
 
 class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapter.RestaurantViewHolder> {
 
@@ -43,7 +43,7 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
 
         holder.itemView.setTag(viewState.getPlaceId());
         holder.name.setText(viewState.getName());
-        holder.distance.setText(String.format(context.getString(R.string.distance), viewState.getDistance()));
+        holder.distance.setText(viewState.getFormattedDistance());
         holder.address.setText(viewState.getAddress());
         holder.openingHours.setText(viewState.getOpeningHours());
         holder.openingHours.setTypeface(null, viewState.getTextStyle());
@@ -51,10 +51,8 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         holder.workmatesLbl.setText(String.format(context.getString(R.string.workmate_count), viewState.getInterestedWorkmatesCount()));
         holder.workmatesLbl.setVisibility(viewState.areWorkmatesInterested() ? View.VISIBLE : View.GONE);
         holder.workmatesImg.setVisibility(viewState.areWorkmatesInterested() ? View.VISIBLE : View.GONE);
-        holder.rating1.setVisibility(viewState.getRating() > 0 ? View.VISIBLE : View.GONE);
-        holder.rating2.setVisibility(viewState.getRating() > 1 ? View.VISIBLE : View.GONE);
-        holder.rating3.setVisibility(viewState.getRating() > 2 ? View.VISIBLE : View.GONE);
-        Glide.with(context).load(viewState.getPhotoUrl()).into(holder.photo); // ASKME: handle cache
+        Util.setRatingImgVisibility(viewState.getRating(), holder.rating1, holder.rating2, holder.rating3);
+        Util.setPhotoSrcWithGlide(holder.photo, viewState.getPhotoUrl());
     }
 
     static class RestaurantViewHolder extends RecyclerView.ViewHolder {
@@ -73,16 +71,16 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         public RestaurantViewHolder(@NonNull View itemView, @NonNull OnRestaurantClickedCallback onRestaurantClickedCallback) {
             super(itemView);
 
-            name = itemView.findViewById(R.id.name);
-            distance = itemView.findViewById(R.id.distance);
-            address = itemView.findViewById(R.id.type_address);
-            openingHours = itemView.findViewById(R.id.opening_hours);
-            workmatesLbl = itemView.findViewById(R.id.person_count);
-            workmatesImg = itemView.findViewById(R.id.person_icon);
-            rating1 = itemView.findViewById(R.id.star1);
-            rating2 = itemView.findViewById(R.id.star2);
-            rating3 = itemView.findViewById(R.id.star3);
-            photo = itemView.findViewById(R.id.profile_img);
+            name = itemView.findViewById(R.id.name_lbl);
+            distance = itemView.findViewById(R.id.distance_lbl);
+            address = itemView.findViewById(R.id.address_lbl);
+            openingHours = itemView.findViewById(R.id.opening_hours_lbl);
+            workmatesLbl = itemView.findViewById(R.id.coworker_count_lbl);
+            workmatesImg = itemView.findViewById(R.id.coworker_ic);
+            rating1 = itemView.findViewById(R.id.star1_ic);
+            rating2 = itemView.findViewById(R.id.star2_ic);
+            rating3 = itemView.findViewById(R.id.star3_ic);
+            photo = itemView.findViewById(R.id.thumbnail_img);
 
             itemView.setOnClickListener(v -> onRestaurantClickedCallback.onRestaurantClicked(itemView.getTag().toString()));
         }

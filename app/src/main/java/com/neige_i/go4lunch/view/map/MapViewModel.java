@@ -8,7 +8,6 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
@@ -32,9 +31,9 @@ public class MapViewModel extends ViewModel {
     private float mapZoom = ZOOM_LEVEL_STREETS;
     private static final float ZOOM_LEVEL_STREETS = 15f; // Zoom levels: 1-world, 5-continent, 10-city, 15-streets, 20-buildings
 
-    public MapViewModel(@NonNull PlacesRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
+    public MapViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
-        this.nearbyRepository = (NearbyRepository) nearbyRepository; // TODO: change this cast to ViewModelFactory
+        this.nearbyRepository = nearbyRepository;
     }
 
     @NonNull
