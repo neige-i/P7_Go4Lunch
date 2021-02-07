@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.util.List;
 import java.util.Objects;
 
-public class MapViewState {
+class MapViewState {
 
     private final boolean locationLayerEnabled;
     private final List<MarkerViewState> markerViewStates;

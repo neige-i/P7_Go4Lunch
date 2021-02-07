@@ -18,7 +18,7 @@ public class HomeViewModel extends ViewModel {
     @NonNull
     private final LocationRepository locationRepository;
 
-    private final MutableLiveData<HomeUiModel> uiState = new MutableLiveData<>();
+    private final MutableLiveData<HomeViewState> viewState = new MutableLiveData<>();
     private final MediatorLiveData<Void> requestLocationPermissionEvent = new MediatorLiveData<>();
     private boolean isLocationPermissionRequested;
     private String fragmentToHide = TAG_FRAGMENT_MAP;
@@ -40,8 +40,8 @@ public class HomeViewModel extends ViewModel {
         onFragmentSelected(R.id.action_map);
     }
 
-    public LiveData<HomeUiModel> getUiState() {
-        return uiState;
+    public LiveData<HomeViewState> getViewState() {
+        return viewState;
     }
 
     public LiveData<Void> getRequestLocationPermissionEvent() {
@@ -77,7 +77,7 @@ public class HomeViewModel extends ViewModel {
             throw new IllegalStateException("Unexpected value: " + menuItemId);
         }
 
-        uiState.setValue(new HomeUiModel(fragmentToShow, fragmentToHide, titleId));
+        viewState.setValue(new HomeViewState(fragmentToShow, fragmentToHide, titleId));
     }
 
     public void setFragmentToHide(String fragmentToHide) {

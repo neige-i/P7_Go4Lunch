@@ -4,7 +4,7 @@ import androidx.annotation.IdRes;
 
 import java.util.Objects;
 
-public class RestaurantViewState {
+class RestaurantViewState {
 
     private final String placeId;
     private final String name;

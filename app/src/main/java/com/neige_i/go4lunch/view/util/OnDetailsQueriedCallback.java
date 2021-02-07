@@ -1,4 +1,6 @@
-package com.neige_i.go4lunch.view;
+package com.neige_i.go4lunch.view.util;
+
+import androidx.annotation.NonNull;
 
 /**
  * Callback interface used in {@link com.neige_i.go4lunch.view.map.MapFragment MapFragment}
@@ -6,6 +8,6 @@ package com.neige_i.go4lunch.view;
  * The specified placeId is passed to {@link com.neige_i.go4lunch.view.home.HomeActivity HomeActivity}
  * which is in charge to start {@link com.neige_i.go4lunch.view.detail.DetailActivity DetailActivity}.
  */
-public interface OnDetailQueriedCallback {
-    void onDetailQueried(String placeId);
+public interface OnDetailsQueriedCallback {
+    void onDetailsQueried(@NonNull String placeId);
 }

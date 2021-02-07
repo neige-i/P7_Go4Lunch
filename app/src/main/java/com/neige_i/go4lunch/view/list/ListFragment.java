@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.OnDetailQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
+import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class ListFragment extends Fragment {
 
@@ -23,7 +23,7 @@ public class ListFragment extends Fragment {
     public static final int RESTAURANT = 0;
     public static final int WORKMATE = 1;
 
-    private OnDetailQueriedCallback onDetailQueriedCallback;
+    private OnDetailsQueriedCallback onDetailsQueriedCallback;
 
     public static ListFragment newInstance(int whichList) {
         final ListFragment fragment = new ListFragment();
@@ -37,7 +37,7 @@ public class ListFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        onDetailQueriedCallback = (OnDetailQueriedCallback) context;
+        onDetailsQueriedCallback = (OnDetailsQueriedCallback) context;
     }
 
     @Nullable
@@ -55,7 +55,7 @@ public class ListFragment extends Fragment {
         final ListAdapter adapter;
         switch (getArguments().getInt(WHICH_LIST)) {
             case RESTAURANT:
-                adapter = new RestaurantAdapter(placeId -> onDetailQueriedCallback.onDetailQueried(placeId));
+                adapter = new RestaurantAdapter(placeId -> onDetailsQueriedCallback.onDetailsQueried(placeId));
                 break;
             case WORKMATE:
                 adapter = new WorkmateAdapter();

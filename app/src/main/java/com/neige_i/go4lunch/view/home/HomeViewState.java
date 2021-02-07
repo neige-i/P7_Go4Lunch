@@ -1,21 +1,25 @@
 package com.neige_i.go4lunch.view.home;
 
-public class HomeUiModel {
+import androidx.annotation.NonNull;
 
-    private final String fragmentToShow;
-    private final String fragmentToHide;
+class HomeViewState {
+
+    @NonNull private final String fragmentToShow;
+    @NonNull private final String fragmentToHide;
     private final int titleId;
 
-    public HomeUiModel(String fragmentToShow, String fragmentToHide, int titleId) {
+    public HomeViewState(@NonNull String fragmentToShow, @NonNull String fragmentToHide, int titleId) {
         this.fragmentToShow = fragmentToShow;
         this.fragmentToHide = fragmentToHide;
         this.titleId = titleId;
     }
 
+    @NonNull
     public String getFragmentToShow() {
         return fragmentToShow;
     }
 
+    @NonNull
     public String getFragmentToHide() {
         return fragmentToHide;
     }

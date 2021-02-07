@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.ViewModelFactory;
+import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.EXTRA_PLACE_ID;
 
