@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
@@ -23,14 +24,17 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final LocationRepository locationRepository;
     @NonNull
     private final DetailsRepository detailsRepository;
+    @NonNull
+    private final FirebaseRepository firebaseRepository;
 
     @Nullable
     private static ViewModelFactory factory;
 
-    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository) {
+    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository) {
         this.nearbyRepository = nearbyRepository;
         this.locationRepository = locationRepository;
         this.detailsRepository = detailsRepository;
+        this.firebaseRepository = firebaseRepository;
     }
 
     // -------------------------------------- FACTORY METHODS --------------------------------------
@@ -44,7 +48,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                         // Instantiate repositories here to make sure only one instance of them exists
                         new NearbyRepository(),
                         new LocationRepository(),
-                        new DetailsRepository()
+                        new DetailsRepository(),
+                        new FirebaseRepository()
                     );
                 }
             }
@@ -63,7 +68,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(nearbyRepository, locationRepository);
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
-            return (T) new DetailViewModel(detailsRepository);
+            return (T) new DetailViewModel(detailsRepository, firebaseRepository);
         } else if (modelClass.isAssignableFrom(ListViewModel.class)) {
             return (T) new ListViewModel(locationRepository, nearbyRepository);
         }

@@ -9,7 +9,7 @@
     >
 
     <ImageView
-        android:id="@+id/image"
+        android:id="@+id/photo_img"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:contentDescription="@string/description_restaurant_image"
@@ -24,10 +24,11 @@
         android:layout_marginBottom="10dp"
         android:background="@color/orange"
         app:layout_constraintBottom_toTopOf="@id/call_btn"
-        app:layout_constraintTop_toBottomOf="@id/image"
+        app:layout_constraintTop_toBottomOf="@id/photo_img"
         />
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -35,11 +36,11 @@
         app:contentPadding="10dp"
         app:layout_constraintBottom_toTopOf="@id/header"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image"
+        app:layout_constraintTop_toBottomOf="@id/photo_img"
         >
 
         <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/custom_checkbox"
+            android:id="@+id/selected_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/ic_check"
@@ -48,58 +49,79 @@
     </androidx.cardview.widget.CardView>
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/name_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:textColor="@color/white"
         android:textSize="20sp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintEnd_toStartOf="@id/barrier"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image"
+        app:layout_constraintTop_toBottomOf="@id/photo_img"
         tools:text="Le Zinc"
         />
 
     <TextView
-        android:id="@+id/type_address"
+        android:id="@+id/address_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:textColor="@color/white"
         android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@id/name"
-        app:layout_constraintTop_toBottomOf="@id/name"
-        tools:text="French - 12 rue du Faubourg Poissonière"
+        app:layout_constraintStart_toStartOf="@id/name_lbl"
+        app:layout_constraintTop_toBottomOf="@id/name_lbl"
+        tools:text="French - 2 Rue du Vivienne"
+        />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="left"
+        app:constraint_referenced_ids="star1_ic"
         />
 
     <ImageView
-        android:id="@+id/star1"
+        android:id="@+id/star1_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintStart_toEndOf="@id/name"
-        app:layout_constraintTop_toTopOf="@id/name"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/star2_ic"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/name_lbl"
+        app:layout_constraintTop_toTopOf="@id/name_lbl"
+        tools:visibility="visible"
         />
 
     <ImageView
-        android:id="@+id/star2"
+        android:id="@+id/star2_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintStart_toEndOf="@id/star1"
-        app:layout_constraintTop_toTopOf="@id/name"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/star3_ic"
+        app:layout_constraintStart_toEndOf="@id/star1_ic"
+        app:layout_constraintTop_toTopOf="@id/name_lbl"
+        tools:visibility="visible"
         />
 
     <ImageView
-        android:id="@+id/star3"
+        android:id="@+id/star3_ic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
-        app:layout_constraintStart_toEndOf="@id/star2"
-        app:layout_constraintTop_toTopOf="@id/name"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/card_view"
+        app:layout_constraintStart_toEndOf="@id/star2_ic"
+        app:layout_constraintTop_toTopOf="@id/name_lbl"
+        tools:visibility="visible"
         />
 
     <Button
@@ -113,7 +135,7 @@
         android:textColor="@color/orange"
         app:layout_constraintEnd_toStartOf="@id/like_btn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/type_address"
+        app:layout_constraintTop_toBottomOf="@id/address_lbl"
         />
 
     <Button
@@ -121,7 +143,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:drawableTop="@drawable/ic_favorite_on"
+        android:drawableTop="@drawable/ic_favorite_off"
         android:text="@string/button_like"
         android:textColor="@color/orange"
         app:layout_constraintEnd_toStartOf="@id/website_btn"

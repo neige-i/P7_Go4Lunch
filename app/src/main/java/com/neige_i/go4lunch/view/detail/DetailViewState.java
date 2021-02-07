@@ -1,31 +1,23 @@
 package com.neige_i.go4lunch.view.detail;
 
-import androidx.annotation.NonNull;
-
 import java.util.Objects;
 
 class DetailViewState {
 
-    @NonNull
     private final String placeId;
-    @NonNull
-    private final String image;
-    @NonNull
+    private final String photoUrl;
     private final String name;
-    @NonNull
     private final String address;
     private final int rating;
-    @NonNull
     private final String phoneNumber;
-    @NonNull
     private final String website;
     private final boolean selected;
     private final boolean favorite;
 
-    public DetailViewState(@NonNull String placeId, @NonNull String name, @NonNull String image, @NonNull String address, int rating, @NonNull String phoneNumber, @NonNull String website, boolean selected, boolean favorite) {
+    public DetailViewState(String placeId, String name, String photoUrl, String address, int rating, String phoneNumber, String website, boolean selected, boolean favorite) {
         this.placeId = placeId;
         this.name = name;
-        this.image = image;
+        this.photoUrl = photoUrl;
         this.address = address;
         this.rating = rating;
         this.phoneNumber = phoneNumber;
@@ -34,22 +26,18 @@ class DetailViewState {
         this.favorite = favorite;
     }
 
-    @NonNull
     public String getPlaceId() {
         return placeId;
     }
 
-    @NonNull
-    public String getImage() {
-        return image;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
-    @NonNull
     public String getName() {
         return name;
     }
 
-    @NonNull
     public String getAddress() {
         return address;
     }
@@ -58,12 +46,10 @@ class DetailViewState {
         return rating;
     }
 
-    @NonNull
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    @NonNull
     public String getWebsite() {
         return website;
     }
@@ -85,7 +71,7 @@ class DetailViewState {
             selected == that.selected &&
             favorite == that.favorite &&
             placeId.equals(that.placeId) &&
-            image.equals(that.image) &&
+            photoUrl.equals(that.photoUrl) &&
             name.equals(that.name) &&
             address.equals(that.address) &&
             phoneNumber.equals(that.phoneNumber) &&
@@ -94,6 +80,6 @@ class DetailViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, image, name, address, rating, phoneNumber, website, selected, favorite);
+        return Objects.hash(placeId, photoUrl, name, address, rating, phoneNumber, website, selected, favorite);
     }
 }

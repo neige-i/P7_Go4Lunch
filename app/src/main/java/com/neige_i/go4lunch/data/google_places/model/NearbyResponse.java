@@ -412,7 +412,7 @@ public class NearbyResponse extends PlacesResponse {
 
     }
 
-    public static class Photo {
+    public static class Photo extends PlacesResponse.Photo {
 
         @SerializedName("height")
         @Expose

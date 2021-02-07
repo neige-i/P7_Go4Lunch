@@ -1,43 +1,90 @@
 package com.neige_i.go4lunch.view.detail;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
+import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.PlacesResponse;
+import com.neige_i.go4lunch.view.util.Util;
+
+import java.util.List;
 
 public class DetailViewModel extends ViewModel {
 
     private final PlacesRepository detailsRepository;
+    private final FirebaseRepository firebaseRepository;
 
-    public DetailViewModel(PlacesRepository detailsRepository) {
+    private final MediatorLiveData<DetailViewState> viewState = new MediatorLiveData<>();
+
+    public DetailViewModel(DetailsRepository detailsRepository, FirebaseRepository firebaseRepository) {
         this.detailsRepository = detailsRepository;
+        this.firebaseRepository = firebaseRepository;
     }
 
-    public LiveData<DetailViewState> getViewState(@NonNull String placeId) {
-        return Transformations.map(detailsRepository.getPlacesResponse(placeId), detailsResponse -> {
-            final DetailsResponse.Result result = ((DetailsResponse) detailsResponse).getResult();
+    public LiveData<DetailViewState> getViewState() {
+        return viewState;
+    }
 
-            // Shorten the address: "2 Rue du Vivienne, 75005 Paris, France" -> "2 Rue du Vivienne"
-            final String shortAddress = result.getFormattedAddress().substring(0, result.getFormattedAddress().indexOf(','));
+    public void onInfoQueried(@NonNull String placeId) {
+        final LiveData<PlacesResponse> detailsResponseLiveData = detailsRepository.getPlacesResponse(placeId);
+        final LiveData<List<String>> favoriteRestaurantsLiveData = firebaseRepository.getFavoriteRestaurants();
+        final LiveData<String> selectedRestaurantLiveData = firebaseRepository.getSelectedRestaurant();
 
-            // Change rating: Google [1.0,5.0] -> (-1) -> [0.0,4.0] -> (*.75) -> [0.0,3.0] -> (round) -> [0,3] Go4Lunch
-            final int rating = (int) Math.round((result.getRating() - 1) * .75);
+        viewState.addSource(
+            detailsResponseLiveData,
+            detailsResponse -> combine(detailsResponse, selectedRestaurantLiveData.getValue(), favoriteRestaurantsLiveData.getValue())
+        );
+        viewState.addSource(
+            firebaseRepository.getSelectedRestaurant(),
+            selectedRestaurant -> combine(detailsResponseLiveData.getValue(), selectedRestaurant, favoriteRestaurantsLiveData.getValue())
+        );
+        viewState.addSource(
+            firebaseRepository.getFavoriteRestaurants(),
+            favoriteRestaurants -> combine(detailsResponseLiveData.getValue(), selectedRestaurantLiveData.getValue(), favoriteRestaurants)
+        );
+    }
 
-            // TODO: handle empty field case
-            return new DetailViewState(
-                result.getPlaceId(),
-                result.getName(),
-                "",
-                shortAddress,
-                rating,
-                result.getFormattedPhoneNumber(),
-                result.getWebsite(),
-                false,
-                false
-            );
-        });
+    private void combine(@Nullable PlacesResponse detailsResponse, @Nullable String selectedRestaurant, @Nullable List<String> favoriteRestaurants) {
+        if (detailsResponse == null || favoriteRestaurants == null)
+            return;
+
+        final DetailsResponse.Result result = ((DetailsResponse) detailsResponse).getResult();
+        final String placeId = result.getPlaceId();
+
+        // TODO: handle empty field case
+        viewState.setValue(new DetailViewState(
+            placeId,
+            result.getName(),
+            Util.getPhotoUrl(result.getPhotos()),
+            Util.getShortAddress(result.getFormattedAddress()),
+            Util.getRating(result.getRating()),
+            result.getInternationalPhoneNumber(),
+            result.getWebsite(),
+            placeId.equals(selectedRestaurant),
+            favoriteRestaurants.contains(placeId)
+        ));
+    }
+
+    public void onLikeBtnClicked() {
+        final DetailViewState currentViewState = viewState.getValue();
+        if (currentViewState != null) {
+            firebaseRepository.toggleFavoriteRestaurant(currentViewState.getPlaceId());
+        }
+    }
+
+    public void onSelectedRestaurantUpdated(boolean isSelected) {
+        final DetailViewState currentViewState = viewState.getValue();
+        if (currentViewState != null) {
+            if (isSelected)
+                firebaseRepository.setSelectedRestaurant(currentViewState.getPlaceId());
+            else
+                firebaseRepository.clearSelectedRestaurant();
+        }
     }
 }

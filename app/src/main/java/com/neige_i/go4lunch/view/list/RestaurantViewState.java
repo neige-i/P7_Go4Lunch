@@ -8,7 +8,8 @@ class RestaurantViewState {
 
     private final String placeId;
     private final String name;
-    private final int distance;
+    private final float distance;
+    private final String formattedDistance;
     private final String address;
     private final int textStyle;
     @IdRes
@@ -20,10 +21,11 @@ class RestaurantViewState {
     private final String photoUrl;
 
 
-    public RestaurantViewState(String placeId, String name, int distance, String address, int textStyle, int textColor, String openingHours, boolean interestedWorkmates, int interestedWorkmatesCount, int rating, String photoUrl) {
+    public RestaurantViewState(String placeId, String name, float distance, String formattedDistance, String address, int textStyle, int textColor, String openingHours, boolean interestedWorkmates, int interestedWorkmatesCount, int rating, String photoUrl) {
         this.placeId = placeId;
         this.name = name;
         this.distance = distance;
+        this.formattedDistance = formattedDistance;
         this.address = address;
         this.textStyle = textStyle;
         this.textColor = textColor;
@@ -42,8 +44,12 @@ class RestaurantViewState {
         return name;
     }
 
-    public int getDistance() {
+    public float getDistance() {
         return distance;
+    }
+
+    public String getFormattedDistance() {
+        return formattedDistance;
     }
 
     public String getAddress() {
@@ -90,7 +96,7 @@ class RestaurantViewState {
             rating == that.rating &&
             Objects.equals(placeId, that.placeId) &&
             Objects.equals(name, that.name) &&
-            Objects.equals(distance, that.distance) &&
+            Objects.equals(formattedDistance, that.formattedDistance) &&
             Objects.equals(address, that.address) &&
             Objects.equals(openingHours, that.openingHours) &&
             Objects.equals(photoUrl, that.photoUrl);
@@ -98,6 +104,6 @@ class RestaurantViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, distance, address, textStyle, textColor, openingHours, interestedWorkmates, interestedWorkmatesCount, rating, photoUrl);
+        return Objects.hash(placeId, name, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmates, interestedWorkmatesCount, rating, photoUrl);
     }
 }

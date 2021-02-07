@@ -173,7 +173,7 @@ public class DetailsResponse extends PlacesResponse {
         }
     }
 
-    public static class Photo {
+    public static class Photo extends PlacesResponse.Photo {
 
         @SerializedName("height")
         @Expose
@@ -217,9 +217,9 @@ public class DetailsResponse extends PlacesResponse {
         @SerializedName("formatted_address")
         @Expose
         private final String formattedAddress;
-        @SerializedName("formatted_phone_number")
+        @SerializedName("international_phone_number")
         @Expose
-        private final String formattedPhoneNumber;
+        private final String internationalPhoneNumber;
         @SerializedName("geometry")
         @Expose
         private final Geometry geometry;
@@ -245,9 +245,9 @@ public class DetailsResponse extends PlacesResponse {
         @Expose
         private final String website;
 
-        public Result(String formattedAddress, String formattedPhoneNumber, Geometry geometry, String name, List<Object> obfuscatedType, OpeningHours openingHours, List<Photo> photos, String placeId, Double rating, String website) {
+        public Result(String formattedAddress, String internationalPhoneNumber, Geometry geometry, String name, List<Object> obfuscatedType, OpeningHours openingHours, List<Photo> photos, String placeId, Double rating, String website) {
             this.formattedAddress = formattedAddress;
-            this.formattedPhoneNumber = formattedPhoneNumber;
+            this.internationalPhoneNumber = internationalPhoneNumber;
             this.geometry = geometry;
             this.name = name;
             this.obfuscatedType = obfuscatedType;
@@ -262,8 +262,8 @@ public class DetailsResponse extends PlacesResponse {
             return formattedAddress;
         }
 
-        public String getFormattedPhoneNumber() {
-            return formattedPhoneNumber;
+        public String getInternationalPhoneNumber() {
+            return internationalPhoneNumber;
         }
 
         public Geometry getGeometry() {
