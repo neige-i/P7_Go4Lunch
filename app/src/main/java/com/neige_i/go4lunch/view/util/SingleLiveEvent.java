@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.neige_i.go4lunch.view;
+package com.neige_i.go4lunch.view.util;
 
 import android.util.Log;
 

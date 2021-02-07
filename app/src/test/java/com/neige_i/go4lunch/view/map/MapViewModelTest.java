@@ -5,7 +5,7 @@ import android.location.Location;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.data.google_places.BaseRepository;
+import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
@@ -50,7 +50,7 @@ public class MapViewModelTest {
     // Repositories injected into ViewModel
     private final Location location = mock(Location.class);
     private final LocationRepository locationRepository = mock(LocationRepository.class);
-    private final BaseRepository nearbyRepository = mock(NearbyRepository.class);
+    private final PlacesRepository nearbyRepository = mock(NearbyRepository.class);
 
     // ViewModel under test
     private MapViewModel mapViewModel;
@@ -59,7 +59,7 @@ public class MapViewModelTest {
     public void setUp() {
         doReturn(locationPermissionMutableLiveData).when(locationRepository).isLocationPermissionGranted();
         doReturn(locationMutableLiveData).when(locationRepository).getCurrentLocation();
-        doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).executeDetailsRequest(location);
+        doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).getPlacesResponse(location);
         doReturn(EXPECTED_MAP_LAT).when(location).getLatitude();
         doReturn(EXPECTED_MAP_LNG).when(location).getLongitude();
 

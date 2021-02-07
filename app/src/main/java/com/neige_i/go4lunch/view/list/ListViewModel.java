@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.BaseRepository;
+import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
@@ -23,7 +23,7 @@ public class ListViewModel extends ViewModel {
     private final LocationRepository locationRepository;
     private final NearbyRepository nearbyRepository;
 
-    public ListViewModel(LocationRepository locationRepository, BaseRepository nearbyRepository) {
+    public ListViewModel(LocationRepository locationRepository, PlacesRepository nearbyRepository) {
         this.locationRepository = locationRepository;
         this.nearbyRepository = (NearbyRepository) nearbyRepository;
     }
@@ -32,7 +32,7 @@ public class ListViewModel extends ViewModel {
         return Transformations.switchMap(
             locationRepository.getCurrentLocation(),
             userLocation -> Transformations.map(
-                nearbyRepository.executeDetailsRequest(userLocation),
+                nearbyRepository.getPlacesResponse(userLocation),
                 nearbyResponse -> {
                     final List<RestaurantViewState> viewStates = new ArrayList<>();
 

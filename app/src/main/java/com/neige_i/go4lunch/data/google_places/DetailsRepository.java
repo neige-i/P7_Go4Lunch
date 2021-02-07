@@ -1,27 +1,34 @@
 package com.neige_i.go4lunch.data.google_places;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
 
-import com.neige_i.go4lunch.data.google_places.model.BaseResponse;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.neige_i.go4lunch.data.google_places.model.PlacesResponse;
 
 import java.io.IOException;
 
-public class DetailsRepository extends BaseRepository {
+public class DetailsRepository extends PlacesRepository {
+
+    @Nullable
     @Override
-    protected BaseResponse executeRequest(@NonNull String arg) {
+    protected PlacesResponse executeRequest(@NonNull String arg) {
+        Log.d("Neige", "DetailsRepository::executeRequest");
         try {
             return PlacesApi.getInstance()
-                    .getRestaurantDetails(arg)
-                    .execute()
-                    .body();
+                .getRestaurantDetails(arg)
+                .execute()
+                .body();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
+    @NonNull
     @Override
-    protected String getArg(Object o) {
-        return (String) o;
+    protected String argToString(@NonNull Object o) {
+        return o.toString();
     }
 }

@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class DetailsResponse extends BaseResponse {
+public class DetailsResponse extends PlacesResponse {
 
     @SerializedName("html_attributions")
     @Expose

@@ -23,19 +23,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.OnDetailQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
+import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class MapFragment extends Fragment {
 
     private GoogleMap googleMap;
-    private OnDetailQueriedCallback onDetailQueriedCallback;
+    private OnDetailsQueriedCallback onDetailsQueriedCallback;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        onDetailQueriedCallback = (OnDetailQueriedCallback) context;
+        onDetailsQueriedCallback = (OnDetailsQueriedCallback) context;
     }
 
     @Nullable
@@ -63,7 +63,7 @@ public class MapFragment extends Fragment {
                 marker.showInfoWindow();
                 return false;
             });
-            googleMap.setOnInfoWindowClickListener(marker -> onDetailQueriedCallback.onDetailQueried((String) marker.getTag()));
+            googleMap.setOnInfoWindowClickListener(marker -> onDetailsQueriedCallback.onDetailsQueried((String) marker.getTag()));
 
             final LatLng target = googleMap.getCameraPosition().target;
             viewModel.onMapAvailable(target.latitude, target.longitude);
@@ -73,7 +73,7 @@ public class MapFragment extends Fragment {
         final FloatingActionButton fab = requireView().findViewById(R.id.location_btn);
         fab.setOnClickListener(v -> viewModel.onCameraCentered(googleMap.getCameraPosition().zoom));
 
-        viewModel.getViewState().observe(requireActivity(), mapViewState -> {
+        viewModel.getViewState().observe(getViewLifecycleOwner(), mapViewState -> {
             googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
             fab.setVisibility(mapViewState.isLocationLayerEnabled() ? View.VISIBLE : View.GONE);
 

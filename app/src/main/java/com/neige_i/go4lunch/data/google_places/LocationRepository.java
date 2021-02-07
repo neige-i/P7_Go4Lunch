@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -25,7 +26,9 @@ public class LocationRepository {
     @NonNull
     private final MutableLiveData<Location> currentLocation = new MutableLiveData<>();
 
+    @NonNull
     private final FusedLocationProviderClient fusedLocationClient;
+    @NonNull
     private final LocationCallback locationCallback;
 
     public LocationRepository() {
@@ -36,6 +39,7 @@ public class LocationRepository {
                 if (locationResult != null) {
                     final Location lastLocation = locationResult.getLastLocation();
                     if (lastLocation != null) {
+                        Log.d("Neige", "LocationRepository::onLocationResult: update " + lastLocation.getLatitude() + "," + lastLocation.getLongitude());
                         // Update current user location
                         currentLocation.setValue(lastLocation);
                     }
@@ -44,6 +48,7 @@ public class LocationRepository {
         };
     }
 
+    @NonNull
     public LiveData<Boolean> isLocationPermissionGranted() {
         return isLocationPermissionGranted;
     }
@@ -55,6 +60,7 @@ public class LocationRepository {
             startLocationUpdates();
     }
 
+    @NonNull
     public LiveData<Location> getCurrentLocation() {
         return currentLocation;
     }

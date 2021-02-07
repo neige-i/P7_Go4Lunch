@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
 
-public class WorkmateAdapter extends ListAdapter<Object, WorkmateAdapter.WorkmateViewHolder> {
+class WorkmateAdapter extends ListAdapter<Object, WorkmateAdapter.WorkmateViewHolder> {
 
     protected WorkmateAdapter() {
         super(new WorkmateDiffCallback());

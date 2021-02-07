@@ -17,8 +17,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.OnDetailQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
+import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.util.ViewModelFactory;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 import com.neige_i.go4lunch.view.list.ListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
@@ -26,13 +26,14 @@ import com.neige_i.go4lunch.view.map.MapFragment;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HomeActivity extends AppCompatActivity implements OnDetailQueriedCallback {
+public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     static final String TAG_FRAGMENT_MAP = "map";
     static final String TAG_FRAGMENT_RESTAURANT = "restaurant";
     static final String TAG_FRAGMENT_WORKMATE = "workmate";
+
     public static final String EXTRA_PLACE_ID = "EXTRA_PLACE_ID";
 
     private HomeViewModel viewModel;
@@ -58,7 +59,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailQueriedCa
         final FragmentManager fragmentManager = initFragmentManager();
 
         // Update UI when state is changed
-        viewModel.getUiState().observe(this, homeUiModel -> {
+        viewModel.getViewState().observe(this, homeUiModel -> {
             // Show the correct fragment
             fragmentManager.beginTransaction()
                 .hide(fragmentManager.findFragmentByTag(homeUiModel.getFragmentToHide()))
@@ -137,7 +138,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailQueriedCa
     }
 
     @Override
-    public void onDetailQueried(String placeId) {
+    public void onDetailsQueried(@NonNull String placeId) {
         final Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(EXTRA_PLACE_ID, placeId);
         startActivity(intent);

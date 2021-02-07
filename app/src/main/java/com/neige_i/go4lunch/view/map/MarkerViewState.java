@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class MarkerViewState {
+class MarkerViewState {
 
     private final String placeId;
     private final String name;

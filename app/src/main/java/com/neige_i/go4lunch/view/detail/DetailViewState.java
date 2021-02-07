@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class DetailViewState {
+class DetailViewState {
 
     @NonNull
     private final String placeId;
