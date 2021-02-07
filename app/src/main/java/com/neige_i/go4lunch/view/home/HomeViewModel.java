@@ -21,7 +21,6 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<HomeViewState> viewState = new MutableLiveData<>();
     private final MediatorLiveData<Void> requestLocationPermissionEvent = new MediatorLiveData<>();
     private boolean isLocationPermissionRequested;
-    private String fragmentToHide = TAG_FRAGMENT_MAP;
 
     public HomeViewModel(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
@@ -61,9 +60,16 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void onFragmentSelected(int menuItemId) {
+        final HomeViewState oldViewState = viewState.getValue();
+
+        // Set the fragment to hide as the old displayed fragment
+        final String fragmentToHide = oldViewState != null
+            ? oldViewState.getFragmentToShow()
+            : null;
+
+        // Set the fragment to show and the String ID for the toolbar title
         final String fragmentToShow;
         final int titleId;
-
         if (menuItemId == R.id.action_map) {
             fragmentToShow = TAG_FRAGMENT_MAP;
             titleId = R.string.title_restaurant;
@@ -78,9 +84,5 @@ public class HomeViewModel extends ViewModel {
         }
 
         viewState.setValue(new HomeViewState(fragmentToShow, fragmentToHide, titleId));
-    }
-
-    public void setFragmentToHide(String fragmentToHide) {
-        this.fragmentToHide = fragmentToHide;
     }
 }

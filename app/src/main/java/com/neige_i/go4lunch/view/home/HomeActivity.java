@@ -13,18 +13,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 import com.neige_i.go4lunch.view.list.ListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
 
@@ -56,19 +54,46 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         });
 
         // Init fragment manager
-        final FragmentManager fragmentManager = initFragmentManager();
+        final FragmentManager fragmentManager = getSupportFragmentManager();
 
         // Update UI when state is changed
-        viewModel.getViewState().observe(this, homeUiModel -> {
-            // Show the correct fragment
-            fragmentManager.beginTransaction()
-                .hide(fragmentManager.findFragmentByTag(homeUiModel.getFragmentToHide()))
-                .show(fragmentManager.findFragmentByTag(homeUiModel.getFragmentToShow()))
-                .commit();
-            viewModel.setFragmentToHide(homeUiModel.getFragmentToShow());
+        viewModel.getViewState().observe(this, viewState -> {
+            final Fragment fragmentToShow = fragmentManager.findFragmentByTag(viewState.getFragmentToShow());
+            final Fragment fragmentToHide = fragmentManager.findFragmentByTag(viewState.getFragmentToHide());
+
+            final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            // 1. Hide the existing fragment
+            if (fragmentToHide != null)
+                fragmentTransaction.hide(fragmentToHide);
+
+            if (fragmentToShow != null) {
+                // 2.a. Show the existing fragment
+                fragmentTransaction.show(fragmentToShow);
+            } else {
+                // 2.b. Add the new fragment
+                final Fragment fragmentToAdd;
+                switch (viewState.getFragmentToShow()) {
+                    case TAG_FRAGMENT_MAP:
+                        fragmentToAdd = new MapFragment();
+                        break;
+                    case TAG_FRAGMENT_RESTAURANT:
+                        fragmentToAdd = ListFragment.newInstance(ListFragment.RESTAURANT);
+                        break;
+                    case TAG_FRAGMENT_WORKMATE:
+                        fragmentToAdd = ListFragment.newInstance(ListFragment.WORKMATE);
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + viewState.getFragmentToShow());
+                }
+                fragmentTransaction.add(R.id.fragment_container, fragmentToAdd, viewState.getFragmentToShow());
+            }
+
+            // 3. Commit the fragment transaction
+            fragmentTransaction.commit();
 
             // Update the toolbar title accordingly
-            setTitle(homeUiModel.getTitleId());
+            setTitle(viewState.getTitleId());
         });
 
         viewModel.getRequestLocationPermissionEvent().observe(this, aVoid -> {
@@ -115,26 +140,6 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private FragmentManager initFragmentManager() {
-        // Init BottomNavigationView's fragments
-        final Map<String, Fragment> fragments = new HashMap<>();
-        fragments.put(TAG_FRAGMENT_MAP, new MapFragment());
-        fragments.put(TAG_FRAGMENT_RESTAURANT, ListFragment.newInstance(ListFragment.RESTAURANT));
-        fragments.put(TAG_FRAGMENT_WORKMATE, ListFragment.newInstance(ListFragment.WORKMATE));
-
-        // Add all fragments to the fragment manager and hide them
-        // TODO: add restaurant and workmate fragments only when clicked on the BottomNavigationView to avoid unnecessary initializations
-        final FragmentManager fragmentManager = getSupportFragmentManager();
-        for (Map.Entry<String, Fragment> mapEntry : fragments.entrySet()) {
-            fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, mapEntry.getValue(), mapEntry.getKey())
-                .hide(mapEntry.getValue())
-                .commit();
-        }
-
-        return fragmentManager;
     }
 
     @Override
