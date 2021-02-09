@@ -5,7 +5,6 @@ import android.location.Location;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
@@ -19,15 +18,26 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.view.map.MapViewModel.ZOOM_LEVEL_STREETS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
 
 public class MapViewModelTest {
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+
+    // Initial states
+    private final int NORMAL_STATE = 0;
+    private final int EDGE_CASE_RESPONSE_RESULT_NULL = 1;
+    private final int EDGE_CASE_RESPONSE_NULL = 2;
+    private final int EDGE_CASE_RESPONSE_UNAVAILABLE = 3;
+    private final int EDGE_CASE_LOCATION_UNAVAILABLE = 4;
+    private final int EDGE_CASE_PERMISSION_DENIED = 5;
+    private final int EDGE_CASE_PERMISSION_UNAVAILABLE = 6;
+    private final int NORMAL_STATE_BIG_ZOOM = 7;
 
     // MarkerViewState fields
     private final String EXPECTED_PLACE_ID = "EXPECTED_PLACE_ID";
@@ -37,87 +47,222 @@ public class MapViewModelTest {
     private final String EXPECTED_VICINITY = "EXPECTED_VICINITY";
 
     // MapViewState fields
-    private final boolean EXPECTED_LOC_PERM = true;
     private final double EXPECTED_MAP_LAT = 48.8566;
     private final double EXPECTED_MAP_LNG = 2.3522;
-    private final float EXPECTED_MAP_ZOOM = 15f;
+    private final double INITIAL_MAP_LAT = 0.;
+    private final double INITIAL_MAP_LNG = 0.;
+    private final float INITIAL_MAP_ZOOM = 2f;
+    private final float BIG_MAP_ZOOM = 22f;
 
-    // Values returned from repositories
-    private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<NearbyResponse> nearbyResponseMutableLiveData = new MutableLiveData<>();
+    // Values returned from mocked repositories
+    private final MutableLiveData<Location> location = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> permission = new MutableLiveData<>();
+    private final MutableLiveData<NearbyResponse> nearbyResponse = new MutableLiveData<>();
 
-    // Repositories injected into ViewModel
-    private final Location location = mock(Location.class);
+    // Mock objects
+    // ASKME: difference between mock() and @Mock
+    private final Location currentLocation = mock(Location.class);
     private final LocationRepository locationRepository = mock(LocationRepository.class);
-    private final PlacesRepository nearbyRepository = mock(NearbyRepository.class);
+    private final NearbyRepository nearbyRepository = mock(NearbyRepository.class);
 
     // ViewModel under test
     private MapViewModel mapViewModel;
 
     @Before
     public void setUp() {
-        doReturn(locationPermissionMutableLiveData).when(locationRepository).isLocationPermissionGranted();
-        doReturn(locationMutableLiveData).when(locationRepository).getCurrentLocation();
-        doReturn(nearbyResponseMutableLiveData).when(nearbyRepository).getPlacesResponse(location);
-        doReturn(EXPECTED_MAP_LAT).when(location).getLatitude();
-        doReturn(EXPECTED_MAP_LNG).when(location).getLongitude();
+        doReturn(permission).when(locationRepository).isLocationPermissionGranted();
+        doReturn(location).when(locationRepository).getCurrentLocation();
+        doReturn(nearbyResponse).when(nearbyRepository).getPlacesResponse(currentLocation);
+        doReturn(EXPECTED_MAP_LAT).when(currentLocation).getLatitude();
+        doReturn(EXPECTED_MAP_LNG).when(currentLocation).getLongitude();
 
         mapViewModel = new MapViewModel(nearbyRepository, locationRepository);
     }
 
     @Test
-    public void nominal_case() throws InterruptedException {
+    public void onMapAvailable_nominalCase() throws InterruptedException {
         // Given
-        mapViewModel.onMapAvailable(0.0, 0.0);
-        locationPermissionMutableLiveData.setValue(EXPECTED_LOC_PERM);
-        locationMutableLiveData.setValue(location);
-        nearbyResponseMutableLiveData.setValue(
-            getDefaultNearbyResponse(
-                getDefaultResult(1),
-                getDefaultResult(2)
-            )
-        );
+        setInitialState(NORMAL_STATE);
 
         // When
-        final MapViewState result = getOrAwaitValue(mapViewModel.getViewState());
+        setMapWithInitialZoom(true);
 
         // Then
         assertEquals(
-            getDefaultMapViewStates(
-                getDefaultMarkerViewState(1),
-                getDefaultMarkerViewState(2)
-            ),
-            result
+            getExpectedViewState(NORMAL_STATE),
+            getOrAwaitValue(mapViewModel.getViewState())
         );
     }
 
     @Test
-    public void edge_case_no_result_available() throws InterruptedException {
+    public void onMapAvailable_edgeCase_responseWithoutResult() throws InterruptedException {
         // Given
-        mapViewModel.onMapAvailable(0.0, 0.0);
-        locationPermissionMutableLiveData.setValue(EXPECTED_LOC_PERM);
-        locationMutableLiveData.setValue(location);
-        nearbyResponseMutableLiveData.setValue(getDefaultNearbyResponse());
+        setInitialState(EDGE_CASE_RESPONSE_RESULT_NULL);
 
         // When
-        final MapViewState result = getOrAwaitValue(mapViewModel.getViewState());
+        setMapWithInitialZoom(true);
 
         // Then
         assertEquals(
-            getDefaultMapViewStates(),
-            result
+            getExpectedViewState(EDGE_CASE_RESPONSE_RESULT_NULL),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onMapAvailable_edgeCase_responseNull() throws InterruptedException {
+        // Given
+        setInitialState(EDGE_CASE_RESPONSE_NULL);
+
+        // When
+        setMapWithInitialZoom(true);
+
+        // Then
+        assertEquals(
+            getExpectedViewState(EDGE_CASE_RESPONSE_NULL),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onMapAvailable_edgeCase_noResponseTriggered() throws InterruptedException {
+        // Given
+        setInitialState(EDGE_CASE_RESPONSE_UNAVAILABLE);
+
+        // When
+        setMapWithInitialZoom(true);
+
+        // Then
+        assertEquals(
+            getExpectedViewState(EDGE_CASE_RESPONSE_UNAVAILABLE),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onMapAvailable_edgeCase_noLocationTriggered() throws InterruptedException {
+        // Given
+        setInitialState(EDGE_CASE_LOCATION_UNAVAILABLE);
+
+        // When
+        setMapWithInitialZoom(true);
+
+        // Then
+        assertEquals(
+            getExpectedViewState(EDGE_CASE_LOCATION_UNAVAILABLE),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onMapAvailable_edgeCase_permissionDenied() throws InterruptedException {
+        // Given
+        setInitialState(EDGE_CASE_PERMISSION_DENIED);
+
+        // When
+        setMapWithInitialZoom(true);
+
+        // Then
+        assertEquals(
+            getExpectedViewState(EDGE_CASE_PERMISSION_DENIED),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onMapAvailable_edgeCase_noPermissionTriggered() {
+        // Given
+        setInitialState(EDGE_CASE_PERMISSION_UNAVAILABLE);
+
+        // When
+        setMapWithInitialZoom(true);
+        Throwable thrownException = assertThrows(
+            RuntimeException.class,
+            () -> getOrAwaitValue(mapViewModel.getViewState())
+        );
+
+        // Then
+        assertEquals("LiveData value was never set.", thrownException.getMessage());
+    }
+
+    @Test
+    public void onCameraCentered_initialSmallZoom() throws InterruptedException {
+        // Given
+        setInitialState(NORMAL_STATE);
+        // ASKME: mandatory call to onMapAvailable()
+        setMapWithInitialZoom(true);
+
+        // When: map must be centered
+        mapViewModel.onCameraCentered();
+
+        // Then
+        assertEquals(
+            getExpectedViewState(NORMAL_STATE),
+            getOrAwaitValue(mapViewModel.getViewState())
+        );
+    }
+
+    @Test
+    public void onCameraCentered_initialBigZoom() throws InterruptedException {
+        // Given
+        setInitialState(NORMAL_STATE_BIG_ZOOM);
+        setMapWithInitialZoom(false);
+
+        // When: map must be centered
+        mapViewModel.onCameraCentered();
+
+        // Then
+        assertEquals(
+            getExpectedViewState(NORMAL_STATE_BIG_ZOOM),
+            getOrAwaitValue(mapViewModel.getViewState())
         );
     }
 
     // region IN
-    private NearbyResponse getDefaultNearbyResponse(NearbyResponse.Result... expectedResults) {
-        final NearbyResponse nearbyResponse = new NearbyResponse();
-        final List<NearbyResponse.Result> results = new ArrayList<>(Arrays.asList(expectedResults));
 
-        nearbyResponse.setResults(results);
+    /**
+     * Initializes the value of the {@link MutableLiveData} returned by the mocked repositories.
+     */
+    private void setInitialState(int whichCase) {
+        switch (whichCase) {
+            case EDGE_CASE_PERMISSION_UNAVAILABLE:
+                break;
+            case EDGE_CASE_PERMISSION_DENIED:
+                permission.setValue(false);
+                break;
+            default:
+                permission.setValue(true);
+        }
 
-        return nearbyResponse;
+        // ASKME: should test impossible scenario or not (commented lines)
+        //  logic: no permission (unavailable/denied) -> no location -> no response
+
+        switch (whichCase) {
+            case EDGE_CASE_LOCATION_UNAVAILABLE:
+//            case EDGE_CASE_PERMISSION_UNAVAILABLE:
+//            case EDGE_CASE_PERMISSION_DENIED:
+                break;
+            default:
+                location.setValue(currentLocation);
+        }
+
+        switch (whichCase) {
+            case EDGE_CASE_RESPONSE_UNAVAILABLE:
+//            case EDGE_CASE_LOCATION_UNAVAILABLE:
+//            case EDGE_CASE_PERMISSION_UNAVAILABLE:
+            case EDGE_CASE_PERMISSION_DENIED: // If this is commented, should add condition in code to make test pass
+                break;
+            case EDGE_CASE_RESPONSE_NULL:
+                nearbyResponse.setValue(null);
+                break;
+            case EDGE_CASE_RESPONSE_RESULT_NULL:
+                nearbyResponse.setValue(new NearbyResponse());
+                break;
+            default:
+                final NearbyResponse dummyResponse = new NearbyResponse();
+                dummyResponse.setResults(Arrays.asList(getDefaultResult(1), getDefaultResult(2)));
+                nearbyResponse.setValue(dummyResponse);
+        }
     }
 
     private NearbyResponse.Result getDefaultResult(int index) {
@@ -136,16 +281,59 @@ public class MapViewModelTest {
 
         return result;
     }
+
+    private void setMapWithInitialZoom(boolean isInitialZoom) {
+        mapViewModel.onMapAvailable(
+            INITIAL_MAP_LAT,
+            INITIAL_MAP_LNG,
+            isInitialZoom ? INITIAL_MAP_ZOOM : BIG_MAP_ZOOM
+        );
+    }
     // endregion
 
     // region OUT
-    private MapViewState getDefaultMapViewStates(MarkerViewState... markerViewStates) {
+
+    /**
+     * Returns the expected view state except in the {@link #EDGE_CASE_PERMISSION_UNAVAILABLE} case
+     * when no view state is returned.
+     *
+     * @see #onMapAvailable_edgeCase_noLocationTriggered()
+     */
+    private MapViewState getExpectedViewState(int whichCase) {
+        final boolean isPermissionGranted = whichCase != EDGE_CASE_PERMISSION_DENIED;
+
+        final List<MarkerViewState> markerViewStates =
+            whichCase == NORMAL_STATE || whichCase == NORMAL_STATE_BIG_ZOOM
+                ? Arrays.asList(getDefaultMarkerViewState(1), getDefaultMarkerViewState(2))
+                : new ArrayList<>();
+
+        final double mapLatitude;
+        final double mapLongitude;
+        final float mapZoom;
+        switch (whichCase) {
+            case EDGE_CASE_LOCATION_UNAVAILABLE:
+            case EDGE_CASE_PERMISSION_DENIED:
+                mapLatitude = INITIAL_MAP_LAT;
+                mapLongitude = INITIAL_MAP_LNG;
+                mapZoom = INITIAL_MAP_ZOOM;
+                break;
+            case NORMAL_STATE_BIG_ZOOM:
+                mapLatitude = EXPECTED_MAP_LAT;
+                mapLongitude = EXPECTED_MAP_LNG;
+                mapZoom = BIG_MAP_ZOOM;
+                break;
+            default:
+                mapLatitude = EXPECTED_MAP_LAT;
+                mapLongitude = EXPECTED_MAP_LNG;
+                mapZoom = ZOOM_LEVEL_STREETS;
+        }
+
         return new MapViewState(
-            EXPECTED_LOC_PERM,
-            new ArrayList<>(Arrays.asList(markerViewStates)),
-            EXPECTED_MAP_LAT,
-            EXPECTED_MAP_LNG,
-            EXPECTED_MAP_ZOOM
+            isPermissionGranted,
+            markerViewStates,
+            mapLatitude,
+            mapLongitude,
+            mapZoom
         );
     }
 

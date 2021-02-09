@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
@@ -20,8 +21,10 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/description_location_button"
         android:src="@drawable/ic_location"
+        android:visibility="gone"
         app:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>

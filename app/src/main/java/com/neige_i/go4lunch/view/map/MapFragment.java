@@ -19,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -65,14 +66,18 @@ public class MapFragment extends Fragment {
                 return false;
             });
             googleMap.setOnInfoWindowClickListener(marker -> onDetailsQueriedCallback.onDetailsQueried((String) marker.getTag()));
+            googleMap.setOnCameraIdleListener(() -> {
+                final CameraPosition cameraPosition = googleMap.getCameraPosition();
+                viewModel.onCameraIdled(cameraPosition.target.latitude, cameraPosition.target.longitude, cameraPosition.zoom);
+            });
 
-            final LatLng target = googleMap.getCameraPosition().target;
-            viewModel.onMapAvailable(target.latitude, target.longitude);
+            final CameraPosition cameraPosition = googleMap.getCameraPosition();
+            viewModel.onMapAvailable(cameraPosition.target.latitude, cameraPosition.target.longitude, cameraPosition.zoom);
         });
 
         // Config FAB
         final FloatingActionButton fab = requireView().findViewById(R.id.location_btn);
-        fab.setOnClickListener(v -> viewModel.onCameraCentered(googleMap.getCameraPosition().zoom));
+        fab.setOnClickListener(v -> viewModel.onCameraCentered());
 
         viewModel.getViewState().observe(getViewLifecycleOwner(), mapViewState -> {
             googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
