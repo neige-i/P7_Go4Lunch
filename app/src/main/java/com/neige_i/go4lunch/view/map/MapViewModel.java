@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.view.map;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -17,6 +19,9 @@ import java.util.List;
 
 public class MapViewModel extends ViewModel {
 
+    // Zoom levels: 1-world, 5-continent, 10-city, 15-streets, 20-buildings
+    static final float ZOOM_LEVEL_STREETS = 15f;
+
     @NonNull
     private final LocationRepository locationRepository;
     @NonNull
@@ -26,10 +31,13 @@ public class MapViewModel extends ViewModel {
     private final MediatorLiveData<MapViewState> viewState = new MediatorLiveData<>();
 
     private boolean isLocationPermissionGranted;
+    @Nullable
+    private Location currentLocation;
+    @NonNull
+    private final List<MarkerViewState> markerViewStates = new ArrayList<>();
     private double mapLatitude;
     private double mapLongitude;
-    private float mapZoom = ZOOM_LEVEL_STREETS;
-    private static final float ZOOM_LEVEL_STREETS = 15f; // Zoom levels: 1-world, 5-continent, 10-city, 15-streets, 20-buildings
+    private float mapZoom;
 
     public MapViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
@@ -47,60 +55,70 @@ public class MapViewModel extends ViewModel {
      * {@link com.google.android.gms.maps.SupportMapFragment#getMapAsync(OnMapReadyCallback) SupportMapFragment.getMapAsync()}
      * when the {@link com.google.android.gms.maps.GoogleMap GoogleMap} object is ready to be used.
      */
-    public void onMapAvailable(double mapLat, double mapLng) {
-        // Init map location
+    public void onMapAvailable(double mapLat, double mapLng, float zoom) {
+        // Init camera position
         mapLatitude = mapLat;
         mapLongitude = mapLng;
+        mapZoom = zoom;
 
-        final LiveData<Boolean> isLocationPermissionGranted = locationRepository.isLocationPermissionGranted();
-        final LiveData<NearbyResponse> nearbyResponse = Transformations.switchMap(
-            locationRepository.getCurrentLocation(),
-            location -> {
-                // Update map location
-                mapLatitude = location.getLatitude();
-                mapLongitude = location.getLongitude();
+        final LiveData<Boolean> locationPermissionLiveData = locationRepository.isLocationPermissionGranted();
+        final LiveData<Location> locationLiveData = locationRepository.getCurrentLocation();
 
-                return Transformations.map(
-                    nearbyRepository.getPlacesResponse(location),
-                    response -> (NearbyResponse) response
-                );
-            }
-        );
+        // ASKME: (for tests) logic in repo: no permission -> no location -> no nearby response
+        final LiveData<NearbyResponse> nearbyResponse = /*Transformations.switchMap(
+            locationPermissionLiveData,
+            isPermissionGranted -> {
+                if (isPermissionGranted) {
+                    return*/ Transformations.switchMap(
+                        locationLiveData,
+                        location -> {
+                            // Update current location
+                            currentLocation = location;
 
-        viewState.addSource(
-            isLocationPermissionGranted,
-            isPermissionGranted -> combine(isPermissionGranted, nearbyResponse.getValue())
-        );
+                            return Transformations.map(
+                                nearbyRepository.getPlacesResponse(location),
+                                response -> (NearbyResponse) response
+                            );
+                        }
+                    );
+//                } else {
+//                    return new MutableLiveData<>();
+//                }
+//            }
+//        );
+
+        // ASKME: without 2 awaits in test class, add sources in the reverse order will fire an AssertionError
+        //  because combine() update view state's LiveData value if response is null or not, but only if permission in not null
         viewState.addSource(
             nearbyResponse,
-            nearbyResponseValue -> combine(isLocationPermissionGranted.getValue(), nearbyResponseValue)
+            nearbyResponseValue -> combine(locationPermissionLiveData.getValue(), nearbyResponseValue)
+        );
+        viewState.addSource(
+            locationPermissionLiveData,
+            isPermissionGranted -> combine(isPermissionGranted, nearbyResponse.getValue())
         );
     }
 
-    public void onCameraCentered(float currentMapZoom) {
-        if (isLocationPermissionGranted) {
-            // Update current map zoom if it is higher from the ground that 'streets' level
-            mapZoom = Math.max(currentMapZoom, ZOOM_LEVEL_STREETS);
+    public void onCameraIdled(double mapLat, double mapLng, float zoom) {
+        // Update camera position
+        mapLatitude = mapLat;
+        mapLongitude = mapLng;
+        mapZoom = zoom;
+    }
 
-            final MapViewState currentViewState = viewState.getValue(); // ASKME: check nullability
-            viewState.setValue(new MapViewState(
-                currentViewState.isLocationLayerEnabled(),
-                currentViewState.getMarkerViewStates(),
-                mapLatitude,
-                mapLongitude,
-                mapZoom
-            ));
-        }
+    public void onCameraCentered() {
+        setViewState();
     }
 
     private void combine(@Nullable Boolean isPermissionEnabled, @Nullable NearbyResponse nearbyResponse) {
-        // ASKME: remove nearbyResponse from condition
-        if (isPermissionEnabled == null || nearbyResponse == null)
+        if (isPermissionEnabled == null)
             return;
 
+        // Update location permission
         isLocationPermissionGranted = isPermissionEnabled;
 
-        final List<MarkerViewState> markerViewStates = new ArrayList<>();
+        // Update markers
+        markerViewStates.clear();
         if (nearbyResponse != null) {
             final List<NearbyResponse.Result> resultList = nearbyResponse.getResults();
             if (resultList != null) {
@@ -117,8 +135,20 @@ public class MapViewModel extends ViewModel {
             }
         }
 
+        setViewState();
+    }
+
+    private void setViewState() {
+        // Update camera position if current position is available
+        if (isLocationPermissionGranted && currentLocation != null) {
+            mapLatitude = currentLocation.getLatitude();
+            mapLongitude = currentLocation.getLongitude();
+            mapZoom = Math.max(mapZoom, ZOOM_LEVEL_STREETS);
+        }
+
+        // Update view state value
         viewState.setValue(new MapViewState(
-            isPermissionEnabled,
+            isLocationPermissionGranted,
             markerViewStates,
             mapLatitude,
             mapLongitude,
