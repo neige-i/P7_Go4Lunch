@@ -10,7 +10,7 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
@@ -61,7 +61,7 @@ public class MapViewModel extends ViewModel {
         mapLongitude = mapLng;
         mapZoom = zoom;
 
-        final LiveData<Boolean> locationPermissionLiveData = locationRepository.isLocationPermissionGranted();
+        final LiveData<Boolean> locationPermissionLiveData = locationRepository.getLocationPermission();
         final LiveData<Location> locationLiveData = locationRepository.getCurrentLocation();
 
         // ASKME: (for tests) logic in repo: no permission -> no location -> no nearby response

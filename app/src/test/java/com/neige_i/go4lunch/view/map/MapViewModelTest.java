@@ -5,7 +5,7 @@ import android.location.Location;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
@@ -62,7 +62,7 @@ public class MapViewModelTest {
     // Mock objects
     // ASKME: difference between mock() and @Mock
     private final Location currentLocation = mock(Location.class);
-    private final LocationRepository locationRepository = mock(LocationRepository.class);
+    private final LocationRepositoryImpl locationRepository = mock(LocationRepositoryImpl.class);
     private final NearbyRepository nearbyRepository = mock(NearbyRepository.class);
 
     // ViewModel under test
@@ -70,7 +70,7 @@ public class MapViewModelTest {
 
     @Before
     public void setUp() {
-        doReturn(permission).when(locationRepository).isLocationPermissionGranted();
+        doReturn(permission).when(locationRepository).getLocationPermission();
         doReturn(location).when(locationRepository).getCurrentLocation();
         doReturn(nearbyResponse).when(nearbyRepository).getNearbyResponse(currentLocation);
         doReturn(EXPECTED_MAP_LAT).when(currentLocation).getLatitude();
