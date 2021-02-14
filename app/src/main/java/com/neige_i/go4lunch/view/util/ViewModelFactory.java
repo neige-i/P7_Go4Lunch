@@ -8,9 +8,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
-import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
+import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 import com.neige_i.go4lunch.view.list.ListViewModel;
@@ -49,7 +53,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                     factory = new ViewModelFactory(
                         // Instantiate repositories here to make sure only one instance of them exists
                         new NearbyRepositoryImpl(),
-                        new LocationRepository(),
+                        new LocationRepositoryImpl(),
                         new DetailsRepositoryImpl(),
                         new FirebaseRepository()
                     );
@@ -66,7 +70,11 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel(locationRepository);
+            return (T) new HomeViewModel(
+                new GetLocPermissionUseCaseImpl(locationRepository),
+                new UpdateLocPermissionUseCaseImpl(locationRepository),
+                new StopLocationUpdatesUseCaseImpl(locationRepository)
+            );
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(nearbyRepository, locationRepository);
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {

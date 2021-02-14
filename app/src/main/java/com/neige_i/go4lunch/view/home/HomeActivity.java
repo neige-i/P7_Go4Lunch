@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -96,21 +97,23 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
             setTitle(viewState.getTitleId());
         });
 
-        viewModel.getRequestLocationPermissionEvent().observe(this, aVoid -> {
-            Log.d("Neige", "HomeActivity::observe request location permission");
-            ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                LOCATION_PERMISSION_REQUEST_CODE
-            );
-        });
+        // Update UI when event is triggered
+        viewModel.getRequestLocationPermissionEvent().observe(this, aVoid -> ActivityCompat.requestPermissions(
+            this,
+            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+            LOCATION_PERMISSION_REQUEST_CODE
+        ));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.onLocationPermissionChecked();
+        viewModel.onLocationPermissionUpdated(
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        );
     }
 
     @Override
@@ -121,8 +124,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        // TODO: fix infinite loop if deny permission
-        viewModel.onLocationPermissionGranted(requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
+        viewModel.onLocationPermissionUpdated(requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
                                                   grantResults.length > 0 &&
                                                   grantResults[0] == PackageManager.PERMISSION_GRANTED);
     }

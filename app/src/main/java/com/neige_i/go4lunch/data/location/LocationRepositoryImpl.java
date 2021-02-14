@@ -1,14 +1,11 @@
-package com.neige_i.go4lunch.data.google_places;
+package com.neige_i.go4lunch.data.location;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -19,10 +16,10 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.neige_i.go4lunch.MainApplication;
 
-public class LocationRepository {
+public class LocationRepositoryImpl implements LocationRepository {
 
     @NonNull
-    private final MutableLiveData<Boolean> isLocationPermissionGranted = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<Location> currentLocation = new MutableLiveData<>();
 
@@ -31,7 +28,7 @@ public class LocationRepository {
     @NonNull
     private final LocationCallback locationCallback;
 
-    public LocationRepository() {
+    public LocationRepositoryImpl() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(MainApplication.getInstance());
         locationCallback = new LocationCallback() {
             @Override
@@ -49,34 +46,26 @@ public class LocationRepository {
     }
 
     @NonNull
-    public LiveData<Boolean> isLocationPermissionGranted() {
-        return isLocationPermissionGranted;
+    @Override
+    public LiveData<Boolean> getLocationPermission() {
+        return locationPermission;
     }
 
-    public void setLocationPermissionGranted(boolean locationPermissionGranted) {
-        isLocationPermissionGranted.setValue(locationPermissionGranted);
-
-        if (locationPermissionGranted)
-            startLocationUpdates();
+    @Override
+    public void updateLocationPermission(boolean isPermissionGranted) {
+        locationPermission.setValue(isPermissionGranted);
     }
 
     @NonNull
+    @Override
     public LiveData<Location> getCurrentLocation() {
         return currentLocation;
     }
 
-    public void checkLocationPermission() {
-        setLocationPermissionGranted(
-            ContextCompat.checkSelfPermission(
-                MainApplication.getInstance(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        );
-    }
-
     @SuppressLint("MissingPermission")
-    private void startLocationUpdates() {
-        // TODO: handle when gps is disabled
+    @Override
+    public void startLocationUpdates() {
+        Log.d("Neige", "LocationRepository::startLocationUpdates");
         fusedLocationClient.requestLocationUpdates(
             LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -88,6 +77,7 @@ public class LocationRepository {
         );
     }
 
+    @Override
     public void removeLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }

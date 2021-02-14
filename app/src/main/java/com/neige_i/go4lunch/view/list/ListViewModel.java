@@ -8,7 +8,7 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.LocationRepository;
+import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.view.util.Util;
