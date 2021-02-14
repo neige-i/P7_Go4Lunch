@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
-import com.neige_i.go4lunch.data.google_places.PlacesRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.PlacesResponse;
 import com.neige_i.go4lunch.view.util.Util;
@@ -17,7 +16,7 @@ import java.util.List;
 
 public class DetailViewModel extends ViewModel {
 
-    private final PlacesRepository detailsRepository;
+    private final DetailsRepository detailsRepository;
     private final FirebaseRepository firebaseRepository;
 
     private final MediatorLiveData<DetailViewState> viewState = new MediatorLiveData<>();
@@ -32,7 +31,7 @@ public class DetailViewModel extends ViewModel {
     }
 
     public void onInfoQueried(@NonNull String placeId) {
-        final LiveData<PlacesResponse> detailsResponseLiveData = detailsRepository.getPlacesResponse(placeId);
+        final LiveData<DetailsResponse> detailsResponseLiveData = detailsRepository.getDetailsResponse(placeId);
         final LiveData<List<String>> favoriteRestaurantsLiveData = firebaseRepository.getFavoriteRestaurants();
         final LiveData<String> selectedRestaurantLiveData = firebaseRepository.getSelectedRestaurant();
 
