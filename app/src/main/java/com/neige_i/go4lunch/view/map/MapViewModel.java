@@ -76,8 +76,8 @@ public class MapViewModel extends ViewModel {
                             currentLocation = location;
 
                             return Transformations.map(
-                                nearbyRepository.getPlacesResponse(location),
-                                response -> (NearbyResponse) response
+                                nearbyRepository.getNearbyResponse(location),
+                                response -> response
                             );
                         }
                     );

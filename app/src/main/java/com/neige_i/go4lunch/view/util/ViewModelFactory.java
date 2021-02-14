@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
+import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
+import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 import com.neige_i.go4lunch.view.list.ListViewModel;
@@ -46,9 +48,9 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 if (factory == null) {
                     factory = new ViewModelFactory(
                         // Instantiate repositories here to make sure only one instance of them exists
-                        new NearbyRepository(),
+                        new NearbyRepositoryImpl(),
                         new LocationRepository(),
-                        new DetailsRepository(),
+                        new DetailsRepositoryImpl(),
                         new FirebaseRepository()
                     );
                 }

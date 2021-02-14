@@ -31,12 +31,12 @@ public class ListViewModel extends ViewModel {
         return Transformations.switchMap(
             locationRepository.getCurrentLocation(),
             userLocation -> Transformations.map(
-                nearbyRepository.getPlacesResponse(userLocation),
+                nearbyRepository.getNearbyResponse(userLocation),
                 nearbyResponse -> {
                     final List<RestaurantViewState> viewStates = new ArrayList<>();
 
                     if (nearbyResponse != null) {
-                        final List<NearbyResponse.Result> resultList = ((NearbyResponse) nearbyResponse).getResults();
+                        final List<NearbyResponse.Result> resultList = nearbyResponse.getResults();
                         if (resultList != null) {
                             for (NearbyResponse.Result result : resultList) {
 

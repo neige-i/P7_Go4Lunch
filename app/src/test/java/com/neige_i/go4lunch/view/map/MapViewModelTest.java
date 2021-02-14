@@ -72,7 +72,7 @@ public class MapViewModelTest {
     public void setUp() {
         doReturn(permission).when(locationRepository).isLocationPermissionGranted();
         doReturn(location).when(locationRepository).getCurrentLocation();
-        doReturn(nearbyResponse).when(nearbyRepository).getPlacesResponse(currentLocation);
+        doReturn(nearbyResponse).when(nearbyRepository).getNearbyResponse(currentLocation);
         doReturn(EXPECTED_MAP_LAT).when(currentLocation).getLatitude();
         doReturn(EXPECTED_MAP_LNG).when(currentLocation).getLongitude();
 
