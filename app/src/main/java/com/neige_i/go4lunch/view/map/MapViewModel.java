@@ -6,13 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +21,7 @@ public class MapViewModel extends ViewModel {
     static final float ZOOM_LEVEL_STREETS = 15f;
 
     @NonNull
-    private final LocationRepository locationRepository;
-    @NonNull
-    private final NearbyRepository nearbyRepository;
+    private final GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase;
 
     @NonNull
     private final MediatorLiveData<MapViewState> viewState = new MediatorLiveData<>();
@@ -39,9 +35,8 @@ public class MapViewModel extends ViewModel {
     private double mapLongitude;
     private float mapZoom;
 
-    public MapViewModel(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository) {
-        this.locationRepository = locationRepository;
-        this.nearbyRepository = nearbyRepository;
+    public MapViewModel(@NonNull GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase) {
+        this.getNearbyRestaurantsUseCase = getNearbyRestaurantsUseCase;
     }
 
     @NonNull
@@ -61,42 +56,30 @@ public class MapViewModel extends ViewModel {
         mapLongitude = mapLng;
         mapZoom = zoom;
 
-        final LiveData<Boolean> locationPermissionLiveData = locationRepository.getLocationPermission();
-        final LiveData<Location> locationLiveData = locationRepository.getCurrentLocation();
+        viewState.addSource(getNearbyRestaurantsUseCase.getNearby(), mapModel -> {
+            // Update markers
+            markerViewStates.clear();
+            if (mapModel.getNearbyResponse() != null) {
+                final List<NearbyResponse.Result> resultList = mapModel.getNearbyResponse().getResults();
+                if (resultList != null) {
+                    for (NearbyResponse.Result result : resultList) {
+                        final NearbyResponse.Location nearbyLocation = result.getGeometry().getLocation();
+                        markerViewStates.add(new MarkerViewState(
+                            result.getPlaceId(),
+                            result.getName(),
+                            nearbyLocation.getLat(),
+                            nearbyLocation.getLng(),
+                            result.getVicinity()
+                        ));
+                    }
+                }
+            }
 
-        // ASKME: (for tests) logic in repo: no permission -> no location -> no nearby response
-        final LiveData<NearbyResponse> nearbyResponse = /*Transformations.switchMap(
-            locationPermissionLiveData,
-            isPermissionGranted -> {
-                if (isPermissionGranted) {
-                    return*/ Transformations.switchMap(
-                        locationLiveData,
-                        location -> {
-                            // Update current location
-                            currentLocation = location;
+            isLocationPermissionGranted = mapModel.isLocationPermissionGranted();
+            currentLocation = mapModel.getCurrentLocation();
 
-                            return Transformations.map(
-                                nearbyRepository.getNearbyResponse(location),
-                                response -> response
-                            );
-                        }
-                    );
-//                } else {
-//                    return new MutableLiveData<>();
-//                }
-//            }
-//        );
-
-        // ASKME: without 2 awaits in test class, add sources in the reverse order will fire an AssertionError
-        //  because combine() update view state's LiveData value if response is null or not, but only if permission in not null
-        viewState.addSource(
-            nearbyResponse,
-            nearbyResponseValue -> combine(locationPermissionLiveData.getValue(), nearbyResponseValue)
-        );
-        viewState.addSource(
-            locationPermissionLiveData,
-            isPermissionGranted -> combine(isPermissionGranted, nearbyResponse.getValue())
-        );
+            setViewState();
+        });
     }
 
     public void onCameraIdled(double mapLat, double mapLng, float zoom) {
@@ -110,37 +93,9 @@ public class MapViewModel extends ViewModel {
         setViewState();
     }
 
-    private void combine(@Nullable Boolean isPermissionEnabled, @Nullable NearbyResponse nearbyResponse) {
-        if (isPermissionEnabled == null)
-            return;
-
-        // Update location permission
-        isLocationPermissionGranted = isPermissionEnabled;
-
-        // Update markers
-        markerViewStates.clear();
-        if (nearbyResponse != null) {
-            final List<NearbyResponse.Result> resultList = nearbyResponse.getResults();
-            if (resultList != null) {
-                for (NearbyResponse.Result result : resultList) {
-                    final NearbyResponse.Location nearbyLocation = result.getGeometry().getLocation();
-                    markerViewStates.add(new MarkerViewState(
-                        result.getPlaceId(),
-                        result.getName(),
-                        nearbyLocation.getLat(),
-                        nearbyLocation.getLng(),
-                        result.getVicinity()
-                    ));
-                }
-            }
-        }
-
-        setViewState();
-    }
-
     private void setViewState() {
         // Update camera position if current position is available
-        if (isLocationPermissionGranted && currentLocation != null) {
+        if (currentLocation != null) {
             mapLatitude = currentLocation.getLatitude();
             mapLongitude = currentLocation.getLongitude();
             mapZoom = Math.max(mapZoom, ZOOM_LEVEL_STREETS);

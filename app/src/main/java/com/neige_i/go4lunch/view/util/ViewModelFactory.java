@@ -12,6 +12,7 @@ import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
@@ -76,7 +77,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new StopLocationUpdatesUseCaseImpl(locationRepository)
             );
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
-            return (T) new MapViewModel(nearbyRepository, locationRepository);
+            return (T) new MapViewModel(new GetNearbyRestaurantsUseCaseImpl(locationRepository, nearbyRepository));
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
             return (T) new DetailViewModel(detailsRepository, firebaseRepository);
         } else if (modelClass.isAssignableFrom(ListViewModel.class)) {
