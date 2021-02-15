@@ -4,24 +4,19 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DetailsResponse extends PlacesResponse {
 
     @SerializedName("html_attributions")
     @Expose
-    private final List<Object> htmlAttributions;
+    private List<Object> htmlAttributions;
     @SerializedName("result")
     @Expose
-    private final Result result;
+    private Result result;
     @SerializedName("status")
     @Expose
-    private final String status;
-
-    public DetailsResponse(List<Object> htmlAttributions, Result result, String status) {
-        this.htmlAttributions = htmlAttributions;
-        this.result = result;
-        this.status = status;
-    }
+    private String status;
 
     public List<Object> getHtmlAttributions() {
         return htmlAttributions;
@@ -297,5 +292,20 @@ public class DetailsResponse extends PlacesResponse {
         public String getWebsite() {
             return website;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DetailsResponse that = (DetailsResponse) o;
+        return Objects.equals(htmlAttributions, that.htmlAttributions) &&
+            Objects.equals(result, that.result) &&
+            Objects.equals(status, that.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(htmlAttributions, result, status);
     }
 }

@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
+import java.util.Objects;
 
 public class NearbyResponse extends PlacesResponse {
 
@@ -459,5 +460,21 @@ public class NearbyResponse extends PlacesResponse {
             this.width = width;
         }
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NearbyResponse that = (NearbyResponse) o;
+        return Objects.equals(htmlAttributions, that.htmlAttributions) &&
+            Objects.equals(nextPageToken, that.nextPageToken) &&
+            Objects.equals(results, that.results) &&
+            Objects.equals(status, that.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(htmlAttributions, nextPageToken, results, status);
     }
 }
