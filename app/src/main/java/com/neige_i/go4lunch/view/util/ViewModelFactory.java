@@ -6,16 +6,20 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
+import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.GetAllRestaurantDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
+import com.neige_i.go4lunch.domain.ToggleFavRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
+import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 import com.neige_i.go4lunch.view.list.ListViewModel;
@@ -56,7 +60,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                         new NearbyRepositoryImpl(),
                         new LocationRepositoryImpl(),
                         new DetailsRepositoryImpl(),
-                        new FirebaseRepository()
+                        new FirebaseRepositoryImpl()
                     );
                 }
             }
@@ -79,7 +83,11 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(new GetNearbyRestaurantsUseCaseImpl(locationRepository, nearbyRepository));
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
-            return (T) new DetailViewModel(detailsRepository, firebaseRepository);
+            return (T) new DetailViewModel(
+                new GetAllRestaurantDetailsUseCaseImpl(detailsRepository, firebaseRepository),
+                new ToggleFavRestaurantUseCaseImpl(firebaseRepository),
+                new UpdateSelectedRestaurantUseCaseImpl(firebaseRepository)
+            );
         } else if (modelClass.isAssignableFrom(ListViewModel.class)) {
             return (T) new ListViewModel(locationRepository, nearbyRepository);
         }

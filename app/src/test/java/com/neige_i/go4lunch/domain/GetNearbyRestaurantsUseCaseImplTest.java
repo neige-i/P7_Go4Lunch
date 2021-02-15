@@ -5,7 +5,6 @@ import android.location.Location;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.LiveDataTestUtils;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
@@ -16,7 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -52,16 +52,15 @@ public class GetNearbyRestaurantsUseCaseImplTest {
     @Test
     public void getNearby_nominalCase() throws InterruptedException {
         // Given
-        final NearbyResponse nearby = new NearbyResponse();
         permissionGranted.setValue(true);
         currentLocation.setValue(location);
-        nearbyResponse.setValue(nearby);
+        nearbyResponse.setValue(new NearbyResponse());
 
         // Then
         assertEquals(new MapModel(
             true,
             location,
-            nearby
+            new NearbyResponse()
         ), getOrAwaitValue(getNearbyRestaurantsUseCase.getNearby()));
     }
 
