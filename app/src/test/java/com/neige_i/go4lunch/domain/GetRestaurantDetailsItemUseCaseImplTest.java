@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-public class GetAllRestaurantDetailsUseCaseImplTest {
+public class GetRestaurantDetailsItemUseCaseImplTest {
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
@@ -38,7 +38,7 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
     private final String placeId = "place ID to search";
 
     // UseCase under test
-    private GetAllRestaurantDetailsUseCase getAllRestaurantDetailsUseCase;
+    private GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase;
 
     @Before
     public void setUp() {
@@ -46,11 +46,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
         doReturn(favoriteRestaurants).when(firebaseRepository).getFavoriteRestaurants();
         doReturn(detailsResponse).when(detailsRepository).getDetailsResponse(placeId);
 
-        getAllRestaurantDetailsUseCase = new GetAllRestaurantDetailsUseCaseImpl(detailsRepository, firebaseRepository);
+        getRestaurantDetailsItemUseCase = new GetRestaurantDetailsItemUseCaseImpl(detailsRepository, firebaseRepository);
     }
 
     @Test
-    public void getAllDetails_nominalCase() throws InterruptedException {
+    public void getDetailsItem_nominalCase() throws InterruptedException {
         // Given
         detailsResponse.setValue(new DetailsResponse());
         selectedRestaurant.setValue("Some place ID");
@@ -61,11 +61,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             new DetailsResponse(),
             "Some place ID",
             Arrays.asList("place ID 1", "place ID 2")
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_altCase_noResponse_noneSelected_noFavorite() throws InterruptedException {
+    public void getDetailsItem_altCase_noResponse_noneSelected_noFavorite() throws InterruptedException {
         // Given
         detailsResponse.setValue(null);
         selectedRestaurant.setValue(null);
@@ -76,11 +76,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             null,
             null,
             Collections.emptyList()
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_edgeCase_selectedListNull() throws InterruptedException {
+    public void getDetailsItem_edgeCase_selectedListNull() throws InterruptedException {
         // Given
         detailsResponse.setValue(new DetailsResponse());
         selectedRestaurant.setValue("place ID");
@@ -91,11 +91,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             new DetailsResponse(),
             "place ID",
             Collections.emptyList()
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_edgeCase_noResponseRetrieved() throws InterruptedException {
+    public void getDetailsItem_edgeCase_noResponseRetrieved() throws InterruptedException {
         // Given
         // omit setValue for details response
         selectedRestaurant.setValue("fav place ID");
@@ -106,11 +106,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             null,
             "fav place ID",
             Arrays.asList("placeID 1", "placeID 2")
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_edgeCase_noSelectedRetrieved() throws InterruptedException {
+    public void getDetailsItem_edgeCase_noSelectedRetrieved() throws InterruptedException {
         // Given
         detailsResponse.setValue(new DetailsResponse());
         // omit setValue for selected restaurant
@@ -121,11 +121,11 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             new DetailsResponse(),
             null,
             Arrays.asList("placeID #1", "placeID #2")
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_edgeCase_noFavoriteRetrieved() throws InterruptedException {
+    public void getDetailsItem_edgeCase_noFavoriteRetrieved() throws InterruptedException {
         // Given
         detailsResponse.setValue(new DetailsResponse());
         selectedRestaurant.setValue("favorite place ID");
@@ -136,18 +136,18 @@ public class GetAllRestaurantDetailsUseCaseImplTest {
             new DetailsResponse(),
             "favorite place ID",
             Collections.emptyList()
-        ), getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId)));
+        ), getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId)));
     }
 
     @Test
-    public void getAllDetails_edgeCase_noLiveDataRetrieved() {
+    public void getDetailsItem_edgeCase_noLiveDataRetrieved() {
         // Given
         // omit setValue
 
         // When
         final Throwable thrownException = assertThrows(
             RuntimeException.class,
-            () -> getOrAwaitValue(getAllRestaurantDetailsUseCase.getAllDetails(placeId))
+            () -> getOrAwaitValue(getRestaurantDetailsItemUseCase.getDetailsItem(placeId))
         );
 
         // Then

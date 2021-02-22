@@ -13,7 +13,7 @@ import com.neige_i.go4lunch.domain.model.DetailsModel;
 import java.util.Collections;
 import java.util.List;
 
-public class GetAllRestaurantDetailsUseCaseImpl implements GetAllRestaurantDetailsUseCase {
+public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetailsItemUseCase {
 
     @NonNull
     private final DetailsRepository detailsRepository;
@@ -23,14 +23,14 @@ public class GetAllRestaurantDetailsUseCaseImpl implements GetAllRestaurantDetai
     @NonNull
     private final MediatorLiveData<DetailsModel> detailsModel = new MediatorLiveData<>();
 
-    public GetAllRestaurantDetailsUseCaseImpl(@NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository) {
+    public GetRestaurantDetailsItemUseCaseImpl(@NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository) {
         this.detailsRepository = detailsRepository;
         this.firebaseRepository = firebaseRepository;
     }
 
     @NonNull
     @Override
-    public LiveData<DetailsModel> getAllDetails(@NonNull String placeId) {
+    public LiveData<DetailsModel> getDetailsItem(@NonNull String placeId) {
         final LiveData<DetailsResponse> detailsResponseLiveData = detailsRepository.getDetailsResponse(placeId);
         final LiveData<String> selectedRestaurantLiveData = firebaseRepository.getSelectedRestaurant();
         final LiveData<List<String>> favRestaurantsLiveData = firebaseRepository.getFavoriteRestaurants();

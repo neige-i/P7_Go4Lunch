@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData;
 import com.neige_i.go4lunch.domain.model.DetailsModel;
 import com.neige_i.go4lunch.domain.model.MapModel;
 
-public interface GetAllRestaurantDetailsUseCase {
+public interface GetRestaurantDetailsItemUseCase {
 
     @NonNull
-    LiveData<DetailsModel> getAllDetails(@NonNull String placeId);
+    LiveData<DetailsModel> getDetailsItem(@NonNull String placeId);
 }
