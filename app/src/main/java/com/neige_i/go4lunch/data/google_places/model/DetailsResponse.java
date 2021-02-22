@@ -1,53 +1,73 @@
 package com.neige_i.go4lunch.data.google_places.model;
 
+import androidx.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class DetailsResponse extends PlacesResponse {
 
+    @Nullable
     @SerializedName("html_attributions")
     @Expose
     private List<Object> htmlAttributions;
+    @Nullable
     @SerializedName("result")
     @Expose
     private Result result;
+    @Nullable
     @SerializedName("status")
     @Expose
     private String status;
 
+    @Nullable
     public List<Object> getHtmlAttributions() {
         return htmlAttributions;
     }
 
+    public void setHtmlAttributions(@Nullable List<Object> htmlAttributions) {
+        this.htmlAttributions = htmlAttributions;
+    }
+
+    @Nullable
     public Result getResult() {
         return result;
     }
 
+    public void setResult(@Nullable Result result) {
+        this.result = result;
+    }
+
+    @Nullable
     public String getStatus() {
         return status;
     }
 
+    public void setStatus(@Nullable String status) {
+        this.status = status;
+    }
+
     public static class Close {
 
+        @Nullable
         @SerializedName("day")
         @Expose
-        private final Integer day;
+        private Integer day;
+        @Nullable
         @SerializedName("time")
         @Expose
-        private final String time;
+        private String time;
 
-        public Close(Integer day, String time) {
-            this.day = day;
-            this.time = time;
-        }
-
+        @Nullable
         public Integer getDay() {
             return day;
         }
 
+        @Nullable
         public String getTime() {
             return time;
         }
@@ -55,14 +75,12 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Geometry {
 
+        @Nullable
         @SerializedName("location")
         @Expose
-        private final Location location;
+        private Location location;
 
-        public Geometry(Location location) {
-            this.location = location;
-        }
-
+        @Nullable
         public Location getLocation() {
             return location;
         }
@@ -70,22 +88,21 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Location {
 
+        @Nullable
         @SerializedName("lat")
         @Expose
-        private final Double lat;
+        private Double lat;
+        @Nullable
         @SerializedName("lng")
         @Expose
-        private final Double lng;
+        private Double lng;
 
-        public Location(Double lat, Double lng) {
-            this.lat = lat;
-            this.lng = lng;
-        }
-
+        @Nullable
         public Double getLat() {
             return lat;
         }
 
+        @Nullable
         public Double getLng() {
             return lng;
         }
@@ -93,22 +110,21 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Open {
 
+        @Nullable
         @SerializedName("day")
         @Expose
-        private final Integer day;
+        private Integer day;
+        @Nullable
         @SerializedName("time")
         @Expose
-        private final String time;
+        private String time;
 
-        public Open(Integer day, String time) {
-            this.day = day;
-            this.time = time;
-        }
-
+        @Nullable
         public Integer getDay() {
             return day;
         }
 
+        @Nullable
         public String getTime() {
             return time;
         }
@@ -116,30 +132,30 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class OpeningHours {
 
+        @Nullable
         @SerializedName("open_now")
         @Expose
-        private final Boolean openNow;
+        private Boolean openNow;
+        @Nullable
         @SerializedName("periods")
         @Expose
-        private final List<Period> periods;
+        private List<Period> periods;
+        @Nullable
         @SerializedName("weekday_text")
         @Expose
-        private final List<String> weekdayText;
+        private List<String> weekdayText;
 
-        public OpeningHours(Boolean openNow, List<Period> periods, List<String> weekdayText) {
-            this.openNow = openNow;
-            this.periods = periods;
-            this.weekdayText = weekdayText;
-        }
-
+        @Nullable
         public Boolean getOpenNow() {
             return openNow;
         }
 
+        @Nullable
         public List<Period> getPeriods() {
             return periods;
         }
 
+        @Nullable
         public List<String> getWeekdayText() {
             return weekdayText;
         }
@@ -147,22 +163,21 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Period {
 
+        @Nullable
         @SerializedName("close")
         @Expose
-        private final Close close;
+        private Close close;
+        @Nullable
         @SerializedName("open")
         @Expose
-        private final Open open;
+        private Open open;
 
-        public Period(Close close, Open open) {
-            this.close = close;
-            this.open = open;
-        }
-
+        @Nullable
         public Close getClose() {
             return close;
         }
 
+        @Nullable
         public Open getOpen() {
             return open;
         }
@@ -170,38 +185,39 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Photo extends PlacesResponse.Photo {
 
+        @Nullable
         @SerializedName("height")
         @Expose
-        private final Integer height;
+        private Integer height;
+        @Nullable
         @SerializedName("html_attributions")
         @Expose
-        private final List<String> htmlAttributions;
+        private List<String> htmlAttributions;
+        @Nullable
         @SerializedName("photo_reference")
         @Expose
-        private final String photoReference;
+        private String photoReference;
+        @Nullable
         @SerializedName("width")
         @Expose
-        private final Integer width;
+        private Integer width;
 
-        public Photo(Integer height, List<String> htmlAttributions, String photoReference, Integer width) {
-            this.height = height;
-            this.htmlAttributions = htmlAttributions;
-            this.photoReference = photoReference;
-            this.width = width;
-        }
-
+        @Nullable
         public Integer getHeight() {
             return height;
         }
 
+        @Nullable
         public List<String> getHtmlAttributions() {
             return htmlAttributions;
         }
 
+        @Nullable
         public String getPhotoReference() {
             return photoReference;
         }
 
+        @Nullable
         public Integer getWidth() {
             return width;
         }
@@ -209,88 +225,157 @@ public class DetailsResponse extends PlacesResponse {
 
     public static class Result {
 
+        @Nullable
         @SerializedName("formatted_address")
         @Expose
-        private final String formattedAddress;
+        private String formattedAddress;
+        @Nullable
         @SerializedName("international_phone_number")
         @Expose
-        private final String internationalPhoneNumber;
+        private String internationalPhoneNumber;
+        @Nullable
         @SerializedName("geometry")
         @Expose
-        private final Geometry geometry;
+        private Geometry geometry;
+        @Nullable
         @SerializedName("name")
         @Expose
-        private final String name;
+        private String name;
+        @Nullable
         @SerializedName("obfuscated_type")
         @Expose
-        private final List<Object> obfuscatedType;
+        private List<Object> obfuscatedType;
+        @Nullable
         @SerializedName("opening_hours")
         @Expose
-        private final OpeningHours openingHours;
+        private OpeningHours openingHours;
+        @Nullable
         @SerializedName("photos")
         @Expose
-        private final List<Photo> photos;
+        private List<Photo> photos;
+        @Nullable
         @SerializedName("place_id")
         @Expose
-        private final String placeId;
+        private String placeId;
+        @Nullable
         @SerializedName("rating")
         @Expose
-        private final Double rating;
+        private Double rating;
+        @Nullable
         @SerializedName("website")
         @Expose
-        private final String website;
+        private String website;
 
-        public Result(String formattedAddress, String internationalPhoneNumber, Geometry geometry, String name, List<Object> obfuscatedType, OpeningHours openingHours, List<Photo> photos, String placeId, Double rating, String website) {
-            this.formattedAddress = formattedAddress;
-            this.internationalPhoneNumber = internationalPhoneNumber;
-            this.geometry = geometry;
-            this.name = name;
-            this.obfuscatedType = obfuscatedType;
-            this.openingHours = openingHours;
-            this.photos = photos;
-            this.placeId = placeId;
-            this.rating = rating;
-            this.website = website;
-        }
-
+        @Nullable
         public String getFormattedAddress() {
             return formattedAddress;
         }
 
+        public void setFormattedAddress(@Nullable String formattedAddress) {
+            this.formattedAddress = formattedAddress;
+        }
+
+        @Nullable
         public String getInternationalPhoneNumber() {
             return internationalPhoneNumber;
         }
 
+        public void setInternationalPhoneNumber(@Nullable String internationalPhoneNumber) {
+            this.internationalPhoneNumber = internationalPhoneNumber;
+        }
+
+        @Nullable
         public Geometry getGeometry() {
             return geometry;
         }
 
+        public void setGeometry(@Nullable Geometry geometry) {
+            this.geometry = geometry;
+        }
+
+        @Nullable
         public String getName() {
             return name;
         }
 
+        public void setName(@Nullable String name) {
+            this.name = name;
+        }
+
+        @Nullable
         public List<Object> getObfuscatedType() {
             return obfuscatedType;
         }
 
+        public void setObfuscatedType(@Nullable List<Object> obfuscatedType) {
+            this.obfuscatedType = obfuscatedType;
+        }
+
+        @Nullable
         public OpeningHours getOpeningHours() {
             return openingHours;
         }
 
+        public void setOpeningHours(@Nullable OpeningHours openingHours) {
+            this.openingHours = openingHours;
+        }
+
+        @Nullable
         public List<Photo> getPhotos() {
             return photos;
         }
 
+        public void setPhotos(@Nullable List<Photo> photos) {
+            this.photos = photos;
+        }
+
+        @Nullable
         public String getPlaceId() {
             return placeId;
         }
 
+        public void setPlaceId(@Nullable String placeId) {
+            this.placeId = placeId;
+        }
+
+        @Nullable
         public Double getRating() {
             return rating;
         }
 
+        public void setRating(@Nullable Double rating) {
+            this.rating = rating;
+        }
+
+        @Nullable
         public String getWebsite() {
             return website;
+        }
+
+        public void setWebsite(@Nullable String website) {
+            this.website = website;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result result = (Result) o;
+            return Objects.equals(formattedAddress, result.formattedAddress) &&
+                Objects.equals(internationalPhoneNumber, result.internationalPhoneNumber) &&
+                Objects.equals(geometry, result.geometry) &&
+                Objects.equals(name, result.name) &&
+                Objects.equals(obfuscatedType, result.obfuscatedType) &&
+                Objects.equals(openingHours, result.openingHours) &&
+                Objects.equals(photos, result.photos) &&
+                Objects.equals(placeId, result.placeId) &&
+                Objects.equals(rating, result.rating) &&
+                Objects.equals(website, result.website);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(formattedAddress, internationalPhoneNumber, geometry, name, obfuscatedType, openingHours, photos, placeId, rating, website);
         }
     }
 
@@ -298,10 +383,10 @@ public class DetailsResponse extends PlacesResponse {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DetailsResponse that = (DetailsResponse) o;
-        return Objects.equals(htmlAttributions, that.htmlAttributions) &&
-            Objects.equals(result, that.result) &&
-            Objects.equals(status, that.status);
+        DetailsResponse response = (DetailsResponse) o;
+        return Objects.equals(htmlAttributions, response.htmlAttributions) &&
+            Objects.equals(result, response.result) &&
+            Objects.equals(status, response.status);
     }
 
     @Override

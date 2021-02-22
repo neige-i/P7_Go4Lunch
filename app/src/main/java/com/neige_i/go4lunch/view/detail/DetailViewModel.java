@@ -6,7 +6,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
-import com.neige_i.go4lunch.domain.GetAllRestaurantDetailsUseCase;
+import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCase;
 import com.neige_i.go4lunch.domain.ToggleFavRestaurantUseCase;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCase;
 import com.neige_i.go4lunch.view.util.Util;
@@ -14,7 +14,7 @@ import com.neige_i.go4lunch.view.util.Util;
 public class DetailViewModel extends ViewModel {
 
     @NonNull
-    private final GetAllRestaurantDetailsUseCase getAllRestaurantDetailsUseCase;
+    private final GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase;
     @NonNull
     private final ToggleFavRestaurantUseCase toggleFavoriteRestaurant;
     @NonNull
@@ -22,8 +22,8 @@ public class DetailViewModel extends ViewModel {
 
     private final MediatorLiveData<DetailViewState> viewState = new MediatorLiveData<>();
 
-    public DetailViewModel(@NonNull GetAllRestaurantDetailsUseCase getAllRestaurantDetailsUseCase, @NonNull ToggleFavRestaurantUseCase toggleFavoriteRestaurant, @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase) {
-        this.getAllRestaurantDetailsUseCase = getAllRestaurantDetailsUseCase;
+    public DetailViewModel(@NonNull GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase, @NonNull ToggleFavRestaurantUseCase toggleFavoriteRestaurant, @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase) {
+        this.getRestaurantDetailsItemUseCase = getRestaurantDetailsItemUseCase;
         this.toggleFavoriteRestaurant = toggleFavoriteRestaurant;
         this.updateSelectedRestaurantUseCase = updateSelectedRestaurantUseCase;
     }
@@ -33,7 +33,7 @@ public class DetailViewModel extends ViewModel {
     }
 
     public void onInfoQueried(@NonNull String placeId) {
-        viewState.addSource(getAllRestaurantDetailsUseCase.getAllDetails(placeId), detailsModel -> {
+        viewState.addSource(getRestaurantDetailsItemUseCase.getDetailsItem(placeId), detailsModel -> {
             if (detailsModel.getDetailsResponse() == null)
                 return;
 
