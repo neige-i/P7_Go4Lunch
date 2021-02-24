@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.data.google_places.model;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
@@ -71,6 +72,15 @@ public class DetailsResponse extends PlacesResponse {
         public String getTime() {
             return time;
         }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "Close{" +
+                "day=" + day +
+                ", time='" + time + '\'' +
+                '}';
+        }
     }
 
     public static class Geometry {
@@ -128,6 +138,15 @@ public class DetailsResponse extends PlacesResponse {
         public String getTime() {
             return time;
         }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "Open{" +
+                "day=" + day +
+                ", time='" + time + '\'' +
+                '}';
+        }
     }
 
     public static class OpeningHours {
@@ -159,6 +178,16 @@ public class DetailsResponse extends PlacesResponse {
         public List<String> getWeekdayText() {
             return weekdayText;
         }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "OpeningHours{" +
+                "openNow=" + openNow +
+                ", periods=" + periods +
+                ", weekdayText=" + weekdayText +
+                '}';
+        }
     }
 
     public static class Period {
@@ -180,6 +209,15 @@ public class DetailsResponse extends PlacesResponse {
         @Nullable
         public Open getOpen() {
             return open;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "Period{" +
+                "close=" + close +
+                ", open=" + open +
+                '}';
         }
     }
 
@@ -226,6 +264,10 @@ public class DetailsResponse extends PlacesResponse {
     public static class Result {
 
         @Nullable
+        @SerializedName("business_status")
+        @Expose
+        private String businessStatus;
+        @Nullable
         @SerializedName("formatted_address")
         @Expose
         private String formattedAddress;
@@ -265,6 +307,15 @@ public class DetailsResponse extends PlacesResponse {
         @SerializedName("website")
         @Expose
         private String website;
+
+        @Nullable
+        public String getBusinessStatus() {
+            return businessStatus;
+        }
+
+        public void setBusinessStatus(@Nullable String businessStatus) {
+            this.businessStatus = businessStatus;
+        }
 
         @Nullable
         public String getFormattedAddress() {
@@ -361,7 +412,8 @@ public class DetailsResponse extends PlacesResponse {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Result result = (Result) o;
-            return Objects.equals(formattedAddress, result.formattedAddress) &&
+            return Objects.equals(businessStatus, result.businessStatus) &&
+                Objects.equals(formattedAddress, result.formattedAddress) &&
                 Objects.equals(internationalPhoneNumber, result.internationalPhoneNumber) &&
                 Objects.equals(geometry, result.geometry) &&
                 Objects.equals(name, result.name) &&
@@ -375,7 +427,7 @@ public class DetailsResponse extends PlacesResponse {
 
         @Override
         public int hashCode() {
-            return Objects.hash(formattedAddress, internationalPhoneNumber, geometry, name, obfuscatedType, openingHours, photos, placeId, rating, website);
+            return Objects.hash(businessStatus, formattedAddress, internationalPhoneNumber, geometry, name, obfuscatedType, openingHours, photos, placeId, rating, website);
         }
     }
 
