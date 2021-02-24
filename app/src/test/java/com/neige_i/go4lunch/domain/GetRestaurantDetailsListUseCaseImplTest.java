@@ -67,7 +67,7 @@ public class GetRestaurantDetailsListUseCaseImplTest {
 
         // Then
         assertEquals(new ListModel(
-            Arrays.asList(getDefaultDetailsResponse(1), getDefaultDetailsResponse(2)),
+            nearbyResponse, Arrays.asList(getDefaultDetailsResponse(1), getDefaultDetailsResponse(2)),
             location
         ), getOrAwaitValue(getRestaurantDetailsListUseCase.getDetailsList()));
     }

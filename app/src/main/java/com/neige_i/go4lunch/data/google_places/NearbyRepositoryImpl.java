@@ -21,19 +21,21 @@ public class NearbyRepositoryImpl implements NearbyRepository {
 
     @NonNull
     @Override
-    public LiveData<NearbyResponse> getNearbyResponse(@NonNull Location location) {
+    public LiveData<NearbyResponse> getNearbyResponse(@Nullable Location location) {
         final MutableLiveData<NearbyResponse> nearbyResponse = new MutableLiveData<>();
 
-        final String latLng = location.getLatitude() + "," + location.getLongitude();
+        if (location != null) {
+            final String latLng = location.getLatitude() + "," + location.getLongitude();
 
-        // Check if the request has already been executed
-        final NearbyResponse cachedResponse = nearbyCache.get(latLng);
-        if (cachedResponse != null) {
-            Log.d("Neige", "PlacesRepository::getNearbyResponse: from cache");
-            nearbyResponse.setValue(cachedResponse);
-        } else {
-            Log.d("Neige", "PlacesRepository::getNearbyResponse: need to execute request");
-            new NearbyAsyncTask(nearbyResponse, nearbyCache, latLng).execute();
+            // Check if the request has already been executed
+            final NearbyResponse cachedResponse = nearbyCache.get(latLng);
+            if (cachedResponse != null) {
+                Log.d("Neige", "PlacesRepository::getNearbyResponse: from cache");
+                nearbyResponse.setValue(cachedResponse);
+            } else {
+                Log.d("Neige", "PlacesRepository::getNearbyResponse: need to execute request");
+                new NearbyAsyncTask(nearbyResponse, nearbyCache, latLng).execute();
+            }
         }
 
         return nearbyResponse;
