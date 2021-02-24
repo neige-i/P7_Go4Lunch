@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.domain;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
@@ -12,8 +13,8 @@ import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.domain.model.ListModel;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetailsListUseCase {
 
@@ -24,6 +25,12 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
     @NonNull
     private final DetailsRepository detailsRepository;
 
+    private final MediatorLiveData<ListModel> listModelMediatorLiveData = new MediatorLiveData<>();
+
+    private final MediatorLiveData<Map<String, DetailsResponse>> placeIdDetailsResponseMapMediatorLiveData = new MediatorLiveData<>();
+
+    private final List<String> currentPla
+
     public GetRestaurantDetailsListUseCaseImpl(@NonNull LocationRepository locationRepository,
                                                @NonNull NearbyRepository nearbyRepository,
                                                @NonNull DetailsRepository detailsRepository
@@ -31,48 +38,65 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
         this.locationRepository = locationRepository;
         this.nearbyRepository = nearbyRepository;
         this.detailsRepository = detailsRepository;
+
+        placeIdDetailsResponseMapMediatorLiveData.setValue(new HashMap<>());
+
+        // 1. FETCH the current location
+        LiveData<NearbyResponse> nearbyResponseLiveData = Transformations.switchMap(
+            locationRepository.getCurrentLocation(),
+            currentLocation -> nearbyRepository.getNearbyResponse(currentLocation)
+        );
+
+        listModelMediatorLiveData.addSource(
+            nearbyResponseLiveData,
+            nearbyResponse -> combine(nearbyResponse, placeIdDetailsResponseMapMediatorLiveData.getValue())
+        );
+        listModelMediatorLiveData.addSource(
+            placeIdDetailsResponseMapMediatorLiveData,
+            placeIdDetailsResponseMap -> combine(nearbyResponseLiveData.getValue(), placeIdDetailsResponseMap)
+        );
+    }
+
+    private void combine(@Nullable NearbyResponse nearbyResponse, @Nullable Map<String, DetailsResponse> placeIdDetailsResponseMap) {
+        if (nearbyResponse == null) {
+            return;
+        }
+
+        if (placeIdDetailsResponseMap == null) {
+            throw new IllegalStateException("Impossible state : map is always initialized !");
+        }
+
+        if (nearbyResponse.getResults() != null) {
+
+            for (int i = 0; i < nearbyResponse.getResults().size(); i++) {
+                final NearbyResponse.Result result = nearbyResponse.getResults().get(i);
+
+                if (placeIdDetailsResponseMap.get(result.getPlaceId()) == null) {
+                    // 3. FETCH the restaurant details with the place ID for each one of them
+//                            final int finalI = i;
+                    final LiveData<DetailsResponse> detailsResponseLiveData = detailsRepository.getDetailsResponse(result.getPlaceId());
+
+                    placeIdDetailsResponseMapMediatorLiveData.addSource(detailsResponseLiveData, newDetailsResponse -> {
+
+                        // 4. ADD the new details response to the list and UPDATE LiveData
+                        Map<String, DetailsResponse> map = placeIdDetailsResponseMapMediatorLiveData.getValue();
+
+                        assert map != null;
+
+                        map.put(newDetailsResponse.getResult().getPlaceId(), newDetailsResponse);
+
+                        placeIdDetailsResponseMapMediatorLiveData.setValue(map);
+                    });
+                }
+            }
+        }
+
+        listModelMediatorLiveData.setValue(...);
     }
 
     @NonNull
     @Override
     public LiveData<ListModel> getDetailsList() {
-        // 1. FETCH the current location
-        return Transformations.switchMap(locationRepository.getCurrentLocation(), currentLocation -> {
-            if (currentLocation != null) {
-
-                // 2. FETCH the nearby restaurants to the current location (if not null)
-                return Transformations.switchMap(nearbyRepository.getNearbyResponse(currentLocation), nearbyResponse -> {
-                    final MediatorLiveData<ListModel> listModel = new MediatorLiveData<>();
-
-                    if (nearbyResponse != null && nearbyResponse.getResults() != null) {
-                        final List<DetailsResponse> currentDetailsList = new ArrayList<>();
-
-                        for (int i = 0; i < nearbyResponse.getResults().size(); i++) {
-                            final NearbyResponse.Result result = nearbyResponse.getResults().get(i);
-
-                            // 3. FETCH the restaurant details with the place ID for each one of them
-//                            final int finalI = i;
-                            final LiveData<DetailsResponse> detailsResponseLiveData = detailsRepository.getDetailsResponse(result.getPlaceId());
-
-                            listModel.addSource(detailsResponseLiveData, newDetailsResponse -> {
-
-                                // 4. ADD the new details response to the list and UPDATE LiveData
-                                currentDetailsList.add(newDetailsResponse);
-
-//                                if (finalI == nearbyResponse.getResults().size() - 1) {
-                                listModel.setValue(new ListModel(currentDetailsList, currentLocation));
-//                                }
-
-                                listModel.removeSource(detailsResponseLiveData);
-                            });
-                        }
-                    }
-
-                    return listModel;
-                });
-            } else {
-                return new MediatorLiveData<>();
-            }
-        });
+        return listModelMediatorLiveData;
     }
 }

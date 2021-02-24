@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,13 +14,24 @@ import java.util.Objects;
 public class ListModel {
 
     @NonNull
-    private final List<DetailsResponse> detailsResponses;
+    private final NearbyResponse nearbyResponse;
     @NonNull
+    private final List<DetailsResponse> detailsResponses;
+    @Nullable
     private final Location currentLocation;
 
-    public ListModel(@NonNull List<DetailsResponse> detailsResponses, @Nullable Location currentLocation) {
+    public ListModel(@NonNull NearbyResponse nearbyResponse,
+                     @NonNull List<DetailsResponse> detailsResponses,
+                     @Nullable Location currentLocation
+    ) {
+        this.nearbyResponse = nearbyResponse;
         this.detailsResponses = detailsResponses;
         this.currentLocation = currentLocation;
+    }
+
+    @NonNull
+    public NearbyResponse getNearbyResponse() {
+        return nearbyResponse;
     }
 
     @NonNull
@@ -27,7 +39,7 @@ public class ListModel {
         return detailsResponses;
     }
 
-    @NonNull
+    @Nullable
     public Location getCurrentLocation() {
         return currentLocation;
     }
@@ -37,20 +49,22 @@ public class ListModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ListModel listModel = (ListModel) o;
-        return detailsResponses.equals(listModel.detailsResponses) &&
-            currentLocation.equals(listModel.currentLocation);
+        return Objects.equals(nearbyResponse, listModel.nearbyResponse) &&
+            detailsResponses.equals(listModel.detailsResponses) &&
+            Objects.equals(currentLocation, listModel.currentLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(detailsResponses, currentLocation);
+        return Objects.hash(nearbyResponse, detailsResponses, currentLocation);
     }
 
     @Override
     public String toString() {
         return "ListModel{" +
-            "details=" + detailsResponses +
-            ", location=" + currentLocation +
+            "nearbyResponse=" + nearbyResponse +
+            ", detailsResponses=" + detailsResponses +
+            ", currentLocation=" + currentLocation +
             '}';
     }
 }
