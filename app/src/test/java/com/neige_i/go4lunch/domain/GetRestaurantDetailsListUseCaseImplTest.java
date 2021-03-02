@@ -10,7 +10,6 @@ import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.model.ListModel;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,8 +65,9 @@ public class GetRestaurantDetailsListUseCaseImplTest {
         detailsResponse2.setValue(getDefaultDetailsResponse(2));
 
         // Then
-        assertEquals(new ListModel(
-            nearbyResponse, Arrays.asList(getDefaultDetailsResponse(1), getDefaultDetailsResponse(2)),
+        assertEquals(new GetRestaurantDetailsListUseCase.ListWrapper(
+            getDefaultNearbyResponse(),
+            Arrays.asList(getDefaultDetailsResponse(1), getDefaultDetailsResponse(2)),
             location
         ), getOrAwaitValue(getRestaurantDetailsListUseCase.getDetailsList()));
     }

@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsListUseCase;
 import com.neige_i.go4lunch.view.util.Util;
 
@@ -43,47 +44,42 @@ public class ListViewModel extends ViewModel {
 
             if (listModel != null) {
 
-                // 2. ITERATE through the list of details responses
-                for (DetailsResponse response : listModel.getDetailsResponses()) {
+                final List<NearbyResponse.Result> resultList = listModel.getNearbyResponse().getResults();
 
-                    final DetailsResponse.Result result = response.getResult();
-                    if (result != null && result.getBusinessStatus() != null && result.getBusinessStatus().equals("OPERATIONAL")) {
+                if (resultList != null) {
+                    // 2. ITERATE through the list of details responses
+                    for (NearbyResponse.Result result : resultList) {
 
-                        // 3. GET the distance between the restaurant and the current location
-                        final DetailsResponse.Location restaurantLocation = result.getGeometry().getLocation();
-                        final float[] distances = new float[3];
-                        Location.distanceBetween(
-                            listModel.getCurrentLocation().getLatitude(),
-                            listModel.getCurrentLocation().getLongitude(),
-                            restaurantLocation.getLat(),
-                            restaurantLocation.getLng(),
-                            distances
-                        );
+                        if (result.getBusinessStatus() != null && result.getBusinessStatus().equals("OPERATIONAL")) {
 
-                        // GET opening hours
-                        final PlaceHourWrapper placeHourWrapper = getPlaceHour(result.getOpeningHours());
+                            // 3. GET the distance between the restaurant and the current location
+                            final float distance = getDistance(listModel.getCurrentLocation(), result.getGeometry());
 
-                        // MAPPING
-                        viewStates.add(new RestaurantViewState(
-                            result.getPlaceId(),
-                            result.getName(),
-                            distances[0],
-                            Util.getFormattedDistance(distances[0]),
-                            Util.getShortAddress(result.getFormattedAddress()),
-                            placeHourWrapper.getFontStyle(),//Typeface.BOLD_ITALIC,
-                            placeHourWrapper.getFontColor(),//R.color.lime,
-                            placeHourWrapper.getHours(),
-                            true,
-                            2,
-                            Util.getRating(result.getRating()),
-                            Util.getPhotoUrl(result.getPhotos())
-                        ));
+                            // GET opening hours
+                            final PlaceHourWrapper placeHourWrapper = getPlaceHour(listModel.getDetailsResponses(), result.getPlaceId());
 
-                        // SORT the restaurant list by distance
-                        Collections.sort(
-                            viewStates,
-                            (viewState1, viewState2) -> (int) (viewState1.getDistance() - viewState2.getDistance())
-                        );
+                            // MAPPING
+                            viewStates.add(new RestaurantViewState(
+                                result.getPlaceId(),
+                                result.getName(),
+                                distance,
+                                Util.getFormattedDistance(distance),
+                                Util.getShortAddress(result.getVicinity()),
+                                placeHourWrapper.getFontStyle(),//Typeface.BOLD_ITALIC,
+                                placeHourWrapper.getFontColor(),//R.color.lime,
+                                placeHourWrapper.getHours(),
+                                true,
+                                2,
+                                Util.getRating(result.getRating()),
+                                Util.getPhotoUrl(result.getPhotos())
+                            ));
+
+                            // SORT the restaurant list by distance
+                            Collections.sort(
+                                viewStates,
+                                (viewState1, viewState2) -> (int) (viewState1.getDistance() - viewState2.getDistance())
+                            );
+                        }
                     }
                 }
             }
@@ -92,14 +88,51 @@ public class ListViewModel extends ViewModel {
         });
     }
 
-    private PlaceHourWrapper getPlaceHour(@Nullable DetailsResponse.OpeningHours openingHours) {
+    private float getDistance(@Nullable Location currentLocation, @Nullable NearbyResponse.Geometry geometry) {
+        if (currentLocation == null)
+            return -1;
+
+        if (geometry == null)
+            return -1;
+
+        final NearbyResponse.Location restaurantLocation = geometry.getLocation();
+        if (restaurantLocation == null)
+            return -1;
+
+        final float[] distances = new float[3];
+        Location.distanceBetween(
+            currentLocation.getLatitude(),
+            currentLocation.getLongitude(),
+            restaurantLocation.getLat(),
+            restaurantLocation.getLng(),
+            distances
+        );
+
+        return distances[0];
+    }
+
+    private PlaceHourWrapper getPlaceHour(@Nullable List<DetailsResponse> detailsResponses, @Nullable String nearbyPlaceId) {
         final PlaceHourWrapper unknownHours = new PlaceHourWrapper("Unknown hours", R.color.gray_dark, Typeface.NORMAL);
 
-        if (openingHours == null)
+        if (detailsResponses == null || nearbyPlaceId == null)
             return unknownHours;
 
-        final List<DetailsResponse.Period> periodList = openingHours.getPeriods();
-        if (periodList == null)
+        final List<DetailsResponse.Period> periodList = new ArrayList<>();
+        for (DetailsResponse detailsResponse : detailsResponses) {
+            if (detailsResponse.getResult() != null) {
+
+                final String detailsPlaceId = detailsResponse.getResult().getPlaceId();
+                if (detailsPlaceId != null && detailsPlaceId.equals(nearbyPlaceId)) {
+
+                    if (detailsResponse.getResult().getOpeningHours() != null) {
+                        periodList.addAll(detailsResponse.getResult().getOpeningHours().getPeriods());
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (periodList.isEmpty())
             return unknownHours;
 
         // 1. Check if the place is never closed

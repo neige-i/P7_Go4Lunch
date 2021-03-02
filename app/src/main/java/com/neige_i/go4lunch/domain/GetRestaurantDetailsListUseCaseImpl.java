@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.domain;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -11,47 +13,49 @@ import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.model.ListModel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetailsListUseCase {
 
     @NonNull
-    private final LocationRepository locationRepository;
-    @NonNull
-    private final NearbyRepository nearbyRepository;
-    @NonNull
     private final DetailsRepository detailsRepository;
 
-    private final MediatorLiveData<ListModel> listModelMediatorLiveData = new MediatorLiveData<>();
+    @NonNull
+    private final MediatorLiveData<ListWrapper> listMediatorLiveData = new MediatorLiveData<>();
 
+    @NonNull
     private final MediatorLiveData<Map<String, DetailsResponse>> placeIdDetailsResponseMapMediatorLiveData = new MediatorLiveData<>();
-
-    private final List<String> currentPla
+    @NonNull
+    private final List<String> queriedPlaceIds = new ArrayList<>();
+    @Nullable
+    private Location deviceLocation;
 
     public GetRestaurantDetailsListUseCaseImpl(@NonNull LocationRepository locationRepository,
                                                @NonNull NearbyRepository nearbyRepository,
                                                @NonNull DetailsRepository detailsRepository
     ) {
-        this.locationRepository = locationRepository;
-        this.nearbyRepository = nearbyRepository;
         this.detailsRepository = detailsRepository;
 
         placeIdDetailsResponseMapMediatorLiveData.setValue(new HashMap<>());
 
         // 1. FETCH the current location
-        LiveData<NearbyResponse> nearbyResponseLiveData = Transformations.switchMap(
+        final LiveData<NearbyResponse> nearbyResponseLiveData = Transformations.switchMap(
             locationRepository.getCurrentLocation(),
-            currentLocation -> nearbyRepository.getNearbyResponse(currentLocation)
+            currentLocation -> {
+                deviceLocation = currentLocation;
+                return nearbyRepository.getNearbyResponse(currentLocation);
+            }
         );
 
-        listModelMediatorLiveData.addSource(
+        listMediatorLiveData.addSource(
             nearbyResponseLiveData,
             nearbyResponse -> combine(nearbyResponse, placeIdDetailsResponseMapMediatorLiveData.getValue())
         );
-        listModelMediatorLiveData.addSource(
+        listMediatorLiveData.addSource(
             placeIdDetailsResponseMapMediatorLiveData,
             placeIdDetailsResponseMap -> combine(nearbyResponseLiveData.getValue(), placeIdDetailsResponseMap)
         );
@@ -68,35 +72,40 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
 
         if (nearbyResponse.getResults() != null) {
 
-            for (int i = 0; i < nearbyResponse.getResults().size(); i++) {
-                final NearbyResponse.Result result = nearbyResponse.getResults().get(i);
+            for (NearbyResponse.Result result : nearbyResponse.getResults()) {
+                final String placeId = result.getPlaceId();
 
-                if (placeIdDetailsResponseMap.get(result.getPlaceId()) == null) {
+                if (!queriedPlaceIds.contains(placeId)) { // ASKME: check if map contains key
+
+                    queriedPlaceIds.add(placeId);
+
                     // 3. FETCH the restaurant details with the place ID for each one of them
-//                            final int finalI = i;
-                    final LiveData<DetailsResponse> detailsResponseLiveData = detailsRepository.getDetailsResponse(result.getPlaceId());
+                    placeIdDetailsResponseMapMediatorLiveData.addSource(
+                        detailsRepository.getDetailsResponse(placeId),
+                        newDetailsResponse -> {
 
-                    placeIdDetailsResponseMapMediatorLiveData.addSource(detailsResponseLiveData, newDetailsResponse -> {
+                            // 4. ADD the new details response to the list and UPDATE LiveData
 
-                        // 4. ADD the new details response to the list and UPDATE LiveData
-                        Map<String, DetailsResponse> map = placeIdDetailsResponseMapMediatorLiveData.getValue();
+                            // ASKME: put result's placeId instead of query placeId
+                            placeIdDetailsResponseMap.put(placeId, newDetailsResponse);
 
-                        assert map != null;
-
-                        map.put(newDetailsResponse.getResult().getPlaceId(), newDetailsResponse);
-
-                        placeIdDetailsResponseMapMediatorLiveData.setValue(map);
-                    });
+                            placeIdDetailsResponseMapMediatorLiveData.setValue(placeIdDetailsResponseMap);
+                        }
+                    );
                 }
             }
         }
 
-        listModelMediatorLiveData.setValue(...);
+        listMediatorLiveData.setValue(new ListWrapper(
+            nearbyResponse,
+            new ArrayList<>(placeIdDetailsResponseMap.values()),
+            deviceLocation
+        ));
     }
 
     @NonNull
     @Override
-    public LiveData<ListModel> getDetailsList() {
-        return listModelMediatorLiveData;
+    public LiveData<ListWrapper> getDetailsList() {
+        return listMediatorLiveData;
     }
 }
