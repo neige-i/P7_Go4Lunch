@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.model.MapModel;
+import com.neige_i.go4lunch.domain.model.MapWrapper;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,7 +57,7 @@ public class GetNearbyRestaurantsUseCaseImplTest {
         nearbyResponse.setValue(new NearbyResponse());
 
         // Then
-        assertEquals(new MapModel(
+        assertEquals(new MapWrapper(
             true,
             location,
             new NearbyResponse()
@@ -72,7 +72,7 @@ public class GetNearbyRestaurantsUseCaseImplTest {
         nearbyResponse.setValue(new NearbyResponse());
 
         // Then
-        assertEquals(new MapModel(
+        assertEquals(new MapWrapper(
             false,
             null,
             null
@@ -89,7 +89,7 @@ public class GetNearbyRestaurantsUseCaseImplTest {
         nearbyResponse.setValue(new NearbyResponse());
 
         // Then
-        assertEquals(new MapModel(
+        assertEquals(new MapWrapper(
             true,
             null,
             null
@@ -105,7 +105,7 @@ public class GetNearbyRestaurantsUseCaseImplTest {
         nearbyResponse.setValue(null);
 
         // Then
-        assertEquals(new MapModel(
+        assertEquals(new MapWrapper(
             true,
             location,
             null

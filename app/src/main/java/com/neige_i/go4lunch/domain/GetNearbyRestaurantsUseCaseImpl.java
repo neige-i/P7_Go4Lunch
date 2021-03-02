@@ -1,49 +1,61 @@
 package com.neige_i.go4lunch.domain;
 
+import android.location.Location;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
 
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
+import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.model.MapModel;
 
 public class GetNearbyRestaurantsUseCaseImpl implements GetNearbyRestaurantsUseCase {
 
     @NonNull
-    private final LocationRepository locationRepository;
-    @NonNull
-    private final NearbyRepository nearbyRepository;
+    private final MediatorLiveData<MapWrapper> mapMediatorLiveData = new MediatorLiveData<>();
+
+    @Nullable
+    private Location deviceLocation;
 
     public GetNearbyRestaurantsUseCaseImpl(@NonNull LocationRepository locationRepository, @NonNull NearbyRepository nearbyRepository) {
-        this.locationRepository = locationRepository;
-        this.nearbyRepository = nearbyRepository;
+
+        final LiveData<Boolean> locationPermissionLiveData = locationRepository.getLocationPermission();
+
+        final LiveData<NearbyResponse> nearbyResponseLiveData = Transformations.switchMap(
+            locationRepository.getCurrentLocation(), currentLocation -> {
+                deviceLocation = currentLocation;
+                return nearbyRepository.getNearbyResponse(currentLocation);
+            }
+        );
+
+        mapMediatorLiveData.addSource(
+            locationPermissionLiveData,
+            isPermissionGranted -> combine(isPermissionGranted, nearbyResponseLiveData.getValue())
+        );
+        mapMediatorLiveData.addSource(
+            nearbyResponseLiveData,
+            nearbyResponse -> combine(locationPermissionLiveData.getValue(), nearbyResponse)
+        );
+    }
+
+    private void combine(@Nullable Boolean isPermissionGranted, @Nullable NearbyResponse nearbyResponse) {
+        if (isPermissionGranted == null)
+            return;
+
+        if (!isPermissionGranted)
+            mapMediatorLiveData.setValue(new MapWrapper(false, null, null));
+        else if (deviceLocation == null)
+            mapMediatorLiveData.setValue(new MapWrapper(true, null, null));
+        else
+            mapMediatorLiveData.setValue(new MapWrapper(true, deviceLocation, nearbyResponse));
     }
 
     @NonNull
     @Override
-    public LiveData<MapModel> getNearby() {
-        return Transformations.switchMap(locationRepository.getLocationPermission(), isPermissionGranted -> {
-            final MutableLiveData<MapModel> mapModel = new MutableLiveData<>();
-
-            if (!isPermissionGranted) {
-                mapModel.setValue(new MapModel(isPermissionGranted, null, null));
-                return mapModel;
-            } else {
-                return Transformations.switchMap(locationRepository.getCurrentLocation(), location -> {
-                    if (location == null) {
-                        mapModel.setValue(new MapModel(isPermissionGranted, location, null));
-                        return mapModel;
-                    } else {
-                        return Transformations.map(nearbyRepository.getNearbyResponse(location), nearbyResponse -> new MapModel(
-                            isPermissionGranted,
-                            location,
-                            nearbyResponse
-                        ));
-                    }
-                });
-            }
-        });
+    public LiveData<MapWrapper> getNearby() {
+        return mapMediatorLiveData;
     }
 }
