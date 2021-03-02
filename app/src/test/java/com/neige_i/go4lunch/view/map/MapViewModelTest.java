@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.model.MapModel;
+import com.neige_i.go4lunch.domain.model.MapWrapper;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +36,7 @@ public class MapViewModelTest {
     private final String EXPECTED_VICINITY = "EXPECTED_VICINITY";
 
     // Values returned from mocked objects
-    private final MutableLiveData<MapModel> mapModel = new MutableLiveData<>();
+    private final MutableLiveData<MapWrapper> mapModel = new MutableLiveData<>();
     private final double EXPECTED_MAP_LAT = 48.8566;
     private final double EXPECTED_MAP_LNG = 2.3522;
 
@@ -59,7 +59,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_nominalCase() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             true,
             currentLocation,
             getDefaultResponse()
@@ -84,7 +84,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_altCase_initialBigZoom() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             true,
             currentLocation,
             getDefaultResponse()
@@ -109,7 +109,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_edgeCase_responseWithoutResult() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             true,
             currentLocation,
             new NearbyResponse()
@@ -134,7 +134,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_edgeCase_responseNull() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             true,
             currentLocation,
             null
@@ -159,7 +159,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_edgeCase_noLocation() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             true,
             null,
             getDefaultResponse()
@@ -184,7 +184,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_edgeCase_permissionDenied() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             false,
             currentLocation,
             getDefaultResponse()
@@ -209,7 +209,7 @@ public class MapViewModelTest {
     @Test
     public void onMapAvailable_edgeCase_permissionDenied_noLocation_responseNull() throws InterruptedException {
         // Given
-        mapModel.setValue(new MapModel(
+        mapModel.setValue(new MapWrapper(
             false,
             null,
             null
