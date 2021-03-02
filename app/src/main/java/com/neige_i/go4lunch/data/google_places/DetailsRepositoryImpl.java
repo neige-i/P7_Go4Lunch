@@ -20,17 +20,19 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     @NonNull
     @Override
-    public LiveData<DetailsResponse> getDetailsResponse(@NonNull String placeId) {
+    public LiveData<DetailsResponse> getDetailsResponse(@Nullable String placeId) {
         final MutableLiveData<DetailsResponse> detailsResponse = new MutableLiveData<>();
 
-        // Check if the request has already been executed
-        final DetailsResponse cachedResponse = detailsCache.get(placeId);
-        if (cachedResponse != null) {
-            Log.d("Neige", "PlacesRepository::getPlacesResponse: from cache");
-            detailsResponse.setValue(cachedResponse);
-        } else {
-            Log.d("Neige", "PlacesRepository::getPlacesResponse: need to execute request");
-            new DetailsAsyncTask(detailsResponse, detailsCache, placeId).execute();
+        if (placeId != null) {
+            // Check if the request has already been executed
+            final DetailsResponse cachedResponse = detailsCache.get(placeId);
+            if (cachedResponse != null) {
+                Log.d("Neige", "PlacesRepository::getPlacesResponse: from cache");
+                detailsResponse.setValue(cachedResponse);
+            } else {
+                Log.d("Neige", "PlacesRepository::getPlacesResponse: need to execute request");
+                new DetailsAsyncTask(detailsResponse, detailsCache, placeId).execute();
+            }
         }
 
         return detailsResponse;
