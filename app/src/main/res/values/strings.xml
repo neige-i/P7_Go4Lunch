@@ -17,11 +17,15 @@
     <string name="description_star_icon">Star icon</string>
     <string name="description_profile_image">Profile image</string>
     <string name="description_location_button">Location button</string>
+    <string name="description_app_logo">App logo</string>
+    <string name="description_background_image">Background image</string>
 
     <!-- Button text -->
     <string name="button_call">Call</string>
     <string name="button_like">Like</string>
     <string name="button_website">Website</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="sign_in_facebook">Sign in with Facebook</string>
 
     <!-- Placeholders -->
     <string name="workmate_count">(%d)</string>
@@ -30,4 +34,9 @@
     <string name="always_open">Open 24/7</string>
     <string name="closing_soon">Closing soon</string>
     <string name="closed">Closed</string>
+    <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
+
+    <!-- Third part IDs -->
+    <string name="facebook_app_id">5020438924692715</string>
+    <string name="fb_login_protocol_scheme">fb5020438924692715</string>
 </resources>
