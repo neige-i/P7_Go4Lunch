@@ -21,7 +21,9 @@ import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.ToggleFavRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCaseImpl;
+import com.neige_i.go4lunch.view.auth.AuthViewModel;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
+import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
 import com.neige_i.go4lunch.view.list.ListViewModel;
 import com.neige_i.go4lunch.view.map.MapViewModel;
@@ -95,6 +97,10 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 nearbyRepository,
                 detailsRepository
             ));
+        } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
+            return (T) new AuthViewModel();
+        } else if (modelClass.isAssignableFrom(DispatcherViewModel.class)) {
+            return (T) new DispatcherViewModel();
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
