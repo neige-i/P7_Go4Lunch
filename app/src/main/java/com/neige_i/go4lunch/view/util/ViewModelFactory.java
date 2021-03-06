@@ -13,6 +13,7 @@ import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
@@ -100,7 +101,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
             return (T) new AuthViewModel();
         } else if (modelClass.isAssignableFrom(DispatcherViewModel.class)) {
-            return (T) new DispatcherViewModel();
+            return (T) new DispatcherViewModel(new GetFirebaseUserUseCaseImpl(firebaseRepository));
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

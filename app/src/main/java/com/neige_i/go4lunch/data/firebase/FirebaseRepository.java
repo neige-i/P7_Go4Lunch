@@ -1,11 +1,17 @@
 package com.neige_i.go4lunch.data.firebase;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
+
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
 public interface FirebaseRepository {
+
+    @Nullable
+    FirebaseUser getCurrentUser();
 
     @NonNull
     LiveData<String> getSelectedRestaurant();
