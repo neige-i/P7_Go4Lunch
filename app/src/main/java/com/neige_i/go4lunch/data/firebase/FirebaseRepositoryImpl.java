@@ -1,8 +1,12 @@
 package com.neige_i.go4lunch.data.firebase;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +20,12 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
 
     public FirebaseRepositoryImpl() {
         favoriteRestaurants.setValue(new ArrayList<>());
+    }
+
+    @Nullable
+    @Override
+    public FirebaseUser getCurrentUser() {
+        return FirebaseAuth.getInstance().getCurrentUser(); // ASKME: wrap return type inside LiveData
     }
 
     @NonNull
