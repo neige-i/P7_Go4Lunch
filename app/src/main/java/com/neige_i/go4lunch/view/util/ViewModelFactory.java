@@ -5,15 +5,20 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
+import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
+import com.neige_i.go4lunch.data.firebase.FirestoreRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.CreateFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirebaseUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.GetFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
@@ -41,15 +46,20 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final DetailsRepository detailsRepository;
     @NonNull
     private final FirebaseRepository firebaseRepository;
+    @NonNull
+    private final FirestoreRepository firestoreRepository;
 
     @Nullable
     private static ViewModelFactory factory;
 
-    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository) {
+    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository,
+                            @NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository,
+                            @NonNull FirestoreRepository firestoreRepository) {
         this.nearbyRepository = nearbyRepository;
         this.locationRepository = locationRepository;
         this.detailsRepository = detailsRepository;
         this.firebaseRepository = firebaseRepository;
+        this.firestoreRepository = firestoreRepository;
     }
 
     // -------------------------------------- FACTORY METHODS --------------------------------------
@@ -64,7 +74,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                         new NearbyRepositoryImpl(),
                         new LocationRepositoryImpl(),
                         new DetailsRepositoryImpl(),
-                        new FirebaseRepositoryImpl()
+                        new FirebaseRepositoryImpl(),
+                        new FirestoreRepositoryImpl(FirebaseFirestore.getInstance())
                     );
                 }
             }
@@ -99,7 +110,10 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 detailsRepository
             ));
         } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
-            return (T) new AuthViewModel();
+            return (T) new AuthViewModel(
+                new GetFirestoreUserUseCaseImpl(firestoreRepository),
+                new CreateFirestoreUserUseCaseImpl(firestoreRepository)
+            );
         } else if (modelClass.isAssignableFrom(DispatcherViewModel.class)) {
             return (T) new DispatcherViewModel(new GetFirebaseUserUseCaseImpl(firebaseRepository));
         }
