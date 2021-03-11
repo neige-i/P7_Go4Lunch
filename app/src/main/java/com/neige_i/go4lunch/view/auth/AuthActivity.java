@@ -33,7 +33,6 @@ public class AuthActivity extends AppCompatActivity {
         final GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(
             this,
             new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                // ASKME: hide token
                 .requestIdToken(getString(R.string.default_web_client_id)) // IMPORTANT
                 .requestEmail()
                 .build()
@@ -51,6 +50,8 @@ public class AuthActivity extends AppCompatActivity {
             this,
             Arrays.asList("email", "public_profile")
         ));
+
+        viewModel.getFakeMediatorLiveData().observe(this, aVoid -> {});
 
         // Observe ViewModel's event
         viewModel.getStartHomeActivityEvent().observe(this, aVoid -> {
