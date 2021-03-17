@@ -18,10 +18,11 @@ import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
 import com.neige_i.go4lunch.domain.CreateFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirebaseUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
+import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsListUseCaseImpl;
 import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.ToggleFavRestaurantUseCaseImpl;
@@ -31,7 +32,8 @@ import com.neige_i.go4lunch.view.auth.AuthViewModel;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel;
 import com.neige_i.go4lunch.view.home.HomeViewModel;
-import com.neige_i.go4lunch.view.list.ListViewModel;
+import com.neige_i.go4lunch.view.list_restaurant.RestaurantListViewModel;
+import com.neige_i.go4lunch.view.list_workmate.WorkmateListViewModel;
 import com.neige_i.go4lunch.view.map.MapViewModel;
 
 public class ViewModelFactory implements ViewModelProvider.Factory {
@@ -54,7 +56,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
 
     public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationRepository locationRepository,
                             @NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository,
-                            @NonNull FirestoreRepository firestoreRepository) {
+                            @NonNull FirestoreRepository firestoreRepository
+    ) {
         this.nearbyRepository = nearbyRepository;
         this.locationRepository = locationRepository;
         this.detailsRepository = detailsRepository;
@@ -103,12 +106,14 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new ToggleFavRestaurantUseCaseImpl(firebaseRepository),
                 new UpdateSelectedRestaurantUseCaseImpl(firebaseRepository)
             );
-        } else if (modelClass.isAssignableFrom(ListViewModel.class)) {
-            return (T) new ListViewModel(new GetRestaurantDetailsListUseCaseImpl(
+        } else if (modelClass.isAssignableFrom(RestaurantListViewModel.class)) {
+            return (T) new RestaurantListViewModel(new GetRestaurantDetailsListUseCaseImpl(
                 locationRepository,
                 nearbyRepository,
                 detailsRepository
             ));
+        } else if (modelClass.isAssignableFrom(WorkmateListViewModel.class)) {
+            return (T) new WorkmateListViewModel(new GetFirestoreUserListUseCaseImpl(firestoreRepository));
         } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
             return (T) new AuthViewModel(
                 new GetFirestoreUserUseCaseImpl(firestoreRepository),

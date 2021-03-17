@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.neige_i.go4lunch.LiveDataTestUtils;
+import com.neige_i.go4lunch.data.firebase.model.User;
 
 import org.junit.Before;
 import org.junit.Rule;

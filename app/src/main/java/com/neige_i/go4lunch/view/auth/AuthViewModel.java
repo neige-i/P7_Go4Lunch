@@ -23,7 +23,8 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.neige_i.go4lunch.data.firebase.User;
+import com.google.firebase.auth.UserInfo;
+import com.neige_i.go4lunch.data.firebase.model.User;
 import com.neige_i.go4lunch.domain.CreateFirestoreUserUseCase;
 import com.neige_i.go4lunch.domain.GetFirestoreUserUseCase;
 import com.neige_i.go4lunch.view.util.SingleLiveEvent;
@@ -122,12 +123,27 @@ public class AuthViewModel extends ViewModel {
 
                     fakeMediatorLiveData.addSource(getFirestoreUserUseCase.userAlreadyExists(userId), doesExist -> {
                         if (!doesExist) {
+
+                            String userName = null;
+                            String profileImageUrl = null;
+                            for (UserInfo userInfo : firebaseUser.getProviderData()) {
+                                if (userInfo.getDisplayName() != null) {
+                                    userName = userInfo.getDisplayName();
+                                    profileImageUrl = userInfo.getPhotoUrl().toString();
+                                    break;
+                                }
+
+                            }
+
                             createFirestoreUserUseCase.createUser(
                                 userId,
                                 new User(
                                     userId,
                                     firebaseUser.getEmail(),
-                                    firebaseUser.getDisplayName() // is null when sign in with Google, use getProviderData()
+                                    userName, // getDisplayName() returns null when sign in with Google
+                                    profileImageUrl,
+                                    null,
+                                    null
                                 )
                             );
                         }
