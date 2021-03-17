@@ -15,9 +15,7 @@ public class User {
     @Nullable
     private final String photoUrl;
     @Nullable
-    private final String selectedRestaurantId;
-    @Nullable
-    private final String selectedRestaurantName;
+    private final SelectedRestaurant selectedRestaurant;
 
     /**
      * Mandatory empty constructor for Firestore.
@@ -27,17 +25,15 @@ public class User {
         email = null;
         name = null;
         photoUrl = null;
-        selectedRestaurantId = null;
-        selectedRestaurantName = null;
+        selectedRestaurant = null;
     }
 
-    public User(@Nullable String id, @Nullable String email, @Nullable String name, @Nullable String photoUrl, @Nullable String selectedRestaurantId, @Nullable String selectedRestaurantName) {
+    public User(@Nullable String id, @Nullable String email, @Nullable String name, @Nullable String photoUrl, @Nullable SelectedRestaurant selectedRestaurant) {
         this.id = id;
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
-        this.selectedRestaurantId = selectedRestaurantId;
-        this.selectedRestaurantName = selectedRestaurantName;
+        this.selectedRestaurant = selectedRestaurant;
     }
 
     @Nullable
@@ -61,13 +57,8 @@ public class User {
     }
 
     @Nullable
-    public String getSelectedRestaurantId() {
-        return selectedRestaurantId;
-    }
-
-    @Nullable
-    public String getSelectedRestaurantName() {
-        return selectedRestaurantName;
+    public SelectedRestaurant getSelectedRestaurant() {
+        return selectedRestaurant;
     }
 
     @Override
@@ -79,12 +70,53 @@ public class User {
             Objects.equals(email, user.email) &&
             Objects.equals(name, user.name) &&
             Objects.equals(photoUrl, user.photoUrl) &&
-            Objects.equals(selectedRestaurantId, user.selectedRestaurantId) &&
-            Objects.equals(selectedRestaurantName, user.selectedRestaurantName);
+            Objects.equals(selectedRestaurant, user.selectedRestaurant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, name, photoUrl, selectedRestaurantId, selectedRestaurantName);
+        return Objects.hash(id, email, name, photoUrl, selectedRestaurant);
+    }
+
+    public static class SelectedRestaurant {
+
+        @Nullable private final String restaurantId;
+        @Nullable private final String restaurantName;
+        private final long selectedDate;
+
+        SelectedRestaurant(@Nullable String restaurantId, @Nullable String restaurantName, long selectedDate) {
+            this.restaurantId = restaurantId;
+            this.restaurantName = restaurantName;
+            this.selectedDate = selectedDate;
+        }
+
+        @Nullable
+        public String getRestaurantId() {
+            return restaurantId;
+        }
+
+        @Nullable
+        public String getRestaurantName() {
+            return restaurantName;
+        }
+
+        public long getSelectedDate() {
+            return selectedDate;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SelectedRestaurant that = (SelectedRestaurant) o;
+            return selectedDate == that.selectedDate &&
+                Objects.equals(restaurantId, that.restaurantId) &&
+                Objects.equals(restaurantName, that.restaurantName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(restaurantId, restaurantName, selectedDate);
+        }
     }
 }

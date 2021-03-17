@@ -142,7 +142,6 @@ public class AuthViewModel extends ViewModel {
                                     firebaseUser.getEmail(),
                                     userName, // getDisplayName() returns null when sign in with Google
                                     profileImageUrl,
-                                    null,
                                     null
                                 )
                             );

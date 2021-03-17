@@ -36,6 +36,8 @@ import com.neige_i.go4lunch.view.list_restaurant.RestaurantListViewModel;
 import com.neige_i.go4lunch.view.list_workmate.WorkmateListViewModel;
 import com.neige_i.go4lunch.view.map.MapViewModel;
 
+import java.time.Clock;
+
 public class ViewModelFactory implements ViewModelProvider.Factory {
 
     // -------------------------------------  CLASS VARIABLES --------------------------------------
@@ -113,7 +115,10 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 detailsRepository
             ));
         } else if (modelClass.isAssignableFrom(WorkmateListViewModel.class)) {
-            return (T) new WorkmateListViewModel(new GetFirestoreUserListUseCaseImpl(firestoreRepository));
+            return (T) new WorkmateListViewModel(
+                new GetFirestoreUserListUseCaseImpl(firestoreRepository),
+                Clock.systemDefaultZone()
+            );
         } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
             return (T) new AuthViewModel(
                 new GetFirestoreUserUseCaseImpl(firestoreRepository),
