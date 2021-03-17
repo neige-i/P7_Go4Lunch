@@ -12,6 +12,10 @@ import com.neige_i.go4lunch.data.firebase.model.User;
 import com.neige_i.go4lunch.domain.GetFirestoreUserListUseCase;
 import com.neige_i.go4lunch.view.util.SingleLiveEvent;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +23,15 @@ public class WorkmateListViewModel extends ViewModel {
 
     @NonNull
     private final GetFirestoreUserListUseCase getFirestoreUserListUseCase;
+    @NonNull
+    private final Clock clock;
 
     @NonNull
     private final SingleLiveEvent<String> triggerCallbackEvent = new SingleLiveEvent<>();
 
-    public WorkmateListViewModel(@NonNull GetFirestoreUserListUseCase getFirestoreUserListUseCase) {
+    public WorkmateListViewModel(@NonNull GetFirestoreUserListUseCase getFirestoreUserListUseCase, @NonNull Clock clock) {
         this.getFirestoreUserListUseCase = getFirestoreUserListUseCase;
+        this.clock = clock;
     }
 
     @NonNull
@@ -40,19 +47,49 @@ public class WorkmateListViewModel extends ViewModel {
             if (userList != null) {
 
                 for (User user : userList) {
-                    final boolean hasUserSelectedARestaurant = user.getSelectedRestaurantId() != null;
-                    final String workmateAndRestaurant =
-                        hasUserSelectedARestaurant ?
-                        user.getName() + " is eating in " + user.getSelectedRestaurantName() :
-                        user.getName() + " hasn't decided yet";
 
+                    final User.SelectedRestaurant selectedRestaurant = user.getSelectedRestaurant();
+
+                    // Check if user has selected a restaurant FOR TODAY
+                    final boolean hasUserSelectedARestaurant;
+                    if (selectedRestaurant != null) {
+
+                        final LocalDate selectedLocalDate = Instant
+                            .ofEpochMilli(selectedRestaurant.getSelectedDate())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                        hasUserSelectedARestaurant = selectedLocalDate.isEqual(LocalDate.now(clock));
+                    } else {
+                        hasUserSelectedARestaurant = false;
+                    }
+
+                    // Set the WorkmateViewState fields
+                    final int textStyle;
+                    final int textColor;
+                    final String nameAndSelectedRestaurant;
+                    final String selectedRestaurantId;
+
+                    if (hasUserSelectedARestaurant) {
+                        textStyle = Typeface.NORMAL;
+                        textColor = R.color.black;
+                        nameAndSelectedRestaurant = user.getName() + " is eating in " + selectedRestaurant.getRestaurantName();
+                        selectedRestaurantId = selectedRestaurant.getRestaurantId();
+                    } else {
+                        textStyle = Typeface.ITALIC;
+                        textColor = android.R.color.darker_gray;
+                        nameAndSelectedRestaurant = user.getName() + " hasn't decided yet";
+                        selectedRestaurantId = WorkmateViewState.NO_SELECTED_RESTAURANT;
+                    }
+
+                    // Add the view state to the list
                     viewStates.add(new WorkmateViewState(
                         user.getId(),
                         user.getPhotoUrl(),
-                        hasUserSelectedARestaurant ? Typeface.NORMAL : Typeface.ITALIC,
-                        hasUserSelectedARestaurant ? R.color.black : android.R.color.darker_gray,
-                        workmateAndRestaurant,
-                        hasUserSelectedARestaurant ? user.getSelectedRestaurantId() : WorkmateViewState.NO_SELECTED_RESTAURANT
+                        textStyle,
+                        textColor,
+                        nameAndSelectedRestaurant,
+                        selectedRestaurantId
                     ));
                 }
             }
