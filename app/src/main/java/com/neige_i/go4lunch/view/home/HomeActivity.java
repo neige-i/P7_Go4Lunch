@@ -20,7 +20,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
-import com.neige_i.go4lunch.view.list.ListFragment;
+import com.neige_i.go4lunch.view.list_restaurant.RestaurantListFragment;
+import com.neige_i.go4lunch.view.list_workmate.WorkmateListFragment;
 import com.neige_i.go4lunch.view.map.MapFragment;
 import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
 import com.neige_i.go4lunch.view.util.ViewModelFactory;
@@ -79,10 +80,10 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
                         fragmentToAdd = new MapFragment();
                         break;
                     case TAG_FRAGMENT_RESTAURANT:
-                        fragmentToAdd = ListFragment.newInstance(ListFragment.RESTAURANT);
+                        fragmentToAdd = RestaurantListFragment.newInstance();
                         break;
                     case TAG_FRAGMENT_WORKMATE:
-                        fragmentToAdd = ListFragment.newInstance(ListFragment.WORKMATE);
+                        fragmentToAdd = WorkmateListFragment.newInstance();
                         break;
                     default:
                         throw new IllegalStateException("Unexpected value: " + viewState.getFragmentToShow());

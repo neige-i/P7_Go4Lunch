@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.LiveDataTestUtils;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
-import com.neige_i.go4lunch.data.firebase.User;
+import com.neige_i.go4lunch.data.firebase.model.User;
 
 import org.junit.Before;
 import org.junit.Rule;

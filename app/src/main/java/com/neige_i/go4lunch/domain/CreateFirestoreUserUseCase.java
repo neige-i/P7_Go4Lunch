@@ -2,7 +2,7 @@ package com.neige_i.go4lunch.domain;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.firebase.User;
+import com.neige_i.go4lunch.data.firebase.model.User;
 
 public interface CreateFirestoreUserUseCase {
 

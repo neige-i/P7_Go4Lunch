@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.view.list;
+package com.neige_i.go4lunch.view.list_restaurant;
 
 import android.content.Context;
 import android.view.LayoutInflater;

@@ -5,6 +5,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.neige_i.go4lunch.data.firebase.model.User;
+
+import java.util.List;
 
 public class FirestoreRepositoryImpl implements FirestoreRepository {
 
@@ -34,5 +37,23 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     @Override
     public void addUser(@NonNull String userId, @NonNull User userToAdd) {
         firebaseFirestore.collection(USER_COLLECTION).document(userId).set(userToAdd);
+    }
+
+    @NonNull
+    @Override
+    public LiveData<List<User>> getAllUsers() {
+        final MutableLiveData<List<User>> userListMutableLiveData = new MutableLiveData<>();
+
+        firebaseFirestore.collection(USER_COLLECTION).addSnapshotListener((querySnapshot, error) -> {
+            if (error != null) {
+                return;
+            }
+
+            if (querySnapshot != null) {
+                userListMutableLiveData.setValue(querySnapshot.toObjects(User.class));
+            }
+        });
+
+        return userListMutableLiveData;
     }
 }

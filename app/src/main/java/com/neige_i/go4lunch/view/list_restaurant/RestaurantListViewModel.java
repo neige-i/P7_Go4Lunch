@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.view.list;
+package com.neige_i.go4lunch.view.list_restaurant;
 
 import android.graphics.Typeface;
 import android.location.Location;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ListViewModel extends ViewModel {
+public class RestaurantListViewModel extends ViewModel {
 
     @NonNull
     private static final DateTimeFormatter hourFormat = DateTimeFormatter.ofPattern("HHmm");
@@ -32,19 +32,19 @@ public class ListViewModel extends ViewModel {
     @NonNull
     private final GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase;
 
-    public ListViewModel(@NonNull GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase) {
+    public RestaurantListViewModel(@NonNull GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase) {
         this.getRestaurantDetailsListUseCase = getRestaurantDetailsListUseCase;
     }
 
+    @NonNull
     public LiveData<List<RestaurantViewState>> getViewState() {
-        // 1. FETCH the list model
-        return Transformations.map(getRestaurantDetailsListUseCase.getDetailsList(), listModel -> {
+        return Transformations.map(getRestaurantDetailsListUseCase.getDetailsList(), listWrapper -> {
             // The view state to return
             final List<RestaurantViewState> viewStates = new ArrayList<>();
 
-            if (listModel != null) {
+            if (listWrapper != null) {
 
-                final List<NearbyResponse.Result> resultList = listModel.getNearbyResponse().getResults();
+                final List<NearbyResponse.Result> resultList = listWrapper.getNearbyResponse().getResults();
 
                 if (resultList != null) {
                     // 2. ITERATE through the list of details responses
@@ -53,10 +53,10 @@ public class ListViewModel extends ViewModel {
                         if (result.getBusinessStatus() != null && result.getBusinessStatus().equals("OPERATIONAL")) {
 
                             // 3. GET the distance between the restaurant and the current location
-                            final float distance = getDistance(listModel.getCurrentLocation(), result.getGeometry());
+                            final float distance = getDistance(listWrapper.getCurrentLocation(), result.getGeometry());
 
                             // GET opening hours
-                            final PlaceHourWrapper placeHourWrapper = getPlaceHour(listModel.getDetailsResponses(), result.getPlaceId());
+                            final PlaceHourWrapper placeHourWrapper = getPlaceHour(listWrapper.getDetailsResponses(), result.getPlaceId());
 
                             // MAPPING
                             viewStates.add(new RestaurantViewState(
