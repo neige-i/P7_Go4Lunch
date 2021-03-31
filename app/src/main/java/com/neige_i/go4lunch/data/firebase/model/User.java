@@ -84,6 +84,12 @@ public class User {
         @Nullable private final String restaurantName;
         private final long selectedDate;
 
+        public SelectedRestaurant() {
+            restaurantId = null;
+            restaurantName = null;
+            selectedDate = 0;
+        }
+
         public SelectedRestaurant(@Nullable String restaurantId, @Nullable String restaurantName, long selectedDate) {
             this.restaurantId = restaurantId;
             this.restaurantName = restaurantName;
