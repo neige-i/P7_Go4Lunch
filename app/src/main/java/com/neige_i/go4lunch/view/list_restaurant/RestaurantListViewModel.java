@@ -10,6 +10,7 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsListUseCase;
@@ -58,6 +59,11 @@ public class RestaurantListViewModel extends ViewModel {
                             // GET opening hours
                             final PlaceHourWrapper placeHourWrapper = getPlaceHour(listWrapper.getDetailsResponses(), result.getPlaceId());
 
+                            final Restaurant firestoreRestaurant = listWrapper.getRestaurants()
+                                .stream()
+                                .filter(restaurant -> restaurant.getRestaurantId().equals(result.getPlaceId()))
+                                .findFirst().orElseGet(Restaurant::new);
+
                             // MAPPING
                             viewStates.add(new RestaurantViewState(
                                 result.getPlaceId(),
@@ -68,8 +74,8 @@ public class RestaurantListViewModel extends ViewModel {
                                 placeHourWrapper.getFontStyle(),//Typeface.BOLD_ITALIC,
                                 placeHourWrapper.getFontColor(),//R.color.lime,
                                 placeHourWrapper.getHours(),
-                                true,
-                                2,
+                                firestoreRestaurant.getWorkmateId() != null,
+                                firestoreRestaurant.getWorkmateId() != null ? 1 : 0,
                                 Util.getRating(result.getRating()),
                                 Util.getPhotoUrl(result.getPhotos())
                             ));

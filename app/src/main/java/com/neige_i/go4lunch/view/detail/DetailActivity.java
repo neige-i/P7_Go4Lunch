@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.util.Util;
@@ -37,6 +38,8 @@ public class DetailActivity extends AppCompatActivity {
         final Button likeBtn = findViewById(R.id.like_btn);
         final Button websiteBtn = findViewById(R.id.website_btn);
         final CheckBox selected = findViewById(R.id.selected_checkbox);
+        final InterestedWorkmateAdapter adapter = new InterestedWorkmateAdapter();
+        ((RecyclerView) findViewById(R.id.interested_workmate_list)).setAdapter(adapter);
 
         // ASKME: mandatory null check of Intent.resolveActivity(getPackageManager())
         callBtn.setOnClickListener(v -> startActivity(new Intent(
@@ -64,6 +67,7 @@ public class DetailActivity extends AppCompatActivity {
                 0
             );
             selected.setChecked(detailViewState.isSelected());
+            adapter.submitList(detailViewState.getWorkmateIds());
         });
     }
 }

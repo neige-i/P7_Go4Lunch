@@ -2,24 +2,25 @@ package com.neige_i.go4lunch.domain;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
+import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
+import com.neige_i.go4lunch.data.firebase.model.User;
 
 public class UpdateSelectedRestaurantUseCaseImpl implements UpdateSelectedRestaurantUseCase {
 
     @NonNull
-    private final FirebaseRepository firebaseRepository;
+    private final FirestoreRepository firestoreRepository;
 
-    public UpdateSelectedRestaurantUseCaseImpl(@NonNull FirebaseRepository firebaseRepository) {
-        this.firebaseRepository = firebaseRepository;
+    public UpdateSelectedRestaurantUseCaseImpl(@NonNull FirestoreRepository firestoreRepository) {
+        this.firestoreRepository = firestoreRepository;
     }
 
     @Override
-    public void setSelectedRestaurant(@NonNull String placeId) {
-        firebaseRepository.setSelectedRestaurant(placeId);
+    public void selectRestaurant(@NonNull String userId, @NonNull User.SelectedRestaurant selectedRestaurant) {
+        firestoreRepository.setSelectedRestaurant(userId, selectedRestaurant);
     }
 
     @Override
-    public void clearSelectedRestaurant() {
-        firebaseRepository.clearSelectedRestaurant();
+    public void clearRestaurant(@NonNull String userId) {
+        firestoreRepository.clearSelectedRestaurant(userId);
     }
 }

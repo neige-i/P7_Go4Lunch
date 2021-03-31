@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
+import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 
@@ -25,14 +26,18 @@ public interface GetRestaurantDetailsListUseCase {
         private final List<DetailsResponse> detailsResponses;
         @Nullable
         private final Location currentLocation;
+        @NonNull
+        private final List<Restaurant> restaurants;
 
         public ListWrapper(@NonNull NearbyResponse nearbyResponse,
                            @NonNull List<DetailsResponse> detailsResponses,
-                           @Nullable Location currentLocation
+                           @Nullable Location currentLocation,
+                           @NonNull List<Restaurant> restaurants
         ) {
             this.nearbyResponse = nearbyResponse;
             this.detailsResponses = detailsResponses;
             this.currentLocation = currentLocation;
+            this.restaurants = restaurants;
         }
 
         @NonNull
@@ -50,19 +55,25 @@ public interface GetRestaurantDetailsListUseCase {
             return currentLocation;
         }
 
+        @NonNull
+        public List<Restaurant> getRestaurants() {
+            return restaurants;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            ListWrapper listWrapper = (ListWrapper) o;
-            return Objects.equals(nearbyResponse, listWrapper.nearbyResponse) &&
-                detailsResponses.equals(listWrapper.detailsResponses) &&
-                Objects.equals(currentLocation, listWrapper.currentLocation);
+            ListWrapper that = (ListWrapper) o;
+            return nearbyResponse.equals(that.nearbyResponse) &&
+                detailsResponses.equals(that.detailsResponses) &&
+                Objects.equals(currentLocation, that.currentLocation) &&
+                restaurants.equals(that.restaurants);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(nearbyResponse, detailsResponses, currentLocation);
+            return Objects.hash(nearbyResponse, detailsResponses, currentLocation, restaurants);
         }
 
         @NonNull
@@ -72,6 +83,7 @@ public interface GetRestaurantDetailsListUseCase {
                 "nearbyResponse=" + nearbyResponse +
                 ", detailsResponses=" + detailsResponses +
                 ", currentLocation=" + currentLocation +
+                ", restaurants=" + restaurants +
                 '}';
         }
     }

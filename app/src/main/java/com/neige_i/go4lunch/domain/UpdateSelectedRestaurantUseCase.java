@@ -2,9 +2,11 @@ package com.neige_i.go4lunch.domain;
 
 import androidx.annotation.NonNull;
 
+import com.neige_i.go4lunch.data.firebase.model.User;
+
 public interface UpdateSelectedRestaurantUseCase {
 
-    void setSelectedRestaurant(@NonNull String placeId);
+    void selectRestaurant(@NonNull String userId, @NonNull User.SelectedRestaurant selectedRestaurant);
 
-    void clearSelectedRestaurant();
+    void clearRestaurant(@NonNull String userId);
 }

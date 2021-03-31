@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
 
+import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
+import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
@@ -15,6 +17,7 @@ import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +39,8 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
 
     public GetRestaurantDetailsListUseCaseImpl(@NonNull LocationRepository locationRepository,
                                                @NonNull NearbyRepository nearbyRepository,
-                                               @NonNull DetailsRepository detailsRepository
+                                               @NonNull DetailsRepository detailsRepository,
+                                               @NonNull FirestoreRepository firestoreRepository
     ) {
         this.detailsRepository = detailsRepository;
 
@@ -51,20 +55,28 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
             }
         );
 
-        listMediatorLiveData.addSource(
-            nearbyResponseLiveData,
-            nearbyResponse -> combine(nearbyResponse, placeIdDetailsResponseMapMediatorLiveData.getValue())
+        final LiveData<List<Restaurant>> restaurantListLiveData = firestoreRepository.getAllRestaurants();
+
+        listMediatorLiveData.addSource(nearbyResponseLiveData, nearbyResponse ->
+            combine(nearbyResponse, placeIdDetailsResponseMapMediatorLiveData.getValue(), restaurantListLiveData.getValue())
         );
-        listMediatorLiveData.addSource(
-            placeIdDetailsResponseMapMediatorLiveData,
-            placeIdDetailsResponseMap -> combine(nearbyResponseLiveData.getValue(), placeIdDetailsResponseMap)
+        listMediatorLiveData.addSource(placeIdDetailsResponseMapMediatorLiveData, placeIdDetailsResponseMap ->
+            combine(nearbyResponseLiveData.getValue(), placeIdDetailsResponseMap, restaurantListLiveData.getValue())
+        );
+        listMediatorLiveData.addSource(restaurantListLiveData, restaurants ->
+            combine(nearbyResponseLiveData.getValue(), placeIdDetailsResponseMapMediatorLiveData.getValue(), restaurants)
         );
     }
 
-    private void combine(@Nullable NearbyResponse nearbyResponse, @Nullable Map<String, DetailsResponse> placeIdDetailsResponseMap) {
+    private void combine(@Nullable NearbyResponse nearbyResponse,
+                         @Nullable Map<String, DetailsResponse> placeIdDetailsResponseMap,
+                         @Nullable List<Restaurant> restaurantList
+    ) {
         if (nearbyResponse == null) {
             return;
         }
+
+        final List<Restaurant> restaurants = restaurantList != null ? restaurantList : Collections.emptyList();
 
         if (placeIdDetailsResponseMap == null) {
             throw new IllegalStateException("Impossible state : map is always initialized !");
@@ -99,7 +111,8 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
         listMediatorLiveData.setValue(new ListWrapper(
             nearbyResponse,
             new ArrayList<>(placeIdDetailsResponseMap.values()),
-            deviceLocation
+            deviceLocation,
+            restaurants
         ));
     }
 
