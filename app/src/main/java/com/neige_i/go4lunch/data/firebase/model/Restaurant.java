@@ -63,6 +63,12 @@ public class Restaurant {
         @Nullable
         private final String photoUrl;
 
+        public InterestedWorkmate() {
+            userId = null;
+            name = null;
+            photoUrl = null;
+        }
+
         private InterestedWorkmate(@Nullable String userId, @Nullable String name, @Nullable String photoUrl) {
             this.userId = userId;
             this.name = name;
