@@ -25,7 +25,7 @@ import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsListUseCaseImpl;
 import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
-import com.neige_i.go4lunch.domain.ToggleFavRestaurantUseCaseImpl;
+import com.neige_i.go4lunch.domain.UpdateInterestedWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.view.auth.AuthViewModel;
@@ -52,6 +52,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final FirebaseRepository firebaseRepository;
     @NonNull
     private final FirestoreRepository firestoreRepository;
+    @NonNull
+    private final Clock clock;
 
     @Nullable
     private static ViewModelFactory factory;
@@ -65,6 +67,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.detailsRepository = detailsRepository;
         this.firebaseRepository = firebaseRepository;
         this.firestoreRepository = firestoreRepository;
+        clock = Clock.systemDefaultZone();
     }
 
     // -------------------------------------- FACTORY METHODS --------------------------------------
@@ -105,19 +108,23 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(DetailViewModel.class)) {
             return (T) new DetailViewModel(
                 new GetRestaurantDetailsItemUseCaseImpl(detailsRepository, firebaseRepository),
-                new ToggleFavRestaurantUseCaseImpl(firebaseRepository),
-                new UpdateSelectedRestaurantUseCaseImpl(firebaseRepository)
+                new UpdateInterestedWorkmatesUseCaseImpl(firestoreRepository),
+                new UpdateSelectedRestaurantUseCaseImpl(firestoreRepository),
+                new GetFirebaseUserUseCaseImpl(firebaseRepository),
+                clock,
+                firestoreRepository
             );
         } else if (modelClass.isAssignableFrom(RestaurantListViewModel.class)) {
             return (T) new RestaurantListViewModel(new GetRestaurantDetailsListUseCaseImpl(
                 locationRepository,
                 nearbyRepository,
-                detailsRepository
+                detailsRepository,
+                firestoreRepository
             ));
         } else if (modelClass.isAssignableFrom(WorkmateListViewModel.class)) {
             return (T) new WorkmateListViewModel(
                 new GetFirestoreUserListUseCaseImpl(firestoreRepository),
-                Clock.systemDefaultZone()
+                clock
             );
         } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
             return (T) new AuthViewModel(
