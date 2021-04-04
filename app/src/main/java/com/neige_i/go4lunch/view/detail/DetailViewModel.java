@@ -12,7 +12,7 @@ import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.firebase.model.User;
 import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
-import com.neige_i.go4lunch.domain.GetFirebaseUserUseCase;
+import com.neige_i.go4lunch.domain.GetFirebaseUserOldUseCase;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCase;
 import com.neige_i.go4lunch.domain.UpdateInterestedWorkmatesUseCase;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCase;
@@ -35,7 +35,7 @@ public class DetailViewModel extends ViewModel {
     @NonNull
     private final UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase;
     @NonNull
-    private final GetFirebaseUserUseCase getFirebaseUserUseCase;
+    private final GetFirebaseUserOldUseCase getFirebaseUserOldUseCase;
     @NonNull
     private final Clock clock;
     @NonNull
@@ -46,14 +46,14 @@ public class DetailViewModel extends ViewModel {
     public DetailViewModel(@NonNull GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase,
                            @NonNull UpdateInterestedWorkmatesUseCase updateInterestedWorkmatesUseCase,
                            @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase,
-                           @NonNull GetFirebaseUserUseCase getFirebaseUserUseCase,
+                           @NonNull GetFirebaseUserOldUseCase getFirebaseUserOldUseCase,
                            @NonNull Clock clock,
                            @NonNull FirestoreRepository firestoreRepository
     ) {
         this.getRestaurantDetailsItemUseCase = getRestaurantDetailsItemUseCase;
         this.updateInterestedWorkmatesUseCase = updateInterestedWorkmatesUseCase;
         this.updateSelectedRestaurantUseCase = updateSelectedRestaurantUseCase;
-        this.getFirebaseUserUseCase = getFirebaseUserUseCase;
+        this.getFirebaseUserOldUseCase = getFirebaseUserOldUseCase;
         this.clock = clock;
         this.firestoreRepository = firestoreRepository;
     }
@@ -110,7 +110,7 @@ public class DetailViewModel extends ViewModel {
     public void onSelectedRestaurantUpdated(boolean isSelected) {
         final DetailViewState currentViewState = viewState.getValue();
         if (currentViewState != null) {
-            final String userId = getFirebaseUserUseCase.getFirebaseUser().getUid();
+            final String userId = getFirebaseUserOldUseCase.getFirebaseUser().getUid();
 
             if (isSelected) {
                 updateSelectedRestaurantUseCase.selectRestaurant(
