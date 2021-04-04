@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
@@ -17,7 +18,7 @@ import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
 import com.neige_i.go4lunch.domain.CreateFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.GetFirebaseUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.GetFirebaseUserOldUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetLocPermissionUseCaseImpl;
@@ -28,6 +29,7 @@ import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateInterestedWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCaseImpl;
+import com.neige_i.go4lunch.domain.dispatcher.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.view.auth.AuthViewModel;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel;
@@ -54,6 +56,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final FirestoreRepository firestoreRepository;
     @NonNull
     private final Clock clock;
+    @NonNull
+    private final FirebaseAuth firebaseAuth;
 
     @Nullable
     private static ViewModelFactory factory;
@@ -68,6 +72,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.firebaseRepository = firebaseRepository;
         this.firestoreRepository = firestoreRepository;
         clock = Clock.systemDefaultZone();
+        firebaseAuth = FirebaseAuth.getInstance();
     }
 
     // -------------------------------------- FACTORY METHODS --------------------------------------
@@ -110,7 +115,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new GetRestaurantDetailsItemUseCaseImpl(detailsRepository, firebaseRepository),
                 new UpdateInterestedWorkmatesUseCaseImpl(firestoreRepository),
                 new UpdateSelectedRestaurantUseCaseImpl(firestoreRepository),
-                new GetFirebaseUserUseCaseImpl(firebaseRepository),
+                new GetFirebaseUserOldUseCaseImpl(firebaseRepository),
                 clock,
                 firestoreRepository
             );
@@ -132,7 +137,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new CreateFirestoreUserUseCaseImpl(firestoreRepository)
             );
         } else if (modelClass.isAssignableFrom(DispatcherViewModel.class)) {
-            return (T) new DispatcherViewModel(new GetFirebaseUserUseCaseImpl(firebaseRepository));
+            return (T) new DispatcherViewModel(new GetFirebaseUserUseCaseImpl(firebaseAuth));
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

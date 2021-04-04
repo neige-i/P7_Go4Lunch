@@ -6,12 +6,12 @@ import androidx.annotation.Nullable;
 import com.google.firebase.auth.FirebaseUser;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 
-public class GetFirebaseUserUseCaseImpl implements GetFirebaseUserUseCase {
+public class GetFirebaseUserOldUseCaseImpl implements GetFirebaseUserOldUseCase {
 
     @NonNull
     private final FirebaseRepository firebaseRepository;
 
-    public GetFirebaseUserUseCaseImpl(@NonNull FirebaseRepository firebaseRepository) {
+    public GetFirebaseUserOldUseCaseImpl(@NonNull FirebaseRepository firebaseRepository) {
         this.firebaseRepository = firebaseRepository;
     }
 
