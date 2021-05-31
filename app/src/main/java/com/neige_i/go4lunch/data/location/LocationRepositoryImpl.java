@@ -18,43 +18,33 @@ import com.neige_i.go4lunch.MainApplication;
 
 public class LocationRepositoryImpl implements LocationRepository {
 
-    @NonNull
-    private final MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
+    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+
     @NonNull
     private final MutableLiveData<Location> currentLocation = new MutableLiveData<>();
+
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
 
     @NonNull
     private final FusedLocationProviderClient fusedLocationClient;
     @NonNull
     private final LocationCallback locationCallback;
 
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
     public LocationRepositoryImpl() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(MainApplication.getInstance());
         locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
-                    final Location lastLocation = locationResult.getLastLocation();
-                    if (lastLocation != null) {
-                        Log.d("Neige", "LocationRepository::onLocationResult: update " + lastLocation.getLatitude() + "," + lastLocation.getLongitude());
-                        // Update current user location
-                        currentLocation.setValue(lastLocation);
-                    }
-                }
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                final Location lastLocation = locationResult.getLastLocation();
+                Log.d("Neige", "LocationRepository::onLocationResult: last location: " + lastLocation.getLatitude() + "," + lastLocation.getLongitude());
+                currentLocation.setValue(lastLocation);
             }
         };
     }
 
-    @NonNull
-    @Override
-    public LiveData<Boolean> getLocationPermission() {
-        return locationPermission;
-    }
-
-    @Override
-    public void updateLocationPermission(boolean isPermissionGranted) {
-        locationPermission.setValue(isPermissionGranted);
-    }
+    // ------------------------------------ REPOSITORY METHODS -------------------------------------
 
     @NonNull
     @Override
@@ -79,6 +69,7 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @Override
     public void removeLocationUpdates() {
+        Log.d("Neige", "LocationRepositoryImpl::removeLocationUpdates");
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 }

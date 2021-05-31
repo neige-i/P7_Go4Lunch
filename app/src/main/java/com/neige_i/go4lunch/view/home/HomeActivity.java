@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,10 +13,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 import com.neige_i.go4lunch.view.list_restaurant.RestaurantListFragment;
@@ -28,15 +27,21 @@ import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
 
+    // -------------------------------------- CLASS VARIABLES --------------------------------------
+
+    public static final String PLACE_ID_INTENT_EXTRA = BuildConfig.APPLICATION_ID + "placeId";
+
+    static final String MAP_FRAGMENT_TAG = "map";
+    static final String RESTAURANT_FRAGMENT_TAG = "restaurant";
+    static final String WORKMATE_FRAGMENT_TAG = "workmate";
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
-    static final String TAG_FRAGMENT_MAP = "map";
-    static final String TAG_FRAGMENT_RESTAURANT = "restaurant";
-    static final String TAG_FRAGMENT_WORKMATE = "workmate";
-
-    public static final String EXTRA_PLACE_ID = "EXTRA_PLACE_ID";
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
 
     private HomeViewModel viewModel;
+
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,84 +56,84 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         // Config BottomNavigationView listener
         ((BottomNavigationView) findViewById(R.id.bottom_navigation)).setOnNavigationItemSelectedListener(item -> {
-            viewModel.onFragmentSelected(item.getItemId());
+            viewModel.onNavigationItemSelected(item.getItemId());
             return true;
         });
 
-        // Init fragment manager
-        final FragmentManager fragmentManager = getSupportFragmentManager();
-
         // Update UI when state is changed
-        viewModel.getViewState().observe(this, viewState -> {
-            final Fragment fragmentToShow = fragmentManager.findFragmentByTag(viewState.getFragmentToShow());
-            final Fragment fragmentToHide = fragmentManager.findFragmentByTag(viewState.getFragmentToHide());
+        viewModel.getTitleIdState().observe(this, this::setTitle);
 
-            final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // Config actions when events are triggered
+        viewModel.getRequestLocationPermissionEvent().observe(this, aBoolean ->
+            ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+        );
+        configFragmentTransactions(getSupportFragmentManager());
+    }
 
-            // 1. Hide the existing fragment
-            if (fragmentToHide != null)
-                fragmentTransaction.hide(fragmentToHide);
+    private void configFragmentTransactions(@NonNull FragmentManager fragmentManager) {
+        viewModel.getHideFragmentEvent().observe(this, fragmentToHideTag -> {
+            // This LiveData contains the tag of the currently displayed fragment, findFragmentByTag() should never return null
+            final Fragment fragmentToHide = fragmentManager.findFragmentByTag(fragmentToHideTag);
+            assert fragmentToHide != null;
 
-            if (fragmentToShow != null) {
-                // 2.a. Show the existing fragment
-                fragmentTransaction.show(fragmentToShow);
-            } else {
-                // 2.b. Add the new fragment
-                final Fragment fragmentToAdd;
-                switch (viewState.getFragmentToShow()) {
-                    case TAG_FRAGMENT_MAP:
-                        fragmentToAdd = new MapFragment();
-                        break;
-                    case TAG_FRAGMENT_RESTAURANT:
-                        fragmentToAdd = RestaurantListFragment.newInstance();
-                        break;
-                    case TAG_FRAGMENT_WORKMATE:
-                        fragmentToAdd = WorkmateListFragment.newInstance();
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + viewState.getFragmentToShow());
-                }
-                fragmentTransaction.add(R.id.fragment_container, fragmentToAdd, viewState.getFragmentToShow());
-            }
-
-            // 3. Commit the fragment transaction
-            fragmentTransaction.commit();
-
-            // Update the toolbar title accordingly
-            setTitle(viewState.getTitleId());
+            fragmentManager.beginTransaction().hide(fragmentToHide).commit();
         });
 
-        // Update UI when event is triggered
-        viewModel.getRequestLocationPermissionEvent().observe(this, aVoid -> ActivityCompat.requestPermissions(
-            this,
-            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-            LOCATION_PERMISSION_REQUEST_CODE
-        ));
+        viewModel.getShowFragmentEvent().observe(this, fragmentToShowTag -> {
+            // This LiveData contains the tag of a fragment that has already been displayed, findFragmentByTag() should never return null
+            final Fragment fragmentToShow = fragmentManager.findFragmentByTag(fragmentToShowTag);
+            assert fragmentToShow != null;
+
+            fragmentManager.beginTransaction().show(fragmentToShow).commit();
+        });
+
+        viewModel.getAddMapFragmentEvent().observe(this, aBoolean ->
+            addFragment(fragmentManager, new MapFragment(), MAP_FRAGMENT_TAG));
+
+        viewModel.getAddRestaurantFragmentEvent().observe(this, aBoolean ->
+            addFragment(fragmentManager, RestaurantListFragment.newInstance(), RESTAURANT_FRAGMENT_TAG));
+
+        viewModel.getAddWorkmateFragmentEvent().observe(this, aBoolean ->
+            addFragment(fragmentManager, WorkmateListFragment.newInstance(), WORKMATE_FRAGMENT_TAG));
+    }
+
+    private void addFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment, @NonNull String tag) {
+        fragmentManager.beginTransaction().add(R.id.fragment_container, fragment, tag).commit();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.onLocationPermissionUpdated(
-            ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+        viewModel.updateLocationPermission(
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         );
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        viewModel.onLocationUpdatesRemoved();
+        viewModel.removeLocationUpdates();
     }
+
+    // ------------------------------------- PERMISSION METHODS ------------------------------------
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        viewModel.onLocationPermissionUpdated(requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
-                                                  grantResults.length > 0 &&
-                                                  grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        viewModel.updateLocationPermission(
+            requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
+                grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+        );
     }
+
+    // ------------------------------------ OPTIONS MENU METHODS -----------------------------------
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -139,16 +144,15 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_search) {
-            Log.d("Neige", "HomeActivity::onOptionsItemSelected: search item");
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    // ------------------------------------- CALLBACK METHODS --------------------------------------
+
     @Override
     public void onDetailsQueried(@NonNull String placeId) {
-        final Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(EXTRA_PLACE_ID, placeId);
-        startActivity(intent);
+        startActivity(new Intent(this, DetailActivity.class).putExtra(PLACE_ID_INTENT_EXTRA, placeId));
     }
 }

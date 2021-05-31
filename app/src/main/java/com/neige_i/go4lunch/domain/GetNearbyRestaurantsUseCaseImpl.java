@@ -10,6 +10,7 @@ import androidx.lifecycle.Transformations;
 
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
 public class GetNearbyRestaurantsUseCaseImpl implements GetNearbyRestaurantsUseCase {
@@ -20,9 +21,9 @@ public class GetNearbyRestaurantsUseCaseImpl implements GetNearbyRestaurantsUseC
     @Nullable
     private Location deviceLocation;
 
-    public GetNearbyRestaurantsUseCaseImpl(@NonNull LocationRepository locationRepository, @NonNull NearbyRepository nearbyRepository) {
+    public GetNearbyRestaurantsUseCaseImpl(@NonNull LocationPermissionRepository locationPermissionRepository, @NonNull LocationRepository locationRepository, @NonNull NearbyRepository nearbyRepository) {
 
-        final LiveData<Boolean> locationPermissionLiveData = locationRepository.getLocationPermission();
+        final LiveData<Boolean> locationPermissionLiveData = locationPermissionRepository.getLocationPermission();
 
         final LiveData<NearbyResponse> nearbyResponseLiveData = Transformations.switchMap(
             locationRepository.getCurrentLocation(), currentLocation -> {

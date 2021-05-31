@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.dispatcher;
+package com.neige_i.go4lunch.domain.firebase;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
