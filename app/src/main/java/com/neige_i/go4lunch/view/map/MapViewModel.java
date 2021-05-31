@@ -17,23 +17,28 @@ import java.util.List;
 
 public class MapViewModel extends ViewModel {
 
-    // Zoom levels: 1-world, 5-continent, 10-city, 15-streets, 20-buildings
-    static final float ZOOM_LEVEL_STREETS = 15f;
+    // -------------------------------------- CLASS VARIABLES --------------------------------------
+
+    static final float ZOOM_LEVEL_STREETS = 15; // 1=world, 5=continent, 10=city, 15=streets, 20=buildings
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
     private final GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase;
 
+    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+
     @NonNull
     private final MediatorLiveData<MapViewState> viewState = new MediatorLiveData<>();
 
-    private boolean isLocationPermissionGranted;
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+
+    @Nullable
+    private MapViewState currentViewState;
     @Nullable
     private Location currentLocation;
-    @NonNull
-    private final List<MarkerViewState> markerViewStates = new ArrayList<>();
-    private double mapLatitude;
-    private double mapLongitude;
-    private float mapZoom;
+
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     public MapViewModel(@NonNull GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase) {
         this.getNearbyRestaurantsUseCase = getNearbyRestaurantsUseCase;
@@ -44,17 +49,16 @@ public class MapViewModel extends ViewModel {
         return viewState;
     }
 
+    // ---------------------------------------- MAP METHODS ----------------------------------------
+
     /**
      * {@link MapViewState} holds data that will be used by a {@link com.google.android.gms.maps.GoogleMap GoogleMap} object.<br />
      * This method must be called inside
      * {@link com.google.android.gms.maps.SupportMapFragment#getMapAsync(OnMapReadyCallback) SupportMapFragment.getMapAsync()}
      * when the {@link com.google.android.gms.maps.GoogleMap GoogleMap} object is ready to be used.
      */
-    public void onMapAvailable(double mapLat, double mapLng, float zoom) {
-        // Init camera position
-        mapLatitude = mapLat;
-        mapLongitude = mapLng;
-        mapZoom = zoom;
+    public void onMapAvailable(double mapLat, double mapLng, float mapZoom) {
+        final List<MarkerViewState> markerViewStates = new ArrayList<>();
 
         viewState.addSource(getNearbyRestaurantsUseCase.getNearby(), mapModel -> {
             // Update markers
@@ -63,51 +67,60 @@ public class MapViewModel extends ViewModel {
                 final List<NearbyResponse.Result> resultList = mapModel.getNearbyResponse().getResults();
                 if (resultList != null) {
                     for (NearbyResponse.Result result : resultList) {
-                        final NearbyResponse.Location nearbyLocation = result.getGeometry().getLocation();
-                        markerViewStates.add(new MarkerViewState(
-                            result.getPlaceId(),
-                            result.getName(),
-                            nearbyLocation.getLat(),
-                            nearbyLocation.getLng(),
-                            result.getVicinity()
-                        ));
+                        final NearbyResponse.Location nearbyLocation;
+                        if (result.getGeometry() != null) {
+                            nearbyLocation = result.getGeometry().getLocation();
+                            if (nearbyLocation != null && nearbyLocation.getLat() != null && nearbyLocation.getLng() != null) {
+                                markerViewStates.add(new MarkerViewState(
+                                    result.getPlaceId(),
+                                    result.getName(),
+                                    nearbyLocation.getLat(),
+                                    nearbyLocation.getLng(),
+                                    result.getVicinity()
+                                ));
+                            }
+                        }
                     }
                 }
             }
 
-            isLocationPermissionGranted = mapModel.isLocationPermissionGranted();
             currentLocation = mapModel.getCurrentLocation();
-
-            setViewState();
+            currentViewState = new MapViewState(mapModel.isLocationPermissionGranted(), markerViewStates, mapLat, mapLng, mapZoom);
+            updateCameraPosition();
         });
     }
 
-    public void onCameraIdled(double mapLat, double mapLng, float zoom) {
-        // Update camera position
-        mapLatitude = mapLat;
-        mapLongitude = mapLng;
-        mapZoom = zoom;
+    /**
+     * Updates map's zoom.
+     */
+    public void onCameraIdled(float zoom) {
+        if (currentViewState != null) {
+            currentViewState = new MapViewState(
+                currentViewState.isLocationLayerEnabled(),
+                currentViewState.getMarkerViewStates(),
+                currentViewState.getMapLatitude(),
+                currentViewState.getMapLongitude(),
+                zoom
+            );
+        }
     }
 
     public void onCameraCentered() {
-        setViewState();
+        updateCameraPosition();
     }
 
-    private void setViewState() {
-        // Update camera position if current position is available
-        if (currentLocation != null) {
-            mapLatitude = currentLocation.getLatitude();
-            mapLongitude = currentLocation.getLongitude();
-            mapZoom = Math.max(mapZoom, ZOOM_LEVEL_STREETS);
+    private void updateCameraPosition() {
+        if (currentLocation != null && currentViewState != null) {
+            currentViewState = new MapViewState(
+                currentViewState.isLocationLayerEnabled(),
+                currentViewState.getMarkerViewStates(),
+                currentLocation.getLatitude(),
+                currentLocation.getLongitude(),
+                Math.max(currentViewState.getMapZoom(), ZOOM_LEVEL_STREETS)
+            );
         }
 
         // Update view state value
-        viewState.setValue(new MapViewState(
-            isLocationPermissionGranted,
-            markerViewStates,
-            mapLatitude,
-            mapLongitude,
-            mapZoom
-        ));
+        viewState.setValue(currentViewState);
     }
 }

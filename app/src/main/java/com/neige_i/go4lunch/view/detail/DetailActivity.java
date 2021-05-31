@@ -41,7 +41,7 @@ public class DetailActivity extends AppCompatActivity {
         final InterestedWorkmateAdapter adapter = new InterestedWorkmateAdapter();
         ((RecyclerView) findViewById(R.id.interested_workmate_list)).setAdapter(adapter);
 
-        // ASKME: mandatory null check of Intent.resolveActivity(getPackageManager())
+        // TODO: add null check of Intent.resolveActivity(getPackageManager())
         callBtn.setOnClickListener(v -> startActivity(new Intent(
             Intent.ACTION_DIAL,
             Uri.parse("tel:" + callBtn.getTag())

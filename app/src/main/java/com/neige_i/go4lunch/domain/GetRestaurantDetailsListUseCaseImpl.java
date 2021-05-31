@@ -87,7 +87,7 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
             for (NearbyResponse.Result result : nearbyResponse.getResults()) {
                 final String placeId = result.getPlaceId();
 
-                if (!queriedPlaceIds.contains(placeId)) { // ASKME: check if map contains key
+                if (!queriedPlaceIds.contains(placeId)) {
 
                     queriedPlaceIds.add(placeId);
 
@@ -98,7 +98,6 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
 
                             // 4. ADD the new details response to the list and UPDATE LiveData
 
-                            // ASKME: put result's placeId instead of query placeId
                             placeIdDetailsResponseMap.put(placeId, newDetailsResponse);
 
                             placeIdDetailsResponseMapMediatorLiveData.setValue(placeIdDetailsResponseMap);

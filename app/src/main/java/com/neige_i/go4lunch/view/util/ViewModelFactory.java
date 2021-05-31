@@ -19,19 +19,18 @@ import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
-import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.GetFirebaseUserOldUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetFirestoreUserListUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.GetRestaurantDetailsListUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateInterestedWorkmatesUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.StopLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.view.auth.AuthViewModel;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel;
@@ -125,7 +124,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new GetRestaurantDetailsItemUseCaseImpl(detailsRepository, firebaseRepository),
                 new UpdateInterestedWorkmatesUseCaseImpl(firestoreRepository),
                 new UpdateSelectedRestaurantUseCaseImpl(firestoreRepository),
-                new GetFirebaseUserOldUseCaseImpl(firebaseRepository),
+                new GetFirebaseUserUseCaseImpl(firebaseAuth),
                 clock,
                 firestoreRepository
             );

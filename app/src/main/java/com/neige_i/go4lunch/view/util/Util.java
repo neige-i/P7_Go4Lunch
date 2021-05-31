@@ -63,7 +63,7 @@ public abstract class Util {
             .with(photoImg.getContext())
             .load(photoUrl)
             .transform(finalTransformation)
-            .into(photoImg); // ASKME: handle cache
+            .into(photoImg);
     }
 
     public static void setRatingImgVisibility(int rating, ImageView... ratingStars) {

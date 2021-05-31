@@ -30,8 +30,12 @@ import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class MapFragment extends Fragment {
 
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+
     private GoogleMap googleMap;
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
+
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -58,7 +62,7 @@ public class MapFragment extends Fragment {
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(googleMap -> {
             this.googleMap = googleMap;
 
-            googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Disabled, replaced by FAB
+            googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Replaced by custom FAB
             googleMap.getUiSettings().setMapToolbarEnabled(false); // Disable navigation options
 
             googleMap.setOnMarkerClickListener(marker -> {
@@ -66,10 +70,7 @@ public class MapFragment extends Fragment {
                 return false;
             });
             googleMap.setOnInfoWindowClickListener(marker -> onDetailsQueriedCallback.onDetailsQueried((String) marker.getTag()));
-            googleMap.setOnCameraIdleListener(() -> {
-                final CameraPosition cameraPosition = googleMap.getCameraPosition();
-                viewModel.onCameraIdled(cameraPosition.target.latitude, cameraPosition.target.longitude, cameraPosition.zoom);
-            });
+            googleMap.setOnCameraIdleListener(() -> viewModel.onCameraIdled(googleMap.getCameraPosition().zoom));
 
             final CameraPosition cameraPosition = googleMap.getCameraPosition();
             viewModel.onMapAvailable(cameraPosition.target.latitude, cameraPosition.target.longitude, cameraPosition.zoom);
@@ -79,6 +80,7 @@ public class MapFragment extends Fragment {
         final FloatingActionButton fab = requireView().findViewById(R.id.location_btn);
         fab.setOnClickListener(v -> viewModel.onCameraCentered());
 
+        // Update UI when state is changed
         viewModel.getViewState().observe(getViewLifecycleOwner(), mapViewState -> {
             googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
             fab.setVisibility(mapViewState.isLocationLayerEnabled() ? View.VISIBLE : View.GONE);

@@ -10,9 +10,6 @@ import java.util.List;
 
 public interface FirebaseRepository {
 
-    @Nullable
-    FirebaseUser getCurrentUser();
-
     @NonNull
     LiveData<String> getSelectedRestaurant();
 
