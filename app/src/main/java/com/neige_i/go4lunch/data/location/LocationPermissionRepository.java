@@ -5,12 +5,10 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
-public interface LocationRepository {
+public interface LocationPermissionRepository {
 
     @NonNull
-    LiveData<Location> getCurrentLocation();
+    LiveData<Boolean> getLocationPermission();
 
-    void startLocationUpdates();
-
-    void removeLocationUpdates();
+    void updateLocationPermission(boolean isPermissionGranted);
 }

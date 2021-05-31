@@ -10,7 +10,7 @@
         android:title="@string/bottom_menu_map"
         />
     <item
-        android:id="@+id/action_list"
+        android:id="@+id/action_restaurant"
         android:icon="@drawable/ic_list"
         android:title="@string/bottom_menu_list"
         />

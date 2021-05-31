@@ -16,7 +16,7 @@ import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.view.util.Util;
 import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
-import static com.neige_i.go4lunch.view.home.HomeActivity.EXTRA_PLACE_ID;
+import static com.neige_i.go4lunch.view.home.HomeActivity.PLACE_ID_INTENT_EXTRA;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -26,7 +26,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         final DetailViewModel viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(DetailViewModel.class);
-        viewModel.onInfoQueried(getIntent().getStringExtra(EXTRA_PLACE_ID));
+        viewModel.onInfoQueried(getIntent().getStringExtra(PLACE_ID_INTENT_EXTRA));
 
         final ImageView photoImg = findViewById(R.id.photo_img);
         final ImageView rating1 = findViewById(R.id.star1_ic);

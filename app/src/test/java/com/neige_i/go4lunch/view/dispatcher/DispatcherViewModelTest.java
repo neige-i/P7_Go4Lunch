@@ -3,7 +3,7 @@ package com.neige_i.go4lunch.view.dispatcher;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.neige_i.go4lunch.domain.dispatcher.GetFirebaseUserUseCase;
+import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel.ActivityToStart;
 
 import org.junit.Rule;

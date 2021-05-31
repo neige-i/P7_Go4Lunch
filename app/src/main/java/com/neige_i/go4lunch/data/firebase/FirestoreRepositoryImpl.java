@@ -34,8 +34,16 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
-            .get()
-            .addOnSuccessListener(documentSnapshot -> userMutableLiveData.setValue(documentSnapshot.toObject(User.class)));
+            .addSnapshotListener((documentSnapshot, error) -> {
+                if (error != null) {
+                    // Display error to user
+                    return;
+                }
+
+                if (documentSnapshot != null) {
+                    userMutableLiveData.setValue(documentSnapshot.toObject(User.class));
+                }
+            });
 
         return userMutableLiveData;
     }

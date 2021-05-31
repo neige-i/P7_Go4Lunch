@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain;
+package com.neige_i.go4lunch.domain.location;
 
 public interface StopLocationUpdatesUseCase {
 

@@ -1,9 +1,9 @@
-package com.neige_i.go4lunch.domain;
+package com.neige_i.go4lunch.domain.location;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
-public interface GetLocPermissionUseCase {
+public interface GetLocationPermissionUseCase {
 
     @NonNull
     LiveData<Boolean> isPermissionGranted();

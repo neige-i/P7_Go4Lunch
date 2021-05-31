@@ -6,99 +6,200 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.domain.GetLocPermissionUseCase;
-import com.neige_i.go4lunch.domain.StopLocationUpdatesUseCase;
-import com.neige_i.go4lunch.domain.UpdateLocPermissionUseCase;
+import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.location.StopLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCase;
 import com.neige_i.go4lunch.view.util.MediatorSingleLiveEvent;
+import com.neige_i.go4lunch.view.util.SingleLiveEvent;
 
-import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_MAP;
-import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_RESTAURANT;
-import static com.neige_i.go4lunch.view.home.HomeActivity.TAG_FRAGMENT_WORKMATE;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static com.neige_i.go4lunch.view.home.HomeActivity.MAP_FRAGMENT_TAG;
+import static com.neige_i.go4lunch.view.home.HomeActivity.RESTAURANT_FRAGMENT_TAG;
+import static com.neige_i.go4lunch.view.home.HomeActivity.WORKMATE_FRAGMENT_TAG;
 
 public class HomeViewModel extends ViewModel {
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
     @NonNull
-    private final UpdateLocPermissionUseCase updateLocPermissionUseCase;
+    private final SetLocationPermissionUseCase setLocationPermissionUseCase;
     @NonNull
     private final StopLocationUpdatesUseCase stopLocationUpdatesUseCase;
 
+    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+
     @NonNull
-    private final MutableLiveData<HomeViewState> viewState = new MutableLiveData<>();
+    private final MutableLiveData<Integer> titleIdState = new MutableLiveData<>();
     @NonNull
-    private final MediatorSingleLiveEvent<Void> requestLocationPermissionEvent = new MediatorSingleLiveEvent<>();
+    private final MediatorSingleLiveEvent<Boolean> requestLocationPermissionEvent = new MediatorSingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<String> hideFragmentEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<String> showFragmentEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Boolean> addMapFragmentEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Boolean> addRestaurantFragmentEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Boolean> addWorkmateFragmentEvent = new SingleLiveEvent<>();
+
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
 
     /**
      * Control variable to prevent infinite loop when denying location permission.<br />
-     * 1. if onResume() is called -> update location permission.<br />
-     * 2. if location permission is not granted -> display the request permission dialog.<br />
-     * Then: permission not granted -> display request dialog -> permission denied ->
-     * dialog dismissed -> activity resumed -> location updated -> display request dialog again ->
-     * permission denied -> infinite loop
+     * The location permission is checked inside onResume() and should be requested if it is not granted yet.
+     * The problem happens if the user denies the permission: the permission dialog is naturally dismissed and the activity is resumed.
+     * But, as previously stated, the permission is checked again while the activity is being resumed.
+     * As the permission is not granted, it is requested again and here begins the infinite loop.
      */
     private boolean isLocationPermissionJustDenied;
 
-    public HomeViewModel(@NonNull GetLocPermissionUseCase getLocPermissionUseCase,
-                         @NonNull UpdateLocPermissionUseCase updateLocPermissionUseCase,
+    /**
+     * List of tags representing the fragments that have already been displayed.<br />
+     * The first tag, if present, represents the last displayed fragment.
+     */
+    private final List<String> currentFragmentTags = new ArrayList<>();
+
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
+
+    public HomeViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
+                         @NonNull SetLocationPermissionUseCase setLocationPermissionUseCase,
                          @NonNull StopLocationUpdatesUseCase stopLocationUpdatesUseCase
     ) {
-        this.updateLocPermissionUseCase = updateLocPermissionUseCase;
+        this.setLocationPermissionUseCase = setLocationPermissionUseCase;
         this.stopLocationUpdatesUseCase = stopLocationUpdatesUseCase;
 
-        requestLocationPermissionEvent.addSource(getLocPermissionUseCase.isPermissionGranted(), isPermissionGranted -> {
-            if (isPermissionGranted) {
-                isLocationPermissionJustDenied = false;
-            } else if (!isLocationPermissionJustDenied) {
-                isLocationPermissionJustDenied = true;
+        handleLocationPermissionRequest(getLocationPermissionUseCase);
 
-                // Request the permission only if it is not currently granted and if the user has not just denied it
-                requestLocationPermissionEvent.call();
-            }
-        });
-
-        // Set the map fragment as the default one
-        onFragmentSelected(R.id.action_map);
+        // Set the default fragment to display
+        onNavigationItemSelected(R.id.action_map);
     }
 
-    public LiveData<HomeViewState> getViewState() {
-        return viewState;
+    @NonNull
+    public LiveData<Integer> getTitleIdState() {
+        return titleIdState;
     }
 
-    public LiveData<Void> getRequestLocationPermissionEvent() {
+    @NonNull
+    public MediatorSingleLiveEvent<Boolean> getRequestLocationPermissionEvent() {
         return requestLocationPermissionEvent;
     }
 
-    public void onLocationPermissionUpdated(boolean isPermissionGranted) {
-        updateLocPermissionUseCase.updatePermission(isPermissionGranted);
+    @NonNull
+    public LiveData<String> getHideFragmentEvent() {
+        return hideFragmentEvent;
     }
 
-    public void onLocationUpdatesRemoved() {
+    @NonNull
+    public LiveData<String> getShowFragmentEvent() {
+        return showFragmentEvent;
+    }
+
+    @NonNull
+    public LiveData<Boolean> getAddMapFragmentEvent() {
+        return addMapFragmentEvent;
+    }
+
+    @NonNull
+    public LiveData<Boolean> getAddRestaurantFragmentEvent() {
+        return addRestaurantFragmentEvent;
+    }
+
+    @NonNull
+    public LiveData<Boolean> getAddWorkmateFragmentEvent() {
+        return addWorkmateFragmentEvent;
+    }
+
+    // ------------------------------------- LOCATION METHODS --------------------------------------
+
+    private void handleLocationPermissionRequest(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase) {
+        requestLocationPermissionEvent.addSource(getLocationPermissionUseCase.isPermissionGranted(), isPermissionGranted -> {
+            System.out.print("location permission has changed\t");
+            if (isPermissionGranted) {
+                System.out.println("if");
+                isLocationPermissionJustDenied = false;
+            } else if (!isLocationPermissionJustDenied) {
+                System.out.println("else if");
+                isLocationPermissionJustDenied = true;
+
+                // Request the permission only if it is not currently granted and if the user has not just denied it
+                requestLocationPermissionEvent.setValue(true);
+            } else {
+                System.out.println("else");
+            }
+        });
+    }
+
+    public void updateLocationPermission(boolean isPermissionGranted) {
+        setLocationPermissionUseCase.setPermission(isPermissionGranted);
+    }
+
+    public void removeLocationUpdates() {
         stopLocationUpdatesUseCase.stopUpdates();
     }
 
-    public void onFragmentSelected(int menuItemId) {
-        final HomeViewState oldViewState = viewState.getValue();
+    // ---------------------------------------- UI METHODS -----------------------------------------
 
-        // Set the fragment to hide as the old displayed fragment
-        final String fragmentToHide = oldViewState != null
-            ? oldViewState.getFragmentToShow()
-            : null;
+    public void onNavigationItemSelected(int menuItemId) {
+        updateToolbarTitle(menuItemId);
+        updateDisplayedFragment(menuItemId);
+    }
 
-        // Set the fragment to show and the String ID for the toolbar title
-        final String fragmentToShow;
+    private void updateToolbarTitle(int menuItemId) {
         final int titleId;
+
         if (menuItemId == R.id.action_map) {
-            fragmentToShow = TAG_FRAGMENT_MAP;
             titleId = R.string.title_restaurant;
-        } else if (menuItemId == R.id.action_list) {
-            fragmentToShow = TAG_FRAGMENT_RESTAURANT;
+        } else if (menuItemId == R.id.action_restaurant) {
             titleId = R.string.title_restaurant;
         } else if (menuItemId == R.id.action_workmates) {
-            fragmentToShow = TAG_FRAGMENT_WORKMATE;
             titleId = R.string.title_workmates;
         } else {
-            throw new IllegalStateException("Unexpected value: " + menuItemId);
+            throw new IllegalStateException("Wrong MenuItem ID: " + menuItemId);
         }
 
-        viewState.setValue(new HomeViewState(fragmentToShow, fragmentToHide, titleId));
+        titleIdState.setValue(titleId);
+    }
+
+    private void updateDisplayedFragment(int menuItemId) {
+        // 1. Hide the currently displayed fragment (if there is one)
+        if (!currentFragmentTags.isEmpty()) {
+            hideFragmentEvent.setValue(currentFragmentTags.get(0));
+        }
+
+        // 2. Set the tag of the fragment to display
+        final String fragmentToDisplayTag;
+        if (menuItemId == R.id.action_map) {
+            fragmentToDisplayTag = MAP_FRAGMENT_TAG;
+        } else if (menuItemId == R.id.action_restaurant) {
+            fragmentToDisplayTag = RESTAURANT_FRAGMENT_TAG;
+        } else if (menuItemId == R.id.action_workmates) {
+            fragmentToDisplayTag = WORKMATE_FRAGMENT_TAG;
+        } else {
+            throw new IllegalStateException("Wrong MenuItem ID: " + menuItemId);
+        }
+
+        // 3. Show or add the fragment to display
+        // Make sure to put the tag of the fragment to display as the first element of the list
+        if (currentFragmentTags.contains(fragmentToDisplayTag)) {
+            Collections.swap(currentFragmentTags, currentFragmentTags.indexOf(fragmentToDisplayTag), 0);
+            showFragmentEvent.setValue(currentFragmentTags.get(0));
+        } else {
+            currentFragmentTags.add(0, fragmentToDisplayTag);
+            switch (fragmentToDisplayTag) {
+                case MAP_FRAGMENT_TAG:
+                    addMapFragmentEvent.setValue(true);
+                    break;
+                case RESTAURANT_FRAGMENT_TAG:
+                    addRestaurantFragmentEvent.setValue(true);
+                    break;
+                case WORKMATE_FRAGMENT_TAG:
+                    addWorkmateFragmentEvent.setValue(true);
+                    break;
+            }
+        }
     }
 }

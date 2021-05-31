@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
 
-    <!-- Toolbar title-->
+    <!-- Toolbar title -->
     <string name="title_restaurant">I\'m Hungry!</string>
     <string name="title_workmates">Available workmates</string>
 
@@ -27,7 +27,7 @@
     <string name="sign_in_google">Sign in with Google</string>
     <string name="sign_in_facebook">Sign in with Facebook</string>
 
-    <!-- Placeholders -->
+    <!-- Placeholder -->
     <string name="workmate_count">(%d)</string>
     <string name="open_until">Open until %s</string>
 
@@ -36,7 +36,15 @@
     <string name="closed">Closed</string>
     <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
 
-    <!-- Third part IDs -->
+    <!-- Snackbar message -->
+    <string name="no_internet_error">No internet connection</string>
+    <string name="default_connection_error">Connection failed</string>
+    <string name="invalid_user_error">Account has been disabled</string>
+    <string name="invalid_credentials_error">Malformed or expired credentials</string>
+    <string name="user_collision_error">Account already exists</string>
+    <string name="general_error">An error occurred</string>
+
+    <!-- Third part ID -->
     <string name="facebook_app_id">5020438924692715</string>
     <string name="fb_login_protocol_scheme">fb5020438924692715</string>
 </resources>
