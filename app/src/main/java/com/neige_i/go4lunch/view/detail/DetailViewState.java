@@ -10,18 +10,20 @@ class DetailViewState {
     private final String name;
     private final String address;
     private final int rating;
+    private final boolean noRatingLblVisibility;
     private final String phoneNumber;
     private final String website;
     private final boolean selected;
     private final boolean favorite;
     private final List<String> workmateIds;
 
-    public DetailViewState(String placeId, String name, String photoUrl, String address, int rating, String phoneNumber, String website, boolean selected, boolean favorite, List<String> workmateIds) {
+    public DetailViewState(String placeId, String name, String photoUrl, String address, int rating, boolean noRatingLblVisibility, String phoneNumber, String website, boolean selected, boolean favorite, List<String> workmateIds) {
         this.placeId = placeId;
         this.name = name;
         this.photoUrl = photoUrl;
         this.address = address;
         this.rating = rating;
+        this.noRatingLblVisibility = noRatingLblVisibility;
         this.phoneNumber = phoneNumber;
         this.website = website;
         this.selected = selected;
@@ -47,6 +49,10 @@ class DetailViewState {
 
     public int getRating() {
         return rating;
+    }
+
+    public boolean isNoRatingLblVisible() {
+        return noRatingLblVisibility;
     }
 
     public String getPhoneNumber() {

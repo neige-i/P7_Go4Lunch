@@ -7,8 +7,6 @@ import java.util.Objects;
 public class User {
 
     @Nullable
-    private final String id;
-    @Nullable
     private final String email;
     @Nullable
     private final String name;
@@ -21,24 +19,17 @@ public class User {
      * Mandatory empty constructor for Firestore.
      */
     public User() {
-        id = null;
         email = null;
         name = null;
         photoUrl = null;
         selectedRestaurant = null;
     }
 
-    public User(@Nullable String id, @Nullable String email, @Nullable String name, @Nullable String photoUrl, @Nullable SelectedRestaurant selectedRestaurant) {
-        this.id = id;
+    public User(@Nullable String email, @Nullable String name, @Nullable String photoUrl, @Nullable SelectedRestaurant selectedRestaurant) {
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
         this.selectedRestaurant = selectedRestaurant;
-    }
-
-    @Nullable
-    public String getId() {
-        return id;
     }
 
     @Nullable
@@ -66,8 +57,7 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) &&
-            Objects.equals(email, user.email) &&
+        return Objects.equals(email, user.email) &&
             Objects.equals(name, user.name) &&
             Objects.equals(photoUrl, user.photoUrl) &&
             Objects.equals(selectedRestaurant, user.selectedRestaurant);
@@ -75,7 +65,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, name, photoUrl, selectedRestaurant);
+        return Objects.hash(email, name, photoUrl, selectedRestaurant);
     }
 
     public static class SelectedRestaurant {

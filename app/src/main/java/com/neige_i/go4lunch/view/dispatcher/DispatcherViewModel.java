@@ -5,11 +5,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
-import com.neige_i.go4lunch.view.util.SingleLiveEvent;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 public class DispatcherViewModel extends ViewModel {
 
-    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+    // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
     @NonNull
     private final SingleLiveEvent<ActivityToStart> startActivityEvent = new SingleLiveEvent<>();

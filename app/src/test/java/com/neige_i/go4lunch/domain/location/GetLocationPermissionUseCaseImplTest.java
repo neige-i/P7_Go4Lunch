@@ -4,7 +4,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
-import com.neige_i.go4lunch.data.location.LocationRepository;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,8 +14,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class GetLocationPermissionUseCaseImplTest {
 
@@ -31,8 +28,7 @@ public class GetLocationPermissionUseCaseImplTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
-    private final LocationPermissionRepository mockLocationPermissionRepository = mock(LocationPermissionRepository.class);
-    private final LocationRepository mockLocationRepository = mock(LocationRepository.class);
+    private final LocationPermissionRepository locationPermissionRepositoryMock = mock(LocationPermissionRepository.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -43,41 +39,35 @@ public class GetLocationPermissionUseCaseImplTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(locationPermissionMutableLiveData).when(mockLocationPermissionRepository).getLocationPermission();
+        doReturn(locationPermissionMutableLiveData).when(locationPermissionRepositoryMock).getLocationPermission();
 
         // Init UseCase
-        getLocationPermissionUseCase = new GetLocationPermissionUseCaseImpl(mockLocationPermissionRepository, mockLocationRepository);
+        getLocationPermissionUseCase = new GetLocationPermissionUseCaseImpl(locationPermissionRepositoryMock);
     }
 
     // ------------------------------------------- TESTS -------------------------------------------
 
     @Test
-    public void startLocationUpdates_when_permissionIsGranted() throws InterruptedException {
+    public void returnTrue_when_permissionIsGranted() throws InterruptedException {
         // GIVEN
         locationPermissionMutableLiveData.setValue(true);
 
         // WHEN
-        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isPermissionGranted());
+        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isGranted());
 
         // THEN
         assertTrue(isPermissionGranted);
-
-        verify(mockLocationRepository).startLocationUpdates();
-        verifyNoMoreInteractions(mockLocationRepository);
     }
 
     @Test
-    public void removeLocationUpdates_when_permissionIsDenied() throws InterruptedException {
+    public void returnFalse_when_permissionIsDenied() throws InterruptedException {
         // GIVEN
         locationPermissionMutableLiveData.setValue(false);
 
         // WHEN
-        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isPermissionGranted());
+        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isGranted());
 
         // THEN
         assertFalse(isPermissionGranted);
-
-        verify(mockLocationRepository).removeLocationUpdates();
-        verifyNoMoreInteractions(mockLocationRepository);
     }
 }

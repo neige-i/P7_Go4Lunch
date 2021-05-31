@@ -6,25 +6,30 @@ import java.util.Objects;
 
 class MarkerViewState {
 
+    @NonNull
     private final String placeId;
+    @NonNull
     private final String name;
     private final double latitude;
     private final double longitude;
-    private final String vicinity;
+    @NonNull
+    private final String address;
 
 
-    public MarkerViewState(String placeId, String name, double latitude, double longitude, String vicinity) {
+    MarkerViewState(@NonNull String placeId, @NonNull String name, double latitude, double longitude, @NonNull String address) {
         this.placeId = placeId;
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.vicinity = vicinity;
+        this.address = address;
     }
 
+    @NonNull
     public String getPlaceId() {
         return placeId;
     }
 
+    @NonNull
     public String getName() {
         return name;
     }
@@ -37,36 +42,37 @@ class MarkerViewState {
         return longitude;
     }
 
-    public String getVicinity() {
-        return vicinity;
+    @NonNull
+    public String getAddress() {
+        return address;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         MarkerViewState that = (MarkerViewState) o;
-        return Double.compare(that.latitude, latitude) == 0 &&
-            Double.compare(that.longitude, longitude) == 0 &&
-            Objects.equals(placeId, that.placeId) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(vicinity, that.vicinity);
+        return Double.compare(that.latitude, latitude) == 0 && Double.compare(that.longitude, longitude) == 0 && placeId.equals(that.placeId) && name.equals(that.name) && address.equals(that.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, latitude, longitude, vicinity);
+        return Objects.hash(placeId, name, latitude, longitude, address);
     }
 
     @NonNull
     @Override
     public String toString() {
         return "MarkerViewState{" +
-            placeId +
-            ": '" + name +
-            "' " + latitude +
-            "," + longitude +
-            " '" + vicinity + '\'' +
+            "placeId='" + placeId + '\'' +
+            ", name='" + name + '\'' +
+            ", latitude=" + latitude +
+            ", longitude=" + longitude +
+            ", address='" + address + '\'' +
             '}';
     }
 }

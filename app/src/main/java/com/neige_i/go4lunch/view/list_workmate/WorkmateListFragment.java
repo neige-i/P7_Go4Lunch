@@ -10,19 +10,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
+import com.neige_i.go4lunch.databinding.FragmentListBinding;
+import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.ViewModelFactory;
 
 public class WorkmateListFragment extends Fragment {
 
+    // --------------------------------------- LOCAL FIELDS ----------------------------------------
+
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
+
+    // -------------------------------------- FACTORY METHODS --------------------------------------
 
     public static WorkmateListFragment newInstance() {
         return new WorkmateListFragment();
     }
+
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -41,16 +47,21 @@ public class WorkmateListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final WorkmateListViewModel viewModel =new ViewModelProvider(
-            this,
-            ViewModelFactory.getInstance()
-        ).get(WorkmateListViewModel.class);
+        // Init ViewModel
+        final WorkmateListViewModel viewModel =
+            new ViewModelProvider(this, ViewModelFactory.getInstance()).get(WorkmateListViewModel.class);
 
+        // Init binding
+        final FragmentListBinding binding = FragmentListBinding.bind(view);
+
+        // Setup UI
         final WorkmateAdapter adapter = new WorkmateAdapter(viewModel::onWorkmateItemClicked);
-        ((RecyclerView) requireView().findViewById(R.id.recyclerview)).setAdapter(adapter);
+        binding.recyclerview.setAdapter(adapter);
 
+        // Update UI when state is changed
         viewModel.getViewState().observe(getViewLifecycleOwner(), adapter::submitList);
 
+        // Update UI when event is triggered
         viewModel.getTriggerCallbackEvent().observe(getViewLifecycleOwner(), placeId ->
             onDetailsQueriedCallback.onDetailsQueried(placeId));
     }

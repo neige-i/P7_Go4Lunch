@@ -17,8 +17,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Go4Lunch"
         >
+
         <activity
             android:name=".view.dispatcher.DispatcherActivity"
+            android:exported="true"
             android:theme="@style/Theme.Go4Lunch.Transparent"
             >
             <intent-filter>
@@ -39,7 +41,6 @@
             android:value="@string/MAPS_API_KEY"
             />
 
-        <!-- ASKME: hide app id -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"

@@ -22,12 +22,6 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
         favoriteRestaurants.setValue(new ArrayList<>());
     }
 
-    @Nullable
-    @Override
-    public FirebaseUser getCurrentUser() {
-        return FirebaseAuth.getInstance().getCurrentUser(); // ASKME: wrap return type inside LiveData
-    }
-
     @NonNull
     @Override
     public LiveData<String> getSelectedRestaurant() {

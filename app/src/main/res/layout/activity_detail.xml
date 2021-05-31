@@ -79,18 +79,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="left"
-        app:constraint_referenced_ids="star1_ic"
+        app:constraint_referenced_ids="star1_img"
         />
 
     <ImageView
-        android:id="@+id/star1_ic"
+        android:id="@+id/star1_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/star2_ic"
+        app:layout_constraintEnd_toStartOf="@id/star2_img"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@id/name_lbl"
@@ -99,29 +99,39 @@
         />
 
     <ImageView
-        android:id="@+id/star2_ic"
+        android:id="@+id/star2_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/star3_ic"
-        app:layout_constraintStart_toEndOf="@id/star1_ic"
+        app:layout_constraintEnd_toStartOf="@id/star3_img"
+        app:layout_constraintStart_toEndOf="@id/star1_img"
         app:layout_constraintTop_toTopOf="@id/name_lbl"
         tools:visibility="visible"
         />
 
     <ImageView
-        android:id="@+id/star3_ic"
+        android:id="@+id/star3_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/card_view"
-        app:layout_constraintStart_toEndOf="@id/star2_ic"
+        app:layout_constraintStart_toEndOf="@id/star2_img"
         app:layout_constraintTop_toTopOf="@id/name_lbl"
         tools:visibility="visible"
+        />
+
+    <TextView
+        android:id="@+id/no_rating_lbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:text="@string/no_rating_available"
+        app:layout_constraintStart_toStartOf="@id/star1_img"
+        app:layout_constraintBaseline_toBaselineOf="@id/name_lbl"
         />
 
     <Button

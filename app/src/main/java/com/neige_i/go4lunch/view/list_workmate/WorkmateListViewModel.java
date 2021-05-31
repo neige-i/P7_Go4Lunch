@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.firebase.model.User;
-import com.neige_i.go4lunch.domain.GetFirestoreUserListUseCase;
-import com.neige_i.go4lunch.view.util.SingleLiveEvent;
+import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -84,7 +84,7 @@ public class WorkmateListViewModel extends ViewModel {
 
                     // Add the view state to the list
                     viewStates.add(new WorkmateViewState(
-                        user.getId(),
+                        user.getEmail(),
                         user.getPhotoUrl(),
                         textStyle,
                         textColor,

@@ -4,43 +4,62 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.internal.CallbackManagerImpl;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FacebookAuthProvider;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.databinding.ActivityAuthBinding;
+import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.home.HomeActivity;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 import java.util.Arrays;
 
 public class AuthActivity extends AppCompatActivity {
 
-    // -------------------------------------- CLASS VARIABLES --------------------------------------
-
-    public static final int GOOGLE_SIGN_IN_REQUEST_CODE = 123;
-
-    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+    // -------------------------------------- LOCAL FIELDS --------------------------------------
 
     private AuthViewModel viewModel;
+    @NonNull
+    private final CallbackManager facebookCallbackManager = CallbackManager.Factory.create();
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_auth);
-
-        final View constraintLayout = findViewById(R.id.constraint_layout);
 
         // Init ViewModel
         viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(AuthViewModel.class);
 
-        // Configure Google sign-in
+        // Init view binding
+        final ActivityAuthBinding binding = ActivityAuthBinding.inflate(getLayoutInflater());
+
+        // Setup activity result callback
+        final ActivityResultLauncher<Intent> signInActivityResultLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), ignored -> {
+                // The Facebook login SDK doesn't use the Activity Result API yet
+                // That is why the callback result is ignored and is handled in onActivityResult()
+            });
+
+        // Setup Firebase sign-in methods
         final GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(
             this,
             new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -48,27 +67,35 @@ public class AuthActivity extends AppCompatActivity {
                 .requestEmail()
                 .build()
         );
+        final LoginManager loginManager = LoginManager.getInstance();
+        handleFacebookLogin(loginManager);
 
-        findViewById(R.id.google_sign_in_btn).setOnClickListener(v -> startActivityForResult(
-            googleSignInClient.getSignInIntent(),
-            GOOGLE_SIGN_IN_REQUEST_CODE
-        ));
+        // Setup UI
+        setContentView(binding.getRoot());
 
-        // Configure Facebook sign-in
-        findViewById(R.id.facebook_sign_in_btn).setOnClickListener(v -> viewModel.onFacebookLoggedIn());
+        binding.googleSignInBtn.setOnClickListener(
+            v -> signInActivityResultLauncher.launch(googleSignInClient.getSignInIntent())
+        );
 
-        viewModel.getFacebookLoginEvent().observe(this, loginManager -> loginManager.logInWithReadPermissions(
-            this,
-            Arrays.asList("email", "public_profile")
-        ));
+        binding.facebookSignInBtn.setOnClickListener(
+            v -> loginManager.logInWithReadPermissions(this, Arrays.asList("email", "public_profile"))
+        );
 
-        // Observe ViewModel's event
-        viewModel.getStartHomeActivityEvent().observe(this, aVoid -> {
+        // Update UI when state is changed
+        viewModel.getAuthViewState().observe(this, authViewState -> {
+            binding.progressBar.setVisibility(authViewState.isProgressBarVisible() ? View.VISIBLE : View.GONE);
+            binding.googleSignInBtn.setEnabled(authViewState.isButtonEnabled());
+            binding.facebookSignInBtn.setEnabled(authViewState.isButtonEnabled());
+        });
+
+        // Setup actions when events are triggered
+        viewModel.getStartHomeActivityEvent().observe(this, unused -> {
             startActivity(new Intent(this, HomeActivity.class));
             finish();
         });
         viewModel.getShowErrorEvent().observe(this, stringId ->
-            Snackbar.make(constraintLayout, stringId, Snackbar.LENGTH_SHORT).show());
+            Snackbar.make(binding.getRoot(), stringId, Snackbar.LENGTH_INDEFINITE).show()
+        );
     }
 
     // ------------------------------------ NAVIGATION METHODS -------------------------------------
@@ -76,6 +103,44 @@ public class AuthActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        viewModel.onSignInResult(requestCode, resultCode, data);
+
+        if (requestCode == CallbackManagerImpl.RequestCodeOffset.Login.toRequestCode()) {
+            // Pass the activity result back to the Facebook SDK
+            facebookCallbackManager.onActivityResult(requestCode, resultCode, data);
+        } else {
+            handleGoogleLogin(data);
+        }
+    }
+
+    // --------------------------------------- LOGIN METHODS ---------------------------------------
+
+    private void handleGoogleLogin(@Nullable Intent googleIntent) {
+        try {
+            final String idToken = GoogleSignIn.getSignedInAccountFromIntent(googleIntent)
+                .getResult(ApiException.class)
+                .getIdToken();
+            viewModel.signInToFirebase(GoogleAuthProvider.getCredential(idToken, null));
+        } catch (ApiException e) {
+            viewModel.handleGoogleSignInError(e);
+        }
+    }
+
+    private void handleFacebookLogin(@NonNull LoginManager loginManager) {
+        loginManager.registerCallback(facebookCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                final AccessToken accessToken = loginResult.getAccessToken();
+                viewModel.signInToFirebase(FacebookAuthProvider.getCredential(accessToken.getToken()));
+            }
+
+            @Override
+            public void onCancel() {
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                viewModel.handleFacebookSignInError(error);
+            }
+        });
     }
 }

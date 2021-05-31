@@ -18,58 +18,64 @@
         tools:src="@color/black"
         />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="left"
-        app:barrierMargin="-10dp"
-        app:constraint_referenced_ids="thumbnail_img"
-        />
-
     <TextView
         android:id="@+id/name_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/address_lbl"
         app:layout_constraintEnd_toStartOf="@id/distance_lbl"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/address_lbl"
-        app:layout_constraintTop_toTopOf="@id/thumbnail_img"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         tools:text="Le Zinc"
-        />
-
-    <TextView
-        android:id="@+id/distance_lbl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@id/barrier"
-        app:layout_constraintTop_toTopOf="@id/thumbnail_img"
-        tools:text="120m"
         />
 
     <TextView
         android:id="@+id/address_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@color/gray_dark"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toTopOf="@id/opening_hours_lbl"
-        app:layout_constraintEnd_toStartOf="@id/coworker_ic"
+        app:layout_constraintEnd_toStartOf="@id/coworker_img"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/name_lbl"
         tools:text="French - 2 Rue du Vivienne"
         />
 
+    <TextView
+        android:id="@+id/opening_hours_lbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/gray_dark"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/address_lbl"
+        tools:text="Open until 7pm"
+        />
+
+    <TextView
+        android:id="@+id/distance_lbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_img"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="120m"
+        />
+
     <ImageView
-        android:id="@+id/coworker_ic"
+        android:id="@+id/coworker_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_person_icon"
@@ -83,51 +89,53 @@
         android:id="@+id/coworker_count_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
         android:textColor="@color/gray_dark"
-        app:layout_constraintBottom_toBottomOf="@id/coworker_ic"
-        app:layout_constraintEnd_toStartOf="@id/barrier"
+        app:layout_constraintBottom_toBottomOf="@id/coworker_img"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_img"
         tools:text="(2)"
         />
 
     <TextView
-        android:id="@+id/opening_hours_lbl"
+        android:id="@+id/no_rating_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:text="@string/no_rating_available"
         android:textColor="@color/gray_dark"
-        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/address_lbl"
-        tools:text="Open until 7pm"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_img"
+        app:layout_constraintTop_toTopOf="@id/opening_hours_lbl"
         />
 
     <ImageView
-        android:id="@+id/star3_ic"
+        android:id="@+id/star3_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="@string/description_star_icon"
+        android:src="@drawable/ic_rate"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_img"
+        />
+
+    <ImageView
+        android:id="@+id/star2_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
-        app:layout_constraintEnd_toStartOf="@id/barrier"
+        app:layout_constraintEnd_toStartOf="@id/star3_img"
         />
 
     <ImageView
-        android:id="@+id/star2_ic"
+        android:id="@+id/star1_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
-        app:layout_constraintEnd_toStartOf="@id/star3_ic"
-        />
-
-    <ImageView
-        android:id="@+id/star1_ic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/description_star_icon"
-        android:src="@drawable/ic_rate"
-        app:layout_constraintBottom_toBottomOf="@id/thumbnail_img"
-        app:layout_constraintEnd_toStartOf="@id/star2_ic"
+        app:layout_constraintEnd_toStartOf="@id/star2_img"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
