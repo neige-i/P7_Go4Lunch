@@ -2,14 +2,16 @@ package com.neige_i.go4lunch.view.map;
 
 import android.location.Location;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.domain.location.GetGpsStatusUseCase;
@@ -17,7 +19,7 @@ import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.location.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCase;
-import com.neige_i.go4lunch.view.SingleLiveEvent;
+import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -48,13 +50,15 @@ public class MapViewModel extends ViewModel {
      * The map camera is automatically moved whenever a new location is available.
      * But if the user scrolls manually the map, it should stay still even if the location is updated.
      */
-    private boolean isCameraMovedManually;
+    private boolean hasCameraMovedManually;
+
+    private final MutableLiveData<CameraPosition> cameraPositionMutableLiveData = new MutableLiveData<>();
+
+    // MEDIATOR 2
+    private final MutableLiveData<Boolean> onCenterMapButtonClickedPing = new MutableLiveData<>();
+
     @NonNull
-    private final SingleLiveEvent<Void> moveMapCameraToLocationEvent = new SingleLiveEvent<>();
-    private boolean needToCenterMapCameraOnLocation;
-    @NonNull
-    private final SingleLiveEvent<CameraPosition> cameraPositionSingEvent = new SingleLiveEvent<>();
-    private boolean updateFabStyleOnly;
+    private final MediatorSingleLiveEvent<CameraPosition> cameraPositionMediatorSingleLiveEvent = new MediatorSingleLiveEvent<>();
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -72,23 +76,40 @@ public class MapViewModel extends ViewModel {
         final LiveData<Boolean> isGpsEnabledLiveData = getGpsStatusUseCase.isEnabled();
 
         mapViewState.addSource(isLocationPermissionGrantedLiveData, isLocationPermissionGranted ->
-            mapCombine(isLocationPermissionGranted, locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPositionSingEvent.getValue())
+            mapCombine(isLocationPermissionGranted, locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPositionMutableLiveData.getValue())
         );
         mapViewState.addSource(locationLiveData, location ->
-           mapCombine(isLocationPermissionGrantedLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPositionSingEvent.getValue())
+            mapCombine(isLocationPermissionGrantedLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPositionMutableLiveData.getValue())
         );
         mapViewState.addSource(nearbyRestaurantsLiveData, nearbyRestaurants ->
-            mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurants, isGpsEnabledLiveData.getValue(), cameraPositionSingEvent.getValue())
+            mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurants, isGpsEnabledLiveData.getValue(), cameraPositionMutableLiveData.getValue())
         );
         mapViewState.addSource(isGpsEnabledLiveData, isGpsEnabled ->
-            mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabled, cameraPositionSingEvent.getValue())
+            mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabled, cameraPositionMutableLiveData.getValue())
         );
-        mapViewState.addSource(moveMapCameraToLocationEvent, moveMapCameraToLocation ->
-            mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPositionSingEvent.getValue())
-        );
-        mapViewState.addSource(cameraPositionSingEvent, cameraPosition ->
+        mapViewState.addSource(cameraPositionMutableLiveData, cameraPosition ->
             mapCombine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), cameraPosition)
         );
+
+        // MEDIATOR 2
+        cameraPositionMediatorSingleLiveEvent.addSource(locationLiveData, location -> combineCameraEvent(location, onCenterMapButtonClickedPing.getValue()));
+        cameraPositionMediatorSingleLiveEvent.addSource(onCenterMapButtonClickedPing, ping -> combineCameraEvent(locationLiveData.getValue(), ping));
+    }
+
+    private void combineCameraEvent(@Nullable Location location, @Nullable Boolean ping) {
+        if (location == null || ping == null) {
+            return;
+        }
+
+        onCenterMapButtonClickedPing.setValue(null);
+
+        cameraPositionMediatorSingleLiveEvent.setValue(
+            CameraPosition.fromLatLngZoom(
+                new LatLng(location.getLatitude(), location.getLongitude()),
+                15
+            )
+        );
+
     }
 
     private void mapCombine(@Nullable Boolean isLocationPermissionGranted,
@@ -101,75 +122,65 @@ public class MapViewModel extends ViewModel {
         final boolean isGpsCurrentlyEnabled = Objects.equals(isGpsEnabled, true);
         final float currentZoom = cameraPosition != null ? cameraPosition.zoom : STREET_ZOOM_LEVEL;
 
-        // Setup markers to add
-        final List<MarkerViewState> markers;
-        if (needToCenterMapCameraOnLocation) {
-            isCameraMovedManually = false; // Reset flag because camera needs to be moved programmatically
-            needToCenterMapCameraOnLocation = false;
-
-            if (!isGpsCurrentlyEnabled) {
-                requestGpsUseCase.request();
-                return;
-            }
-            markers = null; // No markers to add when the map camera is moved to the current location
-        } else if (updateFabStyleOnly) {
-            markers = null;
-        } else {
-            markers = setupMarkers(nearbyRestaurants);
+        if (location == null || cameraPosition == null) {
+            return;
         }
 
+        final List<MarkerViewState> markers = setupMarkers(nearbyRestaurants);
+
         // Setup map coordinates (weather or not the map camera should be moved)
-        final Double latitude, longitude;
-        final Float zoom;
-        if (!isCameraMovedManually && !updateFabStyleOnly && isGpsCurrentlyEnabled && location != null) {
+        final double latitude;
+        final double longitude;
+        final float zoom;
+        if (!hasCameraMovedManually) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
             zoom = Math.max(STREET_ZOOM_LEVEL, currentZoom);
         } else {
-            latitude = null;
-            longitude = null;
-            zoom = null;
-        }
-
-        if (updateFabStyleOnly) {
-            updateFabStyleOnly = false; // Reset flag
+            latitude = cameraPosition.target.latitude;
+            longitude = cameraPosition.target.longitude;
+            zoom = currentZoom;
         }
 
         // Setup FAB style
-        final FabStyle fabStyle = setupFabStyle(isGpsCurrentlyEnabled, location, cameraPosition);
+        @ColorRes
+        final int fabColor = setupFabStyle(location, cameraPosition);
 
         // Set view state
         System.out.println("before setViewState: " + latitude + ", " + longitude + ", " + zoom);
         mapViewState.setValue(new MapViewState(
             isLocationGranted && isGpsCurrentlyEnabled,
             isLocationGranted,
-            fabStyle.getFabDrawable(),
-            fabStyle.getFabColor(),
+            R.drawable.ic_gps_off,
+            fabColor,
             markers,
             latitude,
             longitude,
             zoom
         ));
+
+        // Setup markers to add
+        if (!isGpsCurrentlyEnabled) {
+            requestGpsUseCase.request();
+        }
     }
 
-    private FabStyle setupFabStyle(boolean isGpsEnabled,
-                                   @Nullable Location currentLocation,
-                                   @Nullable CameraPosition cameraPosition
+    @ColorRes
+    private int setupFabStyle(
+        @NonNull Location currentLocation,
+        @NonNull CameraPosition cameraPosition
     ) {
-        final int fabDrawable;
-        final int fabColor;
+        // Better use BigDecimal to compare coordinates rather than double values
+        final BigDecimal locationLat = toBigDecimal(currentLocation.getLatitude());
+        final BigDecimal locationLng = toBigDecimal(currentLocation.getLongitude());
+        final BigDecimal mapCameraLat = toBigDecimal(cameraPosition.target.latitude);
+        final BigDecimal mapCameraLng = toBigDecimal(cameraPosition.target.longitude);
 
-        if (!isGpsEnabled) {
-            fabDrawable = R.drawable.ic_gps_off;
-            fabColor = android.R.color.holo_red_dark;
+        if (locationLat.compareTo(mapCameraLat) == 0 && locationLng.compareTo(mapCameraLng) == 0) {
+            return R.color.blue_google;
         } else {
-            fabDrawable = R.drawable.ic_gps_on;
-            fabColor = isMapCenteredOnCurrentLocation(cameraPosition, currentLocation) ?
-                R.color.blue_google :
-                R.color.black;
+            return R.color.black;
         }
-
-        return new FabStyle(fabDrawable, fabColor);
     }
 
     @Nullable
@@ -200,35 +211,20 @@ public class MapViewModel extends ViewModel {
 
     // ---------------------------------------- MAP METHODS ----------------------------------------
 
-    public void setCameraMovedManually(int reason) {
-        isCameraMovedManually = reason != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION;
+    public void onCameraMoved() {
+        hasCameraMovedManually = true;
     }
 
     public void onCameraStopped(@NonNull CameraPosition newCameraPosition) {
-        updateFabStyleOnly = true;
-        cameraPositionSingEvent.setValue(newCameraPosition); // This event is a source that triggers the MapViewState's update
+        cameraPositionMutableLiveData.setValue(newCameraPosition); // This event is a source that triggers the MapViewState's update
     }
 
     public void onLocationButtonClicked() {
-        needToCenterMapCameraOnLocation = true;
-        moveMapCameraToLocationEvent.call(); // This event is a source that triggers the MapViewState's update
+        hasCameraMovedManually = false;
+        onCenterMapButtonClickedPing.setValue(true);
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------
-
-    private boolean isMapCenteredOnCurrentLocation(@Nullable CameraPosition cameraPosition, @Nullable Location currentLocation) {
-        if (cameraPosition == null || currentLocation == null) {
-            return false;
-        }
-
-        // Better use BigDecimal to compare coordinates rather than double values
-        final BigDecimal locationLat = toBigDecimal(currentLocation.getLatitude());
-        final BigDecimal locationLng = toBigDecimal(currentLocation.getLongitude());
-        final BigDecimal mapCameraLat = toBigDecimal(cameraPosition.target.latitude);
-        final BigDecimal mapCameraLng = toBigDecimal(cameraPosition.target.longitude);
-
-        return locationLat.compareTo(mapCameraLat) == 0 && locationLng.compareTo(mapCameraLng) == 0;
-    }
 
     private BigDecimal toBigDecimal(double coordinate) {
         return BigDecimal.valueOf(coordinate).setScale(4, RoundingMode.HALF_UP);
