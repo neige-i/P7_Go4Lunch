@@ -21,28 +21,31 @@
     <string name="description_background_image">Background image</string>
 
     <!-- Button text -->
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="sign_in_facebook">Sign in with Facebook</string>
     <string name="button_call">Call</string>
     <string name="button_like">Like</string>
     <string name="button_website">Website</string>
-    <string name="sign_in_google">Sign in with Google</string>
-    <string name="sign_in_facebook">Sign in with Facebook</string>
 
     <!-- Placeholder -->
+    <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
+    <string name="name_not_available">Name not available</string>
+    <string name="address_not_available">Address not available</string>
     <string name="workmate_count">(%d)</string>
     <string name="open_until">Open until %s</string>
-
     <string name="always_open">Open 24/7</string>
     <string name="closing_soon">Closing soon</string>
     <string name="closed">Closed</string>
-    <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
+    <string name="no_rating_available">No rating available</string>
 
     <!-- Snackbar message -->
-    <string name="no_internet_error">No internet connection</string>
-    <string name="default_connection_error">Connection failed</string>
-    <string name="invalid_user_error">Account has been disabled</string>
-    <string name="invalid_credentials_error">Malformed or expired credentials</string>
-    <string name="user_collision_error">Account already exists</string>
-    <string name="general_error">An error occurred</string>
+    <string name="default_login_error">Login failed: an error occurred</string>
+    <string name="no_internet_error">Login failed: no internet connection</string>
+    <string name="invalid_account_error">Login failed: invalid account name</string>
+    <string name="invalid_user_error">Login failed: account has been disabled</string>
+    <string name="timeout_error">Login failed: connection timed out</string>
+    <string name="invalid_credentials_error">Login failed: malformed or expired credentials</string>
+    <string name="user_collision_error">Login failed: account already exists</string>
 
     <!-- Third part ID -->
     <string name="facebook_app_id">5020438924692715</string>

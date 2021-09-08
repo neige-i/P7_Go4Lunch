@@ -6,7 +6,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
-import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
+
+import java.util.List;
 
 public interface NearbyRepository {
 
@@ -14,5 +16,5 @@ public interface NearbyRepository {
      * Returns the nearby restaurants around the specified location.
      */
     @NonNull
-    LiveData<NearbyResponse> getNearbyResponse(@Nullable Location location);
+    LiveData<List<NearbyRestaurant>> getNearbyRestaurants(@Nullable Location location);
 }

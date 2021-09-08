@@ -1,8 +1,8 @@
 package com.neige_i.go4lunch.data.google_places;
 
 import com.neige_i.go4lunch.BuildConfig;
-import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
-import com.neige_i.go4lunch.data.google_places.model.NearbyResponse;
+import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -25,11 +25,11 @@ public interface PlacesApi {
         "&type=restaurant" +
         "&key=" + BuildConfig.MAPS_API_KEY
     )
-    Call<NearbyResponse> getNearbyRestaurants(@Query("location") String location);
+    Call<RawNearbyResponse> getNearbyRestaurants(@Query("location") String location);
 
     @GET("maps/api/place/details/json?" +
         "fields=business_status,formatted_address,geometry/location,international_phone_number,name,opening_hours,photos,place_id,rating,website" +
         "&key=" + BuildConfig.MAPS_API_KEY
     )
-    Call<DetailsResponse> getRestaurantDetails(@Query("place_id") String placeId);
+    Call<RawDetailsResponse> getRestaurantDetails(@Query("place_id") String placeId);
 }

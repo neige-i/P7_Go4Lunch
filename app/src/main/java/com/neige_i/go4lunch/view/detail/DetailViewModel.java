@@ -11,13 +11,12 @@ import androidx.lifecycle.ViewModel;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.firebase.model.User;
-import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
-import com.neige_i.go4lunch.domain.GetRestaurantDetailsItemUseCase;
-import com.neige_i.go4lunch.domain.UpdateInterestedWorkmatesUseCase;
-import com.neige_i.go4lunch.domain.UpdateSelectedRestaurantUseCase;
+import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
+import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCase;
+import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCase;
+import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.model.DetailsModel;
-import com.neige_i.go4lunch.view.util.Util;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -78,8 +77,8 @@ public class DetailViewModel extends ViewModel {
         if (detailsModel.getDetailsResponse() == null)
             return;
 
-        final DetailsResponse.Result result = detailsModel.getDetailsResponse().getResult();
-        final String restaurantId = result.getPlaceId();
+        final DetailsRestaurant detailsRestaurant = detailsModel.getDetailsResponse();
+        final String restaurantId = detailsRestaurant.getPlaceId();
 
         final List<String> interestedWorkmates = restaurant != null ?
             Collections.singletonList(restaurant.getWorkmateId()) :
@@ -88,12 +87,13 @@ public class DetailViewModel extends ViewModel {
         // TODO: handle empty field case
         viewState.setValue(new DetailViewState(
             restaurantId,
-            result.getName(),
-            Util.getPhotoUrl(result.getPhotos()),
-            Util.getShortAddress(result.getFormattedAddress()),
-            Util.getRating(result.getRating()),
-            result.getInternationalPhoneNumber(),
-            result.getWebsite(),
+            detailsRestaurant.getName(),
+            detailsRestaurant.getPhotoUrl(),
+            detailsRestaurant.getAddress(),
+            detailsRestaurant.getRating(),
+            detailsRestaurant.getRating() == -1,
+            detailsRestaurant.getPhoneNumber(),
+            detailsRestaurant.getWebsite(),
             restaurantId.equals(detailsModel.getSelectedRestaurant()),
             detailsModel.getFavoriteRestaurants().contains(restaurantId),
             interestedWorkmates

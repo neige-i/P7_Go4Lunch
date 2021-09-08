@@ -64,8 +64,12 @@ class WorkmateViewState {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         WorkmateViewState viewState = (WorkmateViewState) o;
         return textStyle == viewState.textStyle &&
             textColor == viewState.textColor &&

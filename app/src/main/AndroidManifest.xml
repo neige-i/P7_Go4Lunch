@@ -17,8 +17,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Go4Lunch"
         >
+
         <activity
             android:name=".view.dispatcher.DispatcherActivity"
+            android:exported="true"
             android:theme="@style/Theme.Go4Lunch.Transparent"
             >
             <intent-filter>

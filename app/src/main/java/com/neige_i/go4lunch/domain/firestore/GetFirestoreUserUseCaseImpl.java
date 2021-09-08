@@ -25,6 +25,6 @@ public class GetFirestoreUserUseCaseImpl implements GetFirestoreUserUseCase {
 
     @Override
     public LiveData<Boolean> userAlreadyExists(@NonNull String uid) {
-        return Transformations.map(firestoreRepository.getUser(uid), Objects::nonNull);
+        return Transformations.map(firestoreRepository.getUser(uid), user -> Objects.nonNull(user));
     }
 }

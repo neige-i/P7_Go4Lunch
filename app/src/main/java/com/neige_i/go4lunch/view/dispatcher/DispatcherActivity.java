@@ -3,14 +3,17 @@ package com.neige_i.go4lunch.view.dispatcher;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.auth.AuthActivity;
 import com.neige_i.go4lunch.view.home.HomeActivity;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class DispatcherActivity extends AppCompatActivity {
+
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,21 +21,24 @@ public class DispatcherActivity extends AppCompatActivity {
 
         // Dispatcher does not set content view
 
-        // Observe when the ViewModel has computed which activity to start
+        // Init ViewModel and update UI when events are triggered
         new ViewModelProvider(this, ViewModelFactory.getInstance())
             .get(DispatcherViewModel.class)
             .getStartActivityEvent()
             .observe(this, activityToStart -> {
                 switch (activityToStart) {
                     case HOME_ACTIVITY:
-                        startActivity(new Intent(this, HomeActivity.class));
-                        finish();
+                        redirectTo(HomeActivity.class);
                         break;
                     case AUTH_ACTIVITY:
-                        startActivity(new Intent(this, AuthActivity.class));
-                        finish();
+                        redirectTo(AuthActivity.class);
                         break;
                 }
             });
+    }
+
+    private void redirectTo(@NonNull Class<? extends AppCompatActivity> activity) {
+        startActivity(new Intent(this, activity));
+        finish();
     }
 }

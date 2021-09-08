@@ -6,5 +6,5 @@ import androidx.lifecycle.LiveData;
 public interface GetLocationPermissionUseCase {
 
     @NonNull
-    LiveData<Boolean> isPermissionGranted();
+    LiveData<Boolean> isGranted();
 }

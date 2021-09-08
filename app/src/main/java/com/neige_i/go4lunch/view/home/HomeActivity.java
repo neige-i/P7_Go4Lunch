@@ -7,37 +7,28 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.databinding.ActivityMainBinding;
+import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
-import com.neige_i.go4lunch.view.list_restaurant.RestaurantListFragment;
-import com.neige_i.go4lunch.view.list_workmate.WorkmateListFragment;
-import com.neige_i.go4lunch.view.map.MapFragment;
-import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
 
 public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
 
-    public static final String PLACE_ID_INTENT_EXTRA = BuildConfig.APPLICATION_ID + "placeId";
+    public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
-    static final String MAP_FRAGMENT_TAG = "map";
-    static final String RESTAURANT_FRAGMENT_TAG = "restaurant";
-    static final String WORKMATE_FRAGMENT_TAG = "workmate";
-
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-
-    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+    // ---------------------------------------- LOCAL FIELDS ---------------------------------------
 
     private HomeViewModel viewModel;
 
@@ -47,62 +38,47 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Config layout and toolbar
-        setContentView(R.layout.activity_main);
-        setSupportActionBar(findViewById(R.id.toolbar));
-
         // Init ViewModel
         viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(HomeViewModel.class);
 
-        // Config BottomNavigationView listener
-        ((BottomNavigationView) findViewById(R.id.bottom_navigation)).setOnNavigationItemSelectedListener(item -> {
-            viewModel.onNavigationItemSelected(item.getItemId());
+        // Init view binding
+        final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+
+        // Setup UI
+        setContentView(binding.getRoot());
+
+        setSupportActionBar(binding.toolbar);
+
+        binding.viewPager.setUserInputEnabled(false); // Disable page scrolling because the ViewPager contains a scrollable map
+        binding.viewPager.setAdapter(new HomePagerAdapter(this));
+
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            viewModel.setViewState(item.getItemId());
             return true;
         });
 
+        // Setup activity result callbacks
+        final ActivityResultLauncher<String> requestLocationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
+                viewModel.setLocationPermissionAndUpdates(isGranted));
+        final ActivityResultLauncher<IntentSenderRequest> enableGpsLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), ignored -> {
+                // The GPS status result is already retrieved in the repository
+            });
+
         // Update UI when state is changed
-        viewModel.getTitleIdState().observe(this, this::setTitle);
+        viewModel.getHomeViewState().observe(this, homeViewState -> {
+            setTitle(homeViewState.getTitleId());
+            binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
+        });
 
-        // Config actions when events are triggered
-        viewModel.getRequestLocationPermissionEvent().observe(this, aBoolean ->
-            ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+        // Setup actions when events are triggered
+        viewModel.getRequestLocationPermissionEvent().observe(this, unused ->
+            requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         );
-        configFragmentTransactions(getSupportFragmentManager());
-    }
-
-    private void configFragmentTransactions(@NonNull FragmentManager fragmentManager) {
-        viewModel.getHideFragmentEvent().observe(this, fragmentToHideTag -> {
-            // This LiveData contains the tag of the currently displayed fragment, findFragmentByTag() should never return null
-            final Fragment fragmentToHide = fragmentManager.findFragmentByTag(fragmentToHideTag);
-            assert fragmentToHide != null;
-
-            fragmentManager.beginTransaction().hide(fragmentToHide).commit();
-        });
-
-        viewModel.getShowFragmentEvent().observe(this, fragmentToShowTag -> {
-            // This LiveData contains the tag of a fragment that has already been displayed, findFragmentByTag() should never return null
-            final Fragment fragmentToShow = fragmentManager.findFragmentByTag(fragmentToShowTag);
-            assert fragmentToShow != null;
-
-            fragmentManager.beginTransaction().show(fragmentToShow).commit();
-        });
-
-        viewModel.getAddMapFragmentEvent().observe(this, aBoolean ->
-            addFragment(fragmentManager, new MapFragment(), MAP_FRAGMENT_TAG));
-
-        viewModel.getAddRestaurantFragmentEvent().observe(this, aBoolean ->
-            addFragment(fragmentManager, RestaurantListFragment.newInstance(), RESTAURANT_FRAGMENT_TAG));
-
-        viewModel.getAddWorkmateFragmentEvent().observe(this, aBoolean ->
-            addFragment(fragmentManager, WorkmateListFragment.newInstance(), WORKMATE_FRAGMENT_TAG));
-    }
-
-    private void addFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment, @NonNull String tag) {
-        fragmentManager.beginTransaction().add(R.id.fragment_container, fragment, tag).commit();
+        viewModel.getEnableGpsEvent().observe(this, resolvableApiException ->
+            enableGpsLauncher.launch(new IntentSenderRequest.Builder(resolvableApiException.getResolution()).build())
+        );
     }
 
     @Override
@@ -110,27 +86,17 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         super.onResume();
 
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.updateLocationPermission(
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        viewModel.setLocationPermissionAndUpdates(
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
         );
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        viewModel.removeLocationUpdates();
-    }
 
-    // ------------------------------------- PERMISSION METHODS ------------------------------------
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        viewModel.updateLocationPermission(
-            requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
-                grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-        );
+        viewModel.stopLocationUpdates();
     }
 
     // ------------------------------------ OPTIONS MENU METHODS -----------------------------------
@@ -153,6 +119,6 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
     @Override
     public void onDetailsQueried(@NonNull String placeId) {
-        startActivity(new Intent(this, DetailActivity.class).putExtra(PLACE_ID_INTENT_EXTRA, placeId));
+        startActivity(new Intent(this, DetailActivity.class).putExtra(EXTRA_PLACE_ID, placeId));
     }
 }

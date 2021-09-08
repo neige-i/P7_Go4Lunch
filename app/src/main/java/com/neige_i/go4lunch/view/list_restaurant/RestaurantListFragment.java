@@ -10,19 +10,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.util.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
+import com.neige_i.go4lunch.databinding.FragmentListBinding;
+import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.ViewModelFactory;
 
 public class RestaurantListFragment extends Fragment {
 
+    // --------------------------------------- LOCAL FIELDS ----------------------------------------
+
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
+
+    // -------------------------------------- FACTORY METHODS --------------------------------------
 
     public static RestaurantListFragment newInstance() {
         return new RestaurantListFragment();
     }
+
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -41,11 +47,15 @@ public class RestaurantListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final RestaurantAdapter restaurantAdapter = new RestaurantAdapter(
-            placeId -> onDetailsQueriedCallback.onDetailsQueried(placeId)
-        );
-        ((RecyclerView) requireView().findViewById(R.id.recyclerview)).setAdapter(restaurantAdapter);
+        // Init binding
+        final FragmentListBinding binding = FragmentListBinding.bind(view);
 
+        // Setup UI
+        final RestaurantAdapter restaurantAdapter =
+            new RestaurantAdapter(placeId -> onDetailsQueriedCallback.onDetailsQueried(placeId));
+        binding.recyclerview.setAdapter(restaurantAdapter);
+
+        // Update UI when state is changed
         new ViewModelProvider(this, ViewModelFactory.getInstance())
             .get(RestaurantListViewModel.class)
             .getViewState()

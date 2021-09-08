@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 
-import java.util.Objects;
-
 public class SetLocationPermissionUseCaseImpl implements SetLocationPermissionUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -22,12 +20,7 @@ public class SetLocationPermissionUseCaseImpl implements SetLocationPermissionUs
     // ------------------------------------- USE CASE METHODS --------------------------------------
 
     @Override
-    public void setPermission(boolean isPermissionGranted) {
-        final Boolean currentPermission = locationPermissionRepository.getLocationPermission().getValue();
-
-        // Update permission only if the new value is different from the current one
-        if (!Objects.equals(currentPermission, isPermissionGranted)) {
-            locationPermissionRepository.updateLocationPermission(isPermissionGranted);
-        }
+    public void set(boolean locationPermission) {
+        locationPermissionRepository.setLocationPermission(locationPermission);
     }
 }

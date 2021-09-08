@@ -3,7 +3,8 @@ package com.neige_i.go4lunch.domain.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.neige_i.go4lunch.data.google_places.model.DetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
+import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 
 import java.util.List;
 import java.util.Objects;
@@ -11,21 +12,21 @@ import java.util.Objects;
 public class DetailsModel {
 
     @Nullable
-    private final DetailsResponse detailsResponse;
+    private final DetailsRestaurant detailsRestaurant;
     @Nullable
     private final String selectedRestaurant;
     @NonNull
     private final List<String> favoriteRestaurants;
 
-    public DetailsModel(@Nullable DetailsResponse detailsResponse, @Nullable String selectedRestaurant, @NonNull List<String> favoriteRestaurants) {
-        this.detailsResponse = detailsResponse;
+    public DetailsModel(@Nullable DetailsRestaurant detailsRestaurant, @Nullable String selectedRestaurant, @NonNull List<String> favoriteRestaurants) {
+        this.detailsRestaurant = detailsRestaurant;
         this.selectedRestaurant = selectedRestaurant;
         this.favoriteRestaurants = favoriteRestaurants;
     }
 
     @Nullable
-    public DetailsResponse getDetailsResponse() {
-        return detailsResponse;
+    public DetailsRestaurant getDetailsResponse() {
+        return detailsRestaurant;
     }
 
     @Nullable
@@ -45,11 +46,11 @@ public class DetailsModel {
         DetailsModel that = (DetailsModel) o;
         return Objects.equals(selectedRestaurant, that.selectedRestaurant) &&
             favoriteRestaurants.equals(that.favoriteRestaurants) &&
-            Objects.equals(detailsResponse, that.detailsResponse);
+            Objects.equals(detailsRestaurant, that.detailsRestaurant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(detailsResponse, selectedRestaurant, favoriteRestaurants);
+        return Objects.hash(detailsRestaurant, selectedRestaurant, favoriteRestaurants);
     }
 }

@@ -3,11 +3,8 @@ package com.neige_i.go4lunch.view.list_workmate;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -16,16 +13,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.databinding.ItemWorkmateBinding;
 
 class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.WorkmateViewHolder> {
 
+    // --------------------------------------- LOCAL FIELDS ----------------------------------------
+
     @NonNull
     private final OnWorkmateClickedCallback onWorkmateClickedCallback;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     protected WorkmateAdapter(@NonNull OnWorkmateClickedCallback onWorkmateClickedCallback) {
         super(new WorkmateDiffCallback());
         this.onWorkmateClickedCallback = onWorkmateClickedCallback;
     }
+
+    // ----------------------------------- LIST ADAPTER METHODS ------------------------------------
 
     @NonNull
     @Override
@@ -44,29 +48,34 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
         holder.itemView.setTag(viewState.getSelectedRestaurantId());
 
         Glide
-            .with(holder.profileImg.getContext())
+            .with(holder.binding.profileImg.getContext())
             .load(viewState.getProfileImageUrl())
             .transform(new CircleCrop())
-            .into(holder.profileImg);
-        holder.workmateAndRestaurantTxt.setText(viewState.getNameAndSelectedRestaurant());
-        holder.workmateAndRestaurantTxt.setTypeface(null, viewState.getTextStyle());
-        holder.workmateAndRestaurantTxt.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), viewState.getTextColor()));
+            .into(holder.binding.profileImg);
+        holder.binding.workmateRestaurantLbl.setText(viewState.getNameAndSelectedRestaurant());
+        holder.binding.workmateRestaurantLbl.setTypeface(null, viewState.getTextStyle());
+        holder.binding.workmateRestaurantLbl.setTextColor(
+            ContextCompat.getColor(holder.itemView.getContext(), viewState.getTextColor()));
     }
+
+    // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
 
     static class WorkmateViewHolder extends RecyclerView.ViewHolder {
 
-        private final ImageView profileImg;
-        private final TextView workmateAndRestaurantTxt;
+        @NonNull
+        private final ItemWorkmateBinding binding;
 
-        public WorkmateViewHolder(@NonNull View itemView, @NonNull OnWorkmateClickedCallback onWorkmateClickedCallback) {
+        WorkmateViewHolder(@NonNull View itemView, @NonNull OnWorkmateClickedCallback onWorkmateClickedCallback) {
             super(itemView);
 
-            profileImg = itemView.findViewById(R.id.profile_img);
-            workmateAndRestaurantTxt = itemView.findViewById(R.id.workmate_restaurant_lbl);
+            binding = ItemWorkmateBinding.bind(itemView);
 
-            itemView.setOnClickListener(v -> onWorkmateClickedCallback.onWorkmateClicked(itemView.getTag().toString()));
+            itemView.setOnClickListener(
+                v -> onWorkmateClickedCallback.onWorkmateClicked(itemView.getTag().toString()));
         }
     }
+
+    // ------------------------------------ DIFF UTIL CALLBACK -------------------------------------
 
     static class WorkmateDiffCallback extends DiffUtil.ItemCallback<WorkmateViewState> {
 
@@ -80,6 +89,8 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
             return oldItem.equals(newItem);
         }
     }
+
+    // -------------------------------------- CUSTOM CALLBACK --------------------------------------
 
     interface OnWorkmateClickedCallback {
         void onWorkmateClicked(@NonNull String placeId);

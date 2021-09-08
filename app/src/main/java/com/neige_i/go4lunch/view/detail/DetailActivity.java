@@ -1,22 +1,29 @@
 package com.neige_i.go4lunch.view.detail;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.util.Util;
-import com.neige_i.go4lunch.view.util.ViewModelFactory;
+import com.neige_i.go4lunch.view.ViewModelFactory;
 
-import static com.neige_i.go4lunch.view.home.HomeActivity.PLACE_ID_INTENT_EXTRA;
+import static com.neige_i.go4lunch.view.home.HomeActivity.EXTRA_PLACE_ID;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -26,12 +33,13 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         final DetailViewModel viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(DetailViewModel.class);
-        viewModel.onInfoQueried(getIntent().getStringExtra(PLACE_ID_INTENT_EXTRA));
+        viewModel.onInfoQueried(getIntent().getStringExtra(EXTRA_PLACE_ID));
 
         final ImageView photoImg = findViewById(R.id.photo_img);
-        final ImageView rating1 = findViewById(R.id.star1_ic);
-        final ImageView rating2 = findViewById(R.id.star2_ic);
-        final ImageView rating3 = findViewById(R.id.star3_ic);
+        final ImageView rating1 = findViewById(R.id.star1_img);
+        final ImageView rating2 = findViewById(R.id.star2_img);
+        final ImageView rating3 = findViewById(R.id.star3_img);
+        final TextView noRatingLbl = findViewById(R.id.no_rating_lbl);
         final TextView nameLbl = findViewById(R.id.name_lbl);
         final TextView addressLbl = findViewById(R.id.address_lbl);
         final Button callBtn = findViewById(R.id.call_btn);
@@ -54,8 +62,9 @@ public class DetailActivity extends AppCompatActivity {
         selected.setOnCheckedChangeListener((buttonView, isChecked) -> viewModel.onSelectedRestaurantUpdated(isChecked));
 
         viewModel.getViewState().observe(this, detailViewState -> {
-            Util.setPhotoSrcWithGlide(photoImg, detailViewState.getPhotoUrl());
-            Util.setRatingImgVisibility(detailViewState.getRating(), rating1, rating2, rating3);
+            setPhotoSrcWithGlide(photoImg, detailViewState.getPhotoUrl());
+            setRatingImgVisibility(detailViewState.getRating(), rating1, rating2, rating3);
+            noRatingLbl.setVisibility(detailViewState.isNoRatingLblVisible() ? View.VISIBLE : View.GONE);
             nameLbl.setText(detailViewState.getName());
             addressLbl.setText(detailViewState.getAddress());
             callBtn.setTag(detailViewState.getPhoneNumber());
@@ -69,5 +78,25 @@ public class DetailActivity extends AppCompatActivity {
             selected.setChecked(detailViewState.isSelected());
             adapter.submitList(detailViewState.getWorkmateIds());
         });
+    }
+
+    // TODO: remove
+    private void setRatingImgVisibility(int rating, ImageView... ratingStars) {
+        for (int i = 0; i < ratingStars.length; i++) {
+            ratingStars[i].setVisibility(rating > i ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public static void setPhotoSrcWithGlide(@NonNull ImageView photoImg, @NonNull String photoUrl) {
+        final Transformation<Bitmap> centerCropTransformation = new CenterCrop();
+        final Transformation<Bitmap> finalTransformation = photoImg.getId() == R.id.photo_img
+            ? centerCropTransformation
+            : new MultiTransformation<>(centerCropTransformation, new RoundedCorners(20));
+
+        Glide
+            .with(photoImg.getContext())
+            .load(photoUrl)
+            .transform(finalTransformation)
+            .into(photoImg);
     }
 }

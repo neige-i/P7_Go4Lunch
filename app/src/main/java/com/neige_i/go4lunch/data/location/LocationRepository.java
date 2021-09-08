@@ -5,6 +5,8 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
+import com.google.android.gms.common.api.ResolvableApiException;
+
 public interface LocationRepository {
 
     @NonNull
@@ -13,4 +15,12 @@ public interface LocationRepository {
     void startLocationUpdates();
 
     void removeLocationUpdates();
+
+    @NonNull
+    LiveData<ResolvableApiException> getEnableGpsEvent();
+
+    @NonNull
+    LiveData<Boolean> isGpsEnabled();
+
+    void requestGps();
 }

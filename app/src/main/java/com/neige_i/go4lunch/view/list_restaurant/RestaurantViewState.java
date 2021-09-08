@@ -1,27 +1,35 @@
 package com.neige_i.go4lunch.view.list_restaurant;
 
 import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
 class RestaurantViewState {
 
+    @NonNull
     private final String placeId;
+    @NonNull
     private final String name;
     private final float distance;
+    @NonNull
     private final String formattedDistance;
+    @NonNull
     private final String address;
     private final int textStyle;
     @IdRes
     private final int textColor;
+    @NonNull
     private final String openingHours;
     private final boolean interestedWorkmates;
     private final int interestedWorkmatesCount;
     private final int rating;
+    private final boolean noRatingLblVisibility;
+    @NonNull
     private final String photoUrl;
 
 
-    public RestaurantViewState(String placeId, String name, float distance, String formattedDistance, String address, int textStyle, int textColor, String openingHours, boolean interestedWorkmates, int interestedWorkmatesCount, int rating, String photoUrl) {
+    public RestaurantViewState(@NonNull String placeId, @NonNull String name, float distance, @NonNull String formattedDistance, @NonNull String address, int textStyle, int textColor, @NonNull String openingHours, boolean interestedWorkmates, int interestedWorkmatesCount, int rating, boolean noRatingLblVisibility, @NonNull String photoUrl) {
         this.placeId = placeId;
         this.name = name;
         this.distance = distance;
@@ -33,13 +41,16 @@ class RestaurantViewState {
         this.interestedWorkmates = interestedWorkmates;
         this.interestedWorkmatesCount = interestedWorkmatesCount;
         this.rating = rating;
+        this.noRatingLblVisibility = noRatingLblVisibility;
         this.photoUrl = photoUrl;
     }
 
+    @NonNull
     public String getPlaceId() {
         return placeId;
     }
 
+    @NonNull
     public String getName() {
         return name;
     }
@@ -48,10 +59,12 @@ class RestaurantViewState {
         return distance;
     }
 
+    @NonNull
     public String getFormattedDistance() {
         return formattedDistance;
     }
 
+    @NonNull
     public String getAddress() {
         return address;
     }
@@ -64,6 +77,7 @@ class RestaurantViewState {
         return textColor;
     }
 
+    @NonNull
     public String getOpeningHours() {
         return openingHours;
     }
@@ -80,30 +94,41 @@ class RestaurantViewState {
         return rating;
     }
 
+    public boolean isNoRatingLblVisible() {
+        return noRatingLblVisibility;
+    }
+
+    @NonNull
     public String getPhotoUrl() {
         return photoUrl;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         RestaurantViewState that = (RestaurantViewState) o;
-        return textStyle == that.textStyle &&
+        return Float.compare(that.distance, distance) == 0 &&
+            textStyle == that.textStyle &&
             textColor == that.textColor &&
             interestedWorkmates == that.interestedWorkmates &&
             interestedWorkmatesCount == that.interestedWorkmatesCount &&
             rating == that.rating &&
-            Objects.equals(placeId, that.placeId) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(formattedDistance, that.formattedDistance) &&
-            Objects.equals(address, that.address) &&
-            Objects.equals(openingHours, that.openingHours) &&
-            Objects.equals(photoUrl, that.photoUrl);
+            noRatingLblVisibility == that.noRatingLblVisibility &&
+            placeId.equals(that.placeId) &&
+            name.equals(that.name) &&
+            formattedDistance.equals(that.formattedDistance) &&
+            address.equals(that.address) &&
+            openingHours.equals(that.openingHours) &&
+            photoUrl.equals(that.photoUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmates, interestedWorkmatesCount, rating, photoUrl);
+        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmates, interestedWorkmatesCount, rating, noRatingLblVisibility, photoUrl);
     }
 }

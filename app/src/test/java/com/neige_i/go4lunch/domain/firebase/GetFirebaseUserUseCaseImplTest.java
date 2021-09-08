@@ -27,38 +27,40 @@ public class GetFirebaseUserUseCaseImplTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
-    private final FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
+    private final FirebaseAuth firebaseAuthMock = mock(FirebaseAuth.class);
 
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
     public void setUp() {
         // Init UseCase
-        getFirebaseUserUseCase = new GetFirebaseUserUseCaseImpl(mockFirebaseAuth);
+        getFirebaseUserUseCase = new GetFirebaseUserUseCaseImpl(firebaseAuthMock);
     }
 
     // ------------------------------------------- TESTS -------------------------------------------
 
     @Test
-    public void returnNull_when_firebaseUserDoesNotExist() {
-        // GIVEN
-        doReturn(null).when(mockFirebaseAuth).getCurrentUser();
-
-        // WHEN
-
-        // THEN
-        assertNull(getFirebaseUserUseCase.getUser());
-    }
-
-    @Test
     public void returnUser_when_firebaseUserExists() {
         // GIVEN
         final FirebaseUser expectedUser = mock(FirebaseUser.class);
-        doReturn(expectedUser).when(mockFirebaseAuth).getCurrentUser();
+        doReturn(expectedUser).when(firebaseAuthMock).getCurrentUser();
 
         // WHEN
+        final FirebaseUser actualUser = getFirebaseUserUseCase.getUser();
 
         // THEN
-        assertEquals(expectedUser, getFirebaseUserUseCase.getUser());
+        assertEquals(expectedUser, actualUser);
+    }
+
+    @Test
+    public void returnNull_when_firebaseUserDoesNotExist() {
+        // GIVEN
+        doReturn(null).when(firebaseAuthMock).getCurrentUser();
+
+        // WHEN
+        final FirebaseUser user = getFirebaseUserUseCase.getUser();
+
+        // THEN
+        assertNull(user);
     }
 }

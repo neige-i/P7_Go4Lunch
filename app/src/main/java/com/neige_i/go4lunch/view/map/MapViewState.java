@@ -1,6 +1,9 @@
 package com.neige_i.go4lunch.view.map;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -8,15 +11,35 @@ import java.util.Objects;
 class MapViewState {
 
     private final boolean locationLayerEnabled;
-    private final List<MarkerViewState> markerViewStates;
-    private final double mapLatitude;
-    private final double mapLongitude;
-    private final float mapZoom;
+    private final boolean fabVisible;
+    @DrawableRes
+    private final int fabDrawable;
+    @ColorRes
+    private final int fabColor;
+    @Nullable
+    private final List<MarkerViewState> markersToAdd;
+    @Nullable
+    private final Double mapLatitude;
+    @Nullable
+    private final Double mapLongitude;
+    @Nullable
+    private final Float mapZoom;
 
 
-    public MapViewState(boolean locationLayerEnabled, List<MarkerViewState> markerViewStates, double mapLatitude, double mapLongitude, float mapZoom) {
+    MapViewState(boolean locationLayerEnabled,
+                 boolean fabVisible,
+                 int fabDrawable,
+                 int fabColor,
+                 @Nullable List<MarkerViewState> markersToAdd,
+                 @Nullable Double mapLatitude,
+                 @Nullable Double mapLongitude,
+                 @Nullable Float mapZoom
+    ) {
         this.locationLayerEnabled = locationLayerEnabled;
-        this.markerViewStates = markerViewStates;
+        this.fabVisible = fabVisible;
+        this.fabDrawable = fabDrawable;
+        this.fabColor = fabColor;
+        this.markersToAdd = markersToAdd;
         this.mapLatitude = mapLatitude;
         this.mapLongitude = mapLongitude;
         this.mapZoom = mapZoom;
@@ -26,48 +49,70 @@ class MapViewState {
         return locationLayerEnabled;
     }
 
-    public List<MarkerViewState> getMarkerViewStates() {
-        return markerViewStates;
+    public boolean isFabVisible() {
+        return fabVisible;
     }
 
-    public double getMapLatitude() {
+    public int getFabDrawable() {
+        return fabDrawable;
+    }
+
+    public int getFabColor() {
+        return fabColor;
+    }
+
+    @Nullable
+    public List<MarkerViewState> getMarkersToAdd() {
+        return markersToAdd;
+    }
+
+    @Nullable
+    public Double getMapLatitude() {
         return mapLatitude;
     }
 
-    public double getMapLongitude() {
+    @Nullable
+    public Double getMapLongitude() {
         return mapLongitude;
     }
 
-    public float getMapZoom() {
+    @Nullable
+    public Float getMapZoom() {
         return mapZoom;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         MapViewState that = (MapViewState) o;
         return locationLayerEnabled == that.locationLayerEnabled &&
-            Double.compare(that.mapLatitude, mapLatitude) == 0 &&
-            Double.compare(that.mapLongitude, mapLongitude) == 0 &&
-            Float.compare(that.mapZoom, mapZoom) == 0 &&
-            Objects.equals(markerViewStates, that.markerViewStates);
+            fabVisible == that.fabVisible &&
+            fabDrawable == that.fabDrawable &&
+            fabColor == that.fabColor &&
+            Objects.equals(markersToAdd, that.markersToAdd) &&
+            Objects.equals(mapLatitude, that.mapLatitude) &&
+            Objects.equals(mapLongitude, that.mapLongitude) &&
+            Objects.equals(mapZoom, that.mapZoom);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationLayerEnabled, markerViewStates, mapLatitude, mapLongitude, mapZoom);
+        return Objects.hash(locationLayerEnabled, fabVisible, fabDrawable, fabColor, markersToAdd, mapLatitude, mapLongitude, mapZoom);
     }
 
     @NonNull
     @Override
     public String toString() {
         return "MapViewState{" +
-            "location " + (locationLayerEnabled ? "enabled" : "disabled") +
-            " " + markerViewStates +
-            ", map(" + mapLatitude +
-            "," + mapLongitude +
-            "," + mapZoom + ')' +
+            "locationLayerEnabled=" + locationLayerEnabled +
+            ", FAB{visible=" + fabVisible + ", drawable=" + fabDrawable + ", color=" + fabColor + '}' +
+            ", markersToAdd[" + (markersToAdd != null ? markersToAdd.size() : null) + ']' +
+            ", map{" + mapLatitude + ", " + mapLongitude + ", " + mapZoom + '}' +
             '}';
     }
 }
