@@ -4,12 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
@@ -28,17 +29,16 @@ import com.neige_i.go4lunch.databinding.FragmentMapBinding;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
 import com.neige_i.go4lunch.view.ViewModelFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MapFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
-//    /**
-//     * Whenever a view state is available from the ViewModel, a list of the markers to display is provided.
-//     * This variable prevents adding an already displayed marker when the view state is updated.
-//     */
-//    @NonNull
-//    private final List<String> displayedMarkerIds = new ArrayList<>();
+    @NonNull
+    private final List<String> displayedMarkerIds = new ArrayList<>();
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -67,26 +67,23 @@ public class MapFragment extends Fragment {
         final FragmentMapBinding binding = FragmentMapBinding.bind(view);
 
         // Setup UI
-        final SupportMapFragment mapFragment = ((SupportMapFragment) getChildFragmentManager().findFragmentById(binding.map.getId()));
-        mapFragment.getMapAsync(googleMap -> {
-            initMap(googleMap, viewModel);
+        ((SupportMapFragment) getChildFragmentManager().findFragmentById(binding.map.getId()))
+            .getMapAsync(googleMap -> {
+                initMap(googleMap, viewModel);
 
-            // Update UI when state is changed
-            // Start observing the view state INSIDE this lambda to make sure the map is ready
-            viewModel.getMapViewState().observe(getViewLifecycleOwner(), mapViewState ->
-                updateMap(mapViewState, googleMap, binding.locationBtn)
-            );
-        });
+                // Update UI when state is changed
+                // Start observing the view state INSIDE this lambda to make sure the map is ready
+                viewModel.getMapViewState().observe(getViewLifecycleOwner(), mapViewState ->
+                    updateMap(mapViewState, googleMap, binding.locationBtn)
+                );
+            });
 
         binding.locationBtn.setOnClickListener(v -> viewModel.onLocationButtonClicked());
     }
 
     private void initMap(@NonNull GoogleMap googleMap, @NonNull MapViewModel viewModel) {
-        Log.d("Neige", "MapFragment::setupMap: map is now ready");
         googleMap.getUiSettings().setMyLocationButtonEnabled(false); // Replaced by custom FAB
         googleMap.getUiSettings().setMapToolbarEnabled(false); // Disable navigation options
-
-//        viewModel.clearCurrentMarkers();
 
         // Setup marker click events
         googleMap.setOnMarkerClickListener(marker -> {
@@ -98,18 +95,17 @@ public class MapFragment extends Fragment {
         });
 
         // Setup camera move events
-
-
-        googleMap.setOnCameraMoveStartedListener(reason -> {
-            viewModel.onCameraMoved();
-            googleMap.setOnCameraMoveStartedListener(null);
+        googleMap.setOnCameraMoveStartedListener(reason -> viewModel.onCameraMoved(reason));
+        googleMap.setOnCameraIdleListener(() -> {
+            viewModel.onCameraStopped(googleMap.getCameraPosition());
         });
-        googleMap.setOnCameraIdleListener(() -> viewModel.onCameraStopped(googleMap.getCameraPosition()));
     }
 
     @SuppressLint("MissingPermission")
-    private void updateMap(@NonNull MapViewState mapViewState, @NonNull GoogleMap googleMap, @NonNull FloatingActionButton locationBtn) {
-        Log.d("Neige", "updateMap() called with: mapViewState = [" + mapViewState + "]");
+    private void updateMap(@NonNull MapViewState mapViewState,
+                           @NonNull GoogleMap googleMap,
+                           @NonNull FloatingActionButton locationBtn
+    ) {
         // Update location layer
         googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
 
@@ -119,32 +115,36 @@ public class MapFragment extends Fragment {
         locationBtn.setColorFilter(getResources().getColor(mapViewState.getFabColor()));
 
         // Add markers for all nearby restaurants
-        if (mapViewState.getMarkersToAdd() != null) {
-            final Bitmap smallMarker = Bitmap.createScaledBitmap(
-                ((BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_marker_orange, null)).getBitmap(),
-                100,
-                100,
-                false
-            );
+        for (MarkerViewState markerViewState : mapViewState.getMarkers()) {
+            final String placeId = markerViewState.getPlaceId();
 
-            googleMap.clear();
-            for (MarkerViewState markerViewState : mapViewState.getMarkersToAdd()) {
+            if (!displayedMarkerIds.contains(placeId)) {
                 googleMap.addMarker(
                     new MarkerOptions()
                         .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
                         .title(markerViewState.getName())
                         .snippet(markerViewState.getAddress())
-                        .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
-                ).setTag(markerViewState.getPlaceId());
+                        .icon(BitmapDescriptorFactory.fromBitmap(getSmallMarker(R.drawable.ic_marker_orange)))
+                ).setTag(placeId);
+
+                displayedMarkerIds.add(placeId);
             }
         }
 
-        // Move camera only if coordinates are not null
-        if (mapViewState.getMapLatitude() != null && mapViewState.getMapLongitude() != null && mapViewState.getMapZoom() != null) {
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mapViewState.getMapLatitude(), mapViewState.getMapLongitude()),
-                mapViewState.getMapZoom()
-            ));
-        }
+        // Move map camera
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+            new LatLng(mapViewState.getMapLatitude(), mapViewState.getMapLongitude()),
+            mapViewState.getMapZoom()
+        ));
+    }
+
+    private Bitmap getSmallMarker(@DrawableRes int drawableId) {
+        final Drawable drawable = ResourcesCompat.getDrawable(getResources(), drawableId, null);
+        return Bitmap.createScaledBitmap(
+            ((BitmapDrawable) drawable).getBitmap(),
+            100,
+            100,
+            false
+        );
     }
 }
