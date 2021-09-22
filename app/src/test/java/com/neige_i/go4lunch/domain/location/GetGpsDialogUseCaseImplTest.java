@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCase;
+import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,7 +17,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-public class GetGpsResolvableUseCaseImplTest {
+public class GetGpsDialogUseCaseImplTest {
 
     // ----------------------------------------- TEST RULE -----------------------------------------
 
@@ -24,7 +26,7 @@ public class GetGpsResolvableUseCaseImplTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private GetGpsResolvableUseCase getGpsResolvableUseCase;
+    private GetGpsDialogUseCase getGpsDialogUseCase;
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -39,10 +41,10 @@ public class GetGpsResolvableUseCaseImplTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(resolvableMutableLiveData).when(locationRepositoryMock).getEnableGpsEvent();
+        doReturn(resolvableMutableLiveData).when(locationRepositoryMock).getGpsDialogPrompt();
 
         // Init UseCase
-        getGpsResolvableUseCase = new GetGpsResolvableUseCaseImpl(locationRepositoryMock);
+        getGpsDialogUseCase = new GetGpsDialogUseCaseImpl(locationRepositoryMock);
     }
 
     // ------------------------------------------- TESTS -------------------------------------------
@@ -54,7 +56,7 @@ public class GetGpsResolvableUseCaseImplTest {
         resolvableMutableLiveData.setValue(expectedResolvable);
 
         // WHEN
-        final ResolvableApiException actualResolvable = getOrAwaitValue(getGpsResolvableUseCase.getResolvable());
+        final ResolvableApiException actualResolvable = getOrAwaitValue(getGpsDialogUseCase.showDialog());
 
         // THEN
         assertEquals(expectedResolvable, actualResolvable);

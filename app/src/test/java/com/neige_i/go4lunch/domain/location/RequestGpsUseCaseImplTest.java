@@ -3,6 +3,8 @@ package com.neige_i.go4lunch.domain.location;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;

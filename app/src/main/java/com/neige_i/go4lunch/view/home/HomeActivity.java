@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -47,20 +48,19 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         // Setup UI
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.toolbar);
-
         binding.viewPager.setUserInputEnabled(false); // Disable page scrolling because the ViewPager contains a scrollable map
         binding.viewPager.setAdapter(new HomePagerAdapter(this));
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
-            viewModel.setViewState(item.getItemId());
+            viewModel.onBottomNavigationItemClicked(item.getItemId());
             return true;
         });
 
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
-                viewModel.setLocationPermissionAndUpdates(isGranted));
+                viewModel.onRequestLocationPermissionResult(isGranted)
+            );
         final ActivityResultLauncher<IntentSenderRequest> enableGpsLauncher =
             registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), ignored -> {
                 // The GPS status result is already retrieved in the repository
@@ -68,15 +68,17 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         // Update UI when state is changed
         viewModel.getHomeViewState().observe(this, homeViewState -> {
-            setTitle(homeViewState.getTitleId());
+            binding.toolbar.setTitle(homeViewState.getTitleId());
             binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
         });
 
         // Setup actions when events are triggered
-        viewModel.getRequestLocationPermissionEvent().observe(this, unused ->
-            requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        );
-        viewModel.getEnableGpsEvent().observe(this, resolvableApiException ->
+        viewModel.getRequestLocationPermissionEvent().observe(this, unused -> {
+            // ASKME: permission dialog is only shown the 1st time
+            Log.d("Neige", "HomeActivity: request location permission");
+            requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        });
+        viewModel.getShowGpsDialogEvent().observe(this, resolvableApiException ->
             enableGpsLauncher.launch(new IntentSenderRequest.Builder(resolvableApiException.getResolution()).build())
         );
     }
@@ -86,7 +88,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         super.onResume();
 
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.setLocationPermissionAndUpdates(
+        viewModel.onActivityResumed(
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
         );
@@ -96,7 +98,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onPause() {
         super.onPause();
 
-        viewModel.stopLocationUpdates();
+        viewModel.onActivityPaused();
     }
 
     // ------------------------------------ OPTIONS MENU METHODS -----------------------------------

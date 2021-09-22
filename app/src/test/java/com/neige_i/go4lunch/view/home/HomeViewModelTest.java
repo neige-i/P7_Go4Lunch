@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.domain.location.GetGpsResolvableUseCase;
+import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
@@ -39,7 +39,7 @@ public class HomeViewModelTest {
     private final GetLocationPermissionUseCase getLocationPermissionUseCaseMock = mock(GetLocationPermissionUseCase.class);
     private final SetLocationPermissionUseCase setLocationPermissionUseCaseMock = mock(SetLocationPermissionUseCase.class);
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCaseMock = mock(SetLocationUpdatesUseCase.class);
-    private final GetGpsResolvableUseCase getGpsResolvableUseCaseMock = mock(GetGpsResolvableUseCase.class);
+    private final GetGpsDialogUseCase getGpsDialogUseCaseMock = mock(GetGpsDialogUseCase.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -52,23 +52,23 @@ public class HomeViewModelTest {
     public void setUp() {
         // Setup mocks
         doReturn(isPermissionGrantedMutableLiveData).when(getLocationPermissionUseCaseMock).isGranted();
-        doReturn(resolvableMutableLiveData).when(getGpsResolvableUseCaseMock).getResolvable();
+        doReturn(resolvableMutableLiveData).when(getGpsDialogUseCaseMock).showDialog();
 
         // Init ViewModel
         homeViewModel = new HomeViewModel(
             getLocationPermissionUseCaseMock,
             setLocationPermissionUseCaseMock,
             setLocationUpdatesUseCaseMock,
-            getGpsResolvableUseCaseMock
+            getGpsDialogUseCaseMock
         );
     }
 
-    // ------------------------------------------ VERIFY -------------------------------------------
+    // -------------------------------------- LOCATION TESTS ---------------------------------------
 
     @Test
-    public void verify_enableLocationPermissionAndUpdates_when_locationPermissionIsGranted() {
+    public void enableLocationPermissionAndUpdates_when_locationPermissionIsGranted() {
         // WHEN
-        homeViewModel.setLocationPermissionAndUpdates(true);
+        homeViewModel.onRequestLocationPermissionResult(true);
 
         // THEN
         verify(setLocationPermissionUseCaseMock).set(true);
@@ -77,9 +77,9 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void verify_disableLocationPermissionAndUpdates_when_locationPermissionIsDenied() {
+    public void disableLocationPermissionAndUpdates_when_locationPermissionIsDenied() {
         // WHEN
-        homeViewModel.setLocationPermissionAndUpdates(false);
+        homeViewModel.onRequestLocationPermissionResult(false);
 
         // THEN
         verify(setLocationPermissionUseCaseMock).set(false);
@@ -88,9 +88,31 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void verify_disableLocationUpdates_when_updatesNeedToBeStopped() {
+    public void enableLocationPermissionAndUpdates_when_activityIsResumedWithGrantedLocationPermission() {
         // WHEN
-        homeViewModel.stopLocationUpdates();
+        homeViewModel.onActivityResumed(true);
+
+        // THEN
+        verify(setLocationPermissionUseCaseMock).set(true);
+        verify(setLocationUpdatesUseCaseMock).set(true);
+        verifyNoMoreInteractions(setLocationPermissionUseCaseMock, setLocationUpdatesUseCaseMock);
+    }
+
+    @Test
+    public void disableLocationPermissionAndUpdates_when_activityIsResumedWithDeniedLocationPermission() {
+        // WHEN
+        homeViewModel.onActivityResumed(false);
+
+        // THEN
+        verify(setLocationPermissionUseCaseMock).set(false);
+        verify(setLocationUpdatesUseCaseMock).set(false);
+        verifyNoMoreInteractions(setLocationPermissionUseCaseMock, setLocationUpdatesUseCaseMock);
+    }
+
+    @Test
+    public void disableLocationUpdates_when_activityIsPaused() {
+        // WHEN
+        homeViewModel.onActivityPaused();
 
         // THEN
         verify(setLocationUpdatesUseCaseMock).set(false);
@@ -99,6 +121,7 @@ public class HomeViewModelTest {
 
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
 
+    // ASKME: how to test that location permission is not requested if it has already been denied
     @Test
     public void requestLocationPermission_when_locationPermissionIsDenied() throws InterruptedException {
         // GIVEN
@@ -111,36 +134,27 @@ public class HomeViewModelTest {
         assertNull(requestLocationPermission); // The SingleLiveEvent's value has been set
     }
 
-    // ------------------------------------- ENABLE GPS TESTS --------------------------------------
+    // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
-    public void enableGpsSettings_when_viewModelIsCreatedAndGpsIsDisabled() throws InterruptedException {
-        // GIVEN: GPS is considered disabled if ResolvableApiException is not null
+    public void showGpsDialog_when_resolvableApiExceptionIsSet() throws InterruptedException {
+        // GIVEN
         final ResolvableApiException expectedResolvable = mock(ResolvableApiException.class);
         resolvableMutableLiveData.setValue(expectedResolvable);
 
         // WHEN
-        final ResolvableApiException actualResolvable = getOrAwaitValue(homeViewModel.getEnableGpsEvent());
+        final ResolvableApiException actualResolvable = getOrAwaitValue(homeViewModel.getShowGpsDialogEvent());
 
         // THEN
         assertEquals(expectedResolvable, actualResolvable);
     }
 
-    // -------------------------------------- VIEW STATE TESTS -------------------------------------
+    // ---------------------------- BOTTOM NAVIGATION ITEM CLICK TESTS -----------------------------
 
     @Test
-    public void returnInitialViewState_when_viewModelIsCreated() throws InterruptedException {
-        // WHEN
-        final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
-
-        // THEN
-        assertEquals(new HomeViewState(R.string.title_restaurant, 0), viewState);
-    }
-
-    @Test
-    public void updateViewState_when_mapItemIsSelected() throws InterruptedException {
+    public void getViewState_when_mapItemIsSelected() throws InterruptedException {
         // GIVEN
-        homeViewModel.setViewState(R.id.action_map);
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_map);
 
         // WHEN
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
@@ -150,9 +164,9 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void updateViewState_when_restaurantItemIsSelected() throws InterruptedException {
+    public void getViewState_when_restaurantItemIsSelected() throws InterruptedException {
         // GIVEN
-        homeViewModel.setViewState(R.id.action_restaurant);
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_restaurant);
 
         // WHEN
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
@@ -162,9 +176,9 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void updateViewState_when_workmateItemIsSelected() throws InterruptedException {
+    public void getViewState_when_workmateItemIsSelected() throws InterruptedException {
         // GIVEN
-        homeViewModel.setViewState(R.id.action_workmates);
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_workmates);
 
         // WHEN
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
@@ -178,10 +192,13 @@ public class HomeViewModelTest {
         // WHEN
         final Throwable thrownException = assertThrows(
             RuntimeException.class,
-            () -> homeViewModel.setViewState(-1)
+            () -> homeViewModel.onBottomNavigationItemClicked(-1)
         );
 
         // THEN
-        assertEquals("setViewState() was called with a wrong MenuItem ID: -1", thrownException.getMessage());
+        assertEquals(
+            "onBottomNavigationItemClicked() was called with a wrong MenuItem ID: -1",
+            thrownException.getMessage()
+        );
     }
 }

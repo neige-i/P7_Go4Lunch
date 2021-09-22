@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.location;
+package com.neige_i.go4lunch.domain.gps;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
-public class GetGpsResolvableUseCaseImpl implements GetGpsResolvableUseCase {
+public class GetGpsDialogUseCaseImpl implements GetGpsDialogUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -15,7 +15,7 @@ public class GetGpsResolvableUseCaseImpl implements GetGpsResolvableUseCase {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    public GetGpsResolvableUseCaseImpl(@NonNull LocationRepository locationRepository) {
+    public GetGpsDialogUseCaseImpl(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }
 
@@ -23,7 +23,7 @@ public class GetGpsResolvableUseCaseImpl implements GetGpsResolvableUseCase {
 
     @NonNull
     @Override
-    public LiveData<ResolvableApiException> getResolvable() {
-        return locationRepository.getEnableGpsEvent();
+    public LiveData<ResolvableApiException> showDialog() {
+        return locationRepository.getGpsDialogPrompt();
     }
 }

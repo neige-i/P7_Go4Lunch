@@ -8,5 +8,5 @@ public interface LocationPermissionRepository {
     @NonNull
     LiveData<Boolean> getLocationPermission();
 
-    void setLocationPermission(boolean newLocationPermission);
+    void setLocationPermission(boolean locationPermission);
 }

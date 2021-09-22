@@ -8,10 +8,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
@@ -23,9 +23,6 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 import com.neige_i.go4lunch.MainApplication;
-import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
-
-import java.util.Objects;
 
 public class LocationRepositoryImpl implements LocationRepository {
 
@@ -34,7 +31,7 @@ public class LocationRepositoryImpl implements LocationRepository {
     @NonNull
     private final MutableLiveData<Location> currentLocationMutableLiveData = new MutableLiveData<>();
     @NonNull
-    private final MediatorSingleLiveEvent<ResolvableApiException> enableGpsEvent = new MediatorSingleLiveEvent<>();
+    private final MediatorLiveData<ResolvableApiException> gpsDialogPrompt = new MediatorLiveData<>();
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -42,8 +39,9 @@ public class LocationRepositoryImpl implements LocationRepository {
      * Provider to start and stop location updates.
      */
     @NonNull
-    private final FusedLocationProviderClient fusedLocationProviderClient = LocationServices
-        .getFusedLocationProviderClient(MainApplication.getInstance());
+    private final FusedLocationProviderClient fusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(MainApplication.getInstance());
+    // TODO: change below docu
     /**
      * Data object that determines how location should be requested.
      */
@@ -67,13 +65,14 @@ public class LocationRepositoryImpl implements LocationRepository {
      * The {@link ResolvableApiException} is used to show the dialog that prompt the user to enable GPS.
      */
     @NonNull
-    private final MutableLiveData<ResolvableApiException> resolvableApiExceptionMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<ResolvableApiException> gpsDisabledMutableLiveData = new MutableLiveData<>();
     @NonNull
-    private final MutableLiveData<Boolean> requestGpsMutableLiveData = new MutableLiveData<>(true);
+    private final MutableLiveData<Boolean> requestGpsPing = new MutableLiveData<>(true);
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     public LocationRepositoryImpl() {
+        // TODO: inject MainApplication instance
         final SettingsClient settingsClient = LocationServices.getSettingsClient(MainApplication.getInstance());
         final LocationSettingsRequest locationSettingsRequest = new LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
@@ -81,7 +80,7 @@ public class LocationRepositoryImpl implements LocationRepository {
             .build();
 
         locationCallback = new LocationCallback() {
-            // Update the current location when a new one is available
+            // Update the current location
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 final Location lastLocation = locationResult.getLastLocation();
@@ -89,31 +88,28 @@ public class LocationRepositoryImpl implements LocationRepository {
                 currentLocationMutableLiveData.setValue(lastLocation);
             }
 
-            // Set and reset the ResolvableApiException object when the GPS settings change
+            // Update the GPS status
             @Override
             public void onLocationAvailability(@NonNull LocationAvailability locationAvailability) {
                 settingsClient.checkLocationSettings(locationSettingsRequest)
                     .addOnSuccessListener(locationSettingsResponse -> {
                         Log.d("Neige", "REPO gpsAvailable: yes");
-                        resolvableApiExceptionMutableLiveData.setValue(null);
-                        requestGpsMutableLiveData.setValue(false); // No need to request GPS if already enabled
+                        gpsDisabledMutableLiveData.setValue(null);
+                        requestGpsPing.setValue(null); // No need to request GPS if already enabled
                     })
                     .addOnFailureListener(e -> {
-                        if (((ApiException) e).getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                        final ResolvableApiException exception = (ResolvableApiException) e;
+                        if (exception.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             Log.d("Neige", "REPO gpsAvailable: no");
-                            resolvableApiExceptionMutableLiveData.setValue((ResolvableApiException) e);
+                            gpsDisabledMutableLiveData.setValue(exception);
                         }
                     });
             }
         };
 
         // Set when to prompt the user to enable GPS
-        enableGpsEvent.addSource(resolvableApiExceptionMutableLiveData, resolvableApiException ->
-            combine(resolvableApiException, requestGpsMutableLiveData.getValue())
-        );
-        enableGpsEvent.addSource(requestGpsMutableLiveData, isGpsRequested ->
-            combine(resolvableApiExceptionMutableLiveData.getValue(), isGpsRequested)
-        );
+        gpsDialogPrompt.addSource(gpsDisabledMutableLiveData, resolvableApiException -> combine(resolvableApiException, requestGpsPing.getValue()));
+        gpsDialogPrompt.addSource(requestGpsPing, isGpsRequested -> combine(gpsDisabledMutableLiveData.getValue(), isGpsRequested));
     }
 
     /**
@@ -123,14 +119,15 @@ public class LocationRepositoryImpl implements LocationRepository {
      * The {@code isGpsNeeded} flag is used to ask the user to turn on the GPS only when necessary.
      */
     private void combine(@Nullable ResolvableApiException resolvableApiException, @Nullable Boolean isGpsRequested) {
-        if (resolvableApiException != null && Objects.equals(isGpsRequested, true)) {
-            // Prompt the user to enable GPS
-            Log.d("Neige", "REPO requestGps");
-            enableGpsEvent.setValue(resolvableApiException);
-
-            // Reset flag
-            requestGpsMutableLiveData.setValue(false);
+        if (resolvableApiException == null || isGpsRequested == null) {
+            return;
         }
+
+        requestGpsPing.setValue(null); // Reset ping
+
+        // Prompt the user to enable GPS only if it is disabled (when resolvableApiException != null)
+        Log.d("Neige", "REPO promptGpsDialog");
+        gpsDialogPrompt.setValue(resolvableApiException);
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -164,18 +161,18 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @NonNull
     @Override
-    public LiveData<ResolvableApiException> getEnableGpsEvent() {
-        return enableGpsEvent;
+    public LiveData<ResolvableApiException> getGpsDialogPrompt() {
+        return gpsDialogPrompt;
     }
 
     @NonNull
     @Override
     public LiveData<Boolean> isGpsEnabled() {
-        return Transformations.map(resolvableApiExceptionMutableLiveData, Objects::isNull);
+        return Transformations.map(gpsDisabledMutableLiveData, gpsDisabled -> gpsDisabled == null);
     }
 
     @Override
     public void requestGps() {
-        requestGpsMutableLiveData.setValue(true);
+        requestGpsPing.setValue(true);
     }
 }

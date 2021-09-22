@@ -4,6 +4,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;

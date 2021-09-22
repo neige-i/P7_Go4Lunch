@@ -15,10 +15,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.location.GetGpsStatusUseCase;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
-import com.neige_i.go4lunch.domain.location.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCase;
 
 import java.math.BigDecimal;
@@ -151,7 +151,7 @@ public class MapViewModel extends ViewModel {
         }
 
         // Set view state
-        Log.d("Neige", "MapViewModel: set view state");
+//        Log.d("Neige", "MapViewModel: set view state");
         mapViewState.setValue(new MapViewState(
             isLocationPermissionGranted && isGpsEnabled,
             isLocationPermissionGranted,
