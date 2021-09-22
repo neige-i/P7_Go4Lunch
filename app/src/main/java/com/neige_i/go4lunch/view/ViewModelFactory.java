@@ -30,11 +30,11 @@ import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetGpsResolvableUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetGpsStatusUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.RequestGpsUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCaseImpl;
@@ -134,7 +134,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new GetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new SetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new SetLocationUpdatesUseCaseImpl(locationRepository),
-                new GetGpsResolvableUseCaseImpl(locationRepository)
+                new GetGpsDialogUseCaseImpl(locationRepository)
             );
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(

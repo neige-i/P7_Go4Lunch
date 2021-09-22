@@ -17,7 +17,7 @@ public interface LocationRepository {
     void removeLocationUpdates();
 
     @NonNull
-    LiveData<ResolvableApiException> getEnableGpsEvent();
+    LiveData<ResolvableApiException> getGpsDialogPrompt();
 
     @NonNull
     LiveData<Boolean> isGpsEnabled();

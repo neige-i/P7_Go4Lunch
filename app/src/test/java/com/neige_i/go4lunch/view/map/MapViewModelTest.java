@@ -16,10 +16,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.location.GetGpsStatusUseCase;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
-import com.neige_i.go4lunch.domain.location.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCase;
 
 import org.junit.Before;
@@ -76,6 +76,7 @@ public class MapViewModelTest {
 
     @Before
     public void setUp() {
+        // Setup mocks
         doReturn(isLocationPermissionGrantedMutableLiveData).when(getLocationPermissionUseCaseMock).isGranted();
         doReturn(locationMutableLiveData).when(getLocationUseCaseMock).get();
         doReturn(nearbyRestaurantsMutableLiveData).when(getNearbyRestaurantsUseCaseMock).get();
@@ -89,6 +90,7 @@ public class MapViewModelTest {
         locationMutableLiveData.setValue(deviceLocation);
         nearbyRestaurantsMutableLiveData.setValue(getDefaultRestaurantList());
 
+        // Init ViewModel
         mapViewModel = new MapViewModel(
             getLocationPermissionUseCaseMock,
             getLocationUseCaseMock,
@@ -136,12 +138,6 @@ public class MapViewModelTest {
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
 
         // THEN
-        // ASKME: is this test still relevant if the below state can't be obtained "in real"
-        //  even if the VM behaviour is consistent:
-        //  permission is denied in setting -> go back to app
-        //  view & its VM are recreated -> request the location permission and deny it
-        //  location updates are not started -> GPS status is never set (remains null)
-        //  MapViewModel#combine requires not null GPS to set the view state -> LiveData is never set
         assertEquals(
             new MapViewState(
                 false, // No location layer

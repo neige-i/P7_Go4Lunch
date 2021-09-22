@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
 public class LocationPermissionRepositoryImpl implements LocationPermissionRepository {
 
@@ -19,14 +18,12 @@ public class LocationPermissionRepositoryImpl implements LocationPermissionRepos
     @NonNull
     @Override
     public LiveData<Boolean> getLocationPermission() {
-        // The transformation below prevent requesting the permission in loop if the user denies it
-        // TODO: remove distinct and put logic in ViewModel
-        return Transformations.distinctUntilChanged(locationPermissionMutableLiveData);
+        return locationPermissionMutableLiveData;
     }
 
     @Override
-    public void setLocationPermission(boolean newLocationPermission) {
-        Log.d("Neige", "REPO setLocationPermission: " + newLocationPermission);
-        locationPermissionMutableLiveData.setValue(newLocationPermission);
+    public void setLocationPermission(boolean locationPermission) {
+        Log.d("Neige", "REPO setLocationPermission: " + locationPermission);
+        locationPermissionMutableLiveData.setValue(locationPermission);
     }
 }
