@@ -16,8 +16,8 @@ import org.junit.Test;
 
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -123,15 +123,24 @@ public class HomeViewModelTest {
 
     // ASKME: how to test that location permission is not requested if it has already been denied
     @Test
-    public void requestLocationPermission_when_locationPermissionIsDenied() throws InterruptedException {
+    public void requestLocationPermission_when_locationPermissionIsDenied() {
         // GIVEN
         isPermissionGrantedMutableLiveData.setValue(false);
+        int[] called = new int[]{ 0 };
 
         // WHEN
-        final Void requestLocationPermission = getOrAwaitValue(homeViewModel.getRequestLocationPermissionEvent());
+        homeViewModel.getRequestLocationPermissionEvent().observeForever(unused -> {
+            called[0] = called[0] += 1;
+
+            if (called[0] > 1) {
+                fail();
+            }
+
+            isPermissionGrantedMutableLiveData.setValue(false);
+        });
 
         // THEN
-        assertNull(requestLocationPermission); // The SingleLiveEvent's value has been set
+        assertEquals(1, called[0]); // The SingleLiveEvent's value has been set
     }
 
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
