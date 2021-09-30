@@ -5,8 +5,8 @@ import androidx.lifecycle.LiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 
-public interface GetGpsDialogUseCase {
+public interface ShowGpsDialogUseCase {
 
     @NonNull
-    LiveData<ResolvableApiException> showDialog();
+    LiveData<ResolvableApiException> getDialog();
 }

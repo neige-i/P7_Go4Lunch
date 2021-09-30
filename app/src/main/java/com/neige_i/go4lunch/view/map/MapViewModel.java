@@ -1,7 +1,6 @@
 package com.neige_i.go4lunch.view.map;
 
 import android.location.Location;
-import android.util.Log;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
@@ -112,7 +111,7 @@ public class MapViewModel extends ViewModel {
             return;
         }
 
-        // Setup weather or not the map camera should be moved
+        // Setup whether or not the map camera should be moved
         final boolean moveMapToLocation;
         if (Objects.equals(locationButtonPing, true)) {
             onLocationButtonClickedPing.setValue(null); // Reset ping
@@ -151,7 +150,6 @@ public class MapViewModel extends ViewModel {
         }
 
         // Set view state
-//        Log.d("Neige", "MapViewModel: set view state");
         mapViewState.setValue(new MapViewState(
             isLocationPermissionGranted && isGpsEnabled,
             isLocationPermissionGranted,

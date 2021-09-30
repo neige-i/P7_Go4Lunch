@@ -21,6 +21,6 @@ public class RequestGpsUseCaseImpl implements RequestGpsUseCase {
 
     @Override
     public void request() {
-        locationRepository.requestGps();
+        locationRepository.requestGpsDialog();
     }
 }

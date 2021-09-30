@@ -1,19 +1,5 @@
 package com.neige_i.go4lunch.view.home;
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.MutableLiveData;
-
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -22,6 +8,22 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
+import androidx.lifecycle.MutableLiveData;
+
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
+import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class HomeViewModelTest {
 
@@ -39,7 +41,9 @@ public class HomeViewModelTest {
     private final GetLocationPermissionUseCase getLocationPermissionUseCaseMock = mock(GetLocationPermissionUseCase.class);
     private final SetLocationPermissionUseCase setLocationPermissionUseCaseMock = mock(SetLocationPermissionUseCase.class);
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCaseMock = mock(SetLocationUpdatesUseCase.class);
-    private final GetGpsDialogUseCase getGpsDialogUseCaseMock = mock(GetGpsDialogUseCase.class);
+    private final ShowGpsDialogUseCase showGpsDialogUseCaseMock = mock(ShowGpsDialogUseCase.class);
+    private final RequestGpsUseCase requestGpsUseCaseMock = mock(RequestGpsUseCase.class);
+    private final GpsStateChangeReceiver gpsStateChangeReceiverMock = mock(GpsStateChangeReceiver.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -52,40 +56,20 @@ public class HomeViewModelTest {
     public void setUp() {
         // Setup mocks
         doReturn(isPermissionGrantedMutableLiveData).when(getLocationPermissionUseCaseMock).isGranted();
-        doReturn(resolvableMutableLiveData).when(getGpsDialogUseCaseMock).showDialog();
+        doReturn(resolvableMutableLiveData).when(showGpsDialogUseCaseMock).getDialog();
 
         // Init ViewModel
         homeViewModel = new HomeViewModel(
             getLocationPermissionUseCaseMock,
             setLocationPermissionUseCaseMock,
             setLocationUpdatesUseCaseMock,
-            getGpsDialogUseCaseMock
+            showGpsDialogUseCaseMock,
+            requestGpsUseCaseMock,
+            gpsStateChangeReceiverMock
         );
     }
 
     // -------------------------------------- LOCATION TESTS ---------------------------------------
-
-    @Test
-    public void enableLocationPermissionAndUpdates_when_locationPermissionIsGranted() {
-        // WHEN
-        homeViewModel.onRequestLocationPermissionResult(true);
-
-        // THEN
-        verify(setLocationPermissionUseCaseMock).set(true);
-        verify(setLocationUpdatesUseCaseMock).set(true);
-        verifyNoMoreInteractions(setLocationPermissionUseCaseMock, setLocationUpdatesUseCaseMock);
-    }
-
-    @Test
-    public void disableLocationPermissionAndUpdates_when_locationPermissionIsDenied() {
-        // WHEN
-        homeViewModel.onRequestLocationPermissionResult(false);
-
-        // THEN
-        verify(setLocationPermissionUseCaseMock).set(false);
-        verify(setLocationUpdatesUseCaseMock).set(false);
-        verifyNoMoreInteractions(setLocationPermissionUseCaseMock, setLocationUpdatesUseCaseMock);
-    }
 
     @Test
     public void enableLocationPermissionAndUpdates_when_activityIsResumedWithGrantedLocationPermission() {
@@ -119,14 +103,23 @@ public class HomeViewModelTest {
         verifyNoMoreInteractions(setLocationUpdatesUseCaseMock);
     }
 
+    // ------------------------------------- REQUEST GPS TESTS -------------------------------------
+
+    @Test
+    public void requestGps_when_viewModelIsInitialized() {
+        // THEN
+        verify(requestGpsUseCaseMock).request();
+        verifyNoMoreInteractions(requestGpsUseCaseMock);
+    }
+
+
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
 
-    // ASKME: how to test that location permission is not requested if it has already been denied
     @Test
-    public void requestLocationPermission_when_locationPermissionIsDenied() {
+    public void requestLocationPermissionOnce_when_locationPermissionIsDeniedMultipleTimes() {
         // GIVEN
         isPermissionGrantedMutableLiveData.setValue(false);
-        int[] called = new int[]{ 0 };
+        final int[] called = new int[]{0};
 
         // WHEN
         homeViewModel.getRequestLocationPermissionEvent().observeForever(unused -> {
@@ -136,26 +129,26 @@ public class HomeViewModelTest {
                 fail();
             }
 
-            isPermissionGrantedMutableLiveData.setValue(false);
+            isPermissionGrantedMutableLiveData.setValue(false); // Deny permission again
         });
 
         // THEN
-        assertEquals(1, called[0]); // The SingleLiveEvent's value has been set
+        assertEquals(1, called[0]); // The permission is only requested once
     }
 
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
-    public void showGpsDialog_when_resolvableApiExceptionIsSet() throws InterruptedException {
+    public void returnGpsDialog_when_dialogIsRequested() throws InterruptedException {
         // GIVEN
-        final ResolvableApiException expectedResolvable = mock(ResolvableApiException.class);
-        resolvableMutableLiveData.setValue(expectedResolvable);
+        final ResolvableApiException expectedGpsDialog = mock(ResolvableApiException.class);
+        resolvableMutableLiveData.setValue(expectedGpsDialog);
 
         // WHEN
-        final ResolvableApiException actualResolvable = getOrAwaitValue(homeViewModel.getShowGpsDialogEvent());
+        final ResolvableApiException actualGpsDialog = getOrAwaitValue(homeViewModel.getShowGpsDialogEvent());
 
         // THEN
-        assertEquals(expectedResolvable, actualResolvable);
+        assertEquals(expectedGpsDialog, actualGpsDialog);
     }
 
     // ---------------------------- BOTTOM NAVIGATION ITEM CLICK TESTS -----------------------------
@@ -209,5 +202,17 @@ public class HomeViewModelTest {
             "onBottomNavigationItemClicked() was called with a wrong MenuItem ID: -1",
             thrownException.getMessage()
         );
+    }
+
+    // ---------------------------------- RECEIVER INSTANCE TESTS ----------------------------------
+
+
+    @Test
+    public void returnReceiverInstance_when_isRequired() {
+        // WHEN
+        final GpsStateChangeReceiver actualReceiver = homeViewModel.getGpsStateChangeReceiver();
+
+        // THEN
+        assertEquals(gpsStateChangeReceiverMock, actualReceiver);
     }
 }

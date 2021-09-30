@@ -2,9 +2,10 @@ package com.neige_i.go4lunch.view.home;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -58,12 +59,13 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
-                viewModel.onRequestLocationPermissionResult(isGranted)
-            );
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), ignored -> {
+                // The location permission is already checked in onResume()
+                // Which is called just after the permission dialog being dismissed
+            });
         final ActivityResultLauncher<IntentSenderRequest> enableGpsLauncher =
             registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), ignored -> {
-                // The GPS status result is already retrieved in the repository
+                // The GPS status result is already retrieved in the receiver
             });
 
         // Update UI when state is changed
@@ -74,12 +76,16 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         // Setup actions when events are triggered
         viewModel.getRequestLocationPermissionEvent().observe(this, unused -> {
-            // ASKME: permission dialog is only shown the 1st time
-            Log.d("Neige", "HomeActivity: request location permission");
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         });
         viewModel.getShowGpsDialogEvent().observe(this, resolvableApiException ->
             enableGpsLauncher.launch(new IntentSenderRequest.Builder(resolvableApiException.getResolution()).build())
+        );
+
+        // Register GPS receiver in this activity's lifecycle
+        registerReceiver(
+            viewModel.getGpsStateChangeReceiver(),
+            new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         );
     }
 
@@ -99,6 +105,13 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         super.onPause();
 
         viewModel.onActivityPaused();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(viewModel.getGpsStateChangeReceiver());
     }
 
     // ------------------------------------ OPTIONS MENU METHODS -----------------------------------

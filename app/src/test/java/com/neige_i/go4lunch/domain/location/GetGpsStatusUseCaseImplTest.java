@@ -1,21 +1,21 @@
 package com.neige_i.go4lunch.domain.location;
 
+import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 public class GetGpsStatusUseCaseImplTest {
 
@@ -30,7 +30,7 @@ public class GetGpsStatusUseCaseImplTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
-    private final LocationRepository locationRepositoryMock = mock(LocationRepository.class);
+    private final GpsStateChangeReceiver gpsStateChangeReceiverMock = mock(GpsStateChangeReceiver.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -41,10 +41,10 @@ public class GetGpsStatusUseCaseImplTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(gpsEnableMutableLiveData).when(locationRepositoryMock).isGpsEnabled();
+        doReturn(gpsEnableMutableLiveData).when(gpsStateChangeReceiverMock).getGpsState();
 
         // Init UseCase
-        getGpsStatusUseCase = new GetGpsStatusUseCaseImpl(locationRepositoryMock);
+        getGpsStatusUseCase = new GetGpsStatusUseCaseImpl(gpsStateChangeReceiverMock);
     }
 
     // ------------------------------------------- TESTS -------------------------------------------
