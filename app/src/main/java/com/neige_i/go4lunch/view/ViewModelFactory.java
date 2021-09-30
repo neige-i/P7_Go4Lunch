@@ -1,5 +1,9 @@
 package com.neige_i.go4lunch.view;
 
+import static android.content.Context.LOCATION_SERVICE;
+
+import android.app.Application;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -8,8 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.neige_i.go4lunch.MainApplication;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
@@ -18,26 +24,27 @@ import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepositoryImpl;
+import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
+import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsListUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCaseImpl;
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
-import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.view.auth.AuthViewModel;
 import com.neige_i.go4lunch.view.detail.DetailViewModel;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel;
@@ -51,7 +58,12 @@ import java.util.concurrent.Executors;
 
 public class ViewModelFactory implements ViewModelProvider.Factory {
 
-    // -------------------------------------  CLASS VARIABLES --------------------------------------
+    // ------------------------------------  INSTANCE VARIABLE -------------------------------------
+
+    @Nullable
+    private static ViewModelFactory factory;
+
+    // ----------------------------------  DEPENDENCIES TO INJECT ----------------------------------
 
     @NonNull
     private final NearbyRepository nearbyRepository;
@@ -66,34 +78,21 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @NonNull
     private final FirestoreRepository firestoreRepository;
     @NonNull
+    private final GpsStateChangeReceiver gpsStateChangeReceiver;
+    @NonNull
     private final Clock clock;
     @NonNull
     private final FirebaseAuth firebaseAuth;
 
-    @Nullable
-    private static ViewModelFactory factory;
-
-    public ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationPermissionRepository locationPermissionRepository,
-                            @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository,
-                            @NonNull FirebaseRepository firebaseRepository, @NonNull FirestoreRepository firestoreRepository
-    ) {
-        this.nearbyRepository = nearbyRepository;
-        this.locationPermissionRepository = locationPermissionRepository;
-        this.locationRepository = locationRepository;
-        this.detailsRepository = detailsRepository;
-        this.firebaseRepository = firebaseRepository;
-        this.firestoreRepository = firestoreRepository;
-        clock = Clock.systemDefaultZone();
-        firebaseAuth = FirebaseAuth.getInstance();
-    }
-
-    // -------------------------------------- FACTORY METHODS --------------------------------------
+    // ------------------------------------- SINGLETON METHOD --------------------------------------
 
     @NonNull
     public static ViewModelFactory getInstance() {
         if (factory == null) {
             synchronized (ViewModelFactory.class) {
                 if (factory == null) {
+                    final Application application = MainApplication.getInstance();
+
                     factory = new ViewModelFactory(
                         // Instantiate repositories here to make sure only one instance of them exists
                         new NearbyRepositoryImpl(
@@ -101,18 +100,42 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                             new Handler(Looper.getMainLooper())
                         ),
                         new LocationPermissionRepositoryImpl(),
-                        new LocationRepositoryImpl(),
+                        new LocationRepositoryImpl(
+                            LocationServices.getFusedLocationProviderClient(application),
+                            LocationServices.getSettingsClient(application)
+                        ),
                         new DetailsRepositoryImpl(
                             Executors.newSingleThreadExecutor(),
                             new Handler(Looper.getMainLooper())
                         ),
                         new FirebaseRepositoryImpl(),
-                        new FirestoreRepositoryImpl(FirebaseFirestore.getInstance())
+                        new FirestoreRepositoryImpl(FirebaseFirestore.getInstance()),
+                        new GpsStateChangeReceiver(
+                            (LocationManager) application.getSystemService(LOCATION_SERVICE)
+                        )
                     );
                 }
             }
         }
         return factory;
+    }
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
+    private ViewModelFactory(@NonNull NearbyRepository nearbyRepository, @NonNull LocationPermissionRepository locationPermissionRepository,
+                            @NonNull LocationRepository locationRepository, @NonNull DetailsRepository detailsRepository,
+                            @NonNull FirebaseRepository firebaseRepository, @NonNull FirestoreRepository firestoreRepository,
+                            @NonNull GpsStateChangeReceiver gpsStateChangeReceiver
+    ) {
+        this.nearbyRepository = nearbyRepository;
+        this.locationPermissionRepository = locationPermissionRepository;
+        this.locationRepository = locationRepository;
+        this.detailsRepository = detailsRepository;
+        this.firebaseRepository = firebaseRepository;
+        this.firestoreRepository = firestoreRepository;
+        this.gpsStateChangeReceiver = gpsStateChangeReceiver;
+        clock = Clock.systemDefaultZone();
+        firebaseAuth = FirebaseAuth.getInstance();
     }
 
     // -------------------------------- VIEW MODEL FACTORY METHODS ---------------------------------
@@ -134,14 +157,16 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 new GetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new SetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new SetLocationUpdatesUseCaseImpl(locationRepository),
-                new GetGpsDialogUseCaseImpl(locationRepository)
+                new ShowGpsDialogUseCaseImpl(locationRepository),
+                new RequestGpsUseCaseImpl(locationRepository),
+                gpsStateChangeReceiver
             );
         } else if (modelClass.isAssignableFrom(MapViewModel.class)) {
             return (T) new MapViewModel(
                 new GetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new GetLocationUseCaseImpl(locationRepository),
                 new GetNearbyRestaurantsUseCaseImpl(locationRepository, nearbyRepository),
-                new GetGpsStatusUseCaseImpl(locationRepository),
+                new GetGpsStatusUseCaseImpl(gpsStateChangeReceiver),
                 new RequestGpsUseCaseImpl(locationRepository)
             );
         } else if (modelClass.isAssignableFrom(RestaurantListViewModel.class)) {

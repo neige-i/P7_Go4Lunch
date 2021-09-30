@@ -45,7 +45,7 @@ public class RequestGpsUseCaseImplTest {
         requestGpsUseCase.request();
 
         // THEN
-        verify(locationRepositoryMock).requestGps();
+        verify(locationRepositoryMock).requestGpsDialog();
         verifyNoMoreInteractions(locationRepositoryMock);
     }
 }

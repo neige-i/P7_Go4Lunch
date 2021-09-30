@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.gps.GetGpsDialogUseCaseImpl;
+import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
+import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-public class GetGpsDialogUseCaseImplTest {
+public class ShowGpsDialogUseCaseImplTest {
 
     // ----------------------------------------- TEST RULE -----------------------------------------
 
@@ -26,7 +26,7 @@ public class GetGpsDialogUseCaseImplTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private GetGpsDialogUseCase getGpsDialogUseCase;
+    private ShowGpsDialogUseCase showGpsDialogUseCase;
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -41,24 +41,24 @@ public class GetGpsDialogUseCaseImplTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(resolvableMutableLiveData).when(locationRepositoryMock).getGpsDialogPrompt();
+        doReturn(resolvableMutableLiveData).when(locationRepositoryMock).getGpsDialog();
 
         // Init UseCase
-        getGpsDialogUseCase = new GetGpsDialogUseCaseImpl(locationRepositoryMock);
+        showGpsDialogUseCase = new ShowGpsDialogUseCaseImpl(locationRepositoryMock);
     }
 
     // ------------------------------------------- TESTS -------------------------------------------
 
     @Test
-    public void returnResolvableApiExceptionInstance_when_IsQueried() throws InterruptedException {
+    public void returnGpsDialog_when_dialogIsQueried() throws InterruptedException {
         // GIVEN
-        final ResolvableApiException expectedResolvable = mock(ResolvableApiException.class);
-        resolvableMutableLiveData.setValue(expectedResolvable);
+        final ResolvableApiException expectedGpsDialog = mock(ResolvableApiException.class);
+        resolvableMutableLiveData.setValue(expectedGpsDialog);
 
         // WHEN
-        final ResolvableApiException actualResolvable = getOrAwaitValue(getGpsDialogUseCase.showDialog());
+        final ResolvableApiException actualGpsDialog = getOrAwaitValue(showGpsDialogUseCase.getDialog());
 
         // THEN
-        assertEquals(expectedResolvable, actualResolvable);
+        assertEquals(expectedGpsDialog, actualGpsDialog);
     }
 }

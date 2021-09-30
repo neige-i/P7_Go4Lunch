@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.location.Location;
 
@@ -291,6 +292,7 @@ public class MapViewModelTest {
 
         // THEN
         verify(requestGpsUseCaseMock).request();
+        verifyNoMoreInteractions(requestGpsUseCaseMock);
     }
 
     // ------------------------------------ MAXIMUM ZOOM TESTS -------------------------------------
