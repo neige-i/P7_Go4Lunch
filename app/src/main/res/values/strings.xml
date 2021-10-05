@@ -47,6 +47,12 @@
     <string name="invalid_credentials_error">Login failed: malformed or expired credentials</string>
     <string name="user_collision_error">Login failed: account already exists</string>
 
+    <!-- Alert dialog -->
+    <string name="mandatory_permission_title">The location permission is denied</string>
+    <string name="mandatory_permission_message">This app requires the location permission to run. Do you want to go to the settings to grant it?</string>
+    <string name="positive_button_text">Yes, go to settings</string>
+    <string name="negative_button_text">No, exit the app</string>
+
     <!-- Third part ID -->
     <string name="facebook_app_id">5020438924692715</string>
     <string name="fb_login_protocol_scheme">fb5020438924692715</string>

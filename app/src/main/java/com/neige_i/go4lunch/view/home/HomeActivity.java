@@ -1,11 +1,15 @@
 package com.neige_i.go4lunch.view.home;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -63,7 +67,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
                 // The location permission is already checked in onResume()
                 // Which is called just after the permission dialog being dismissed
             });
-        final ActivityResultLauncher<IntentSenderRequest> enableGpsLauncher =
+        final ActivityResultLauncher<IntentSenderRequest> showGpsDialogLauncher =
             registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), ignored -> {
                 // The GPS status result is already retrieved in the receiver
             });
@@ -77,10 +81,30 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         // Setup actions when events are triggered
         viewModel.getRequestLocationPermissionEvent().observe(this, unused -> {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            Log.d("Neige", "getRequestLocationPermissionEvent");
         });
-        viewModel.getShowGpsDialogEvent().observe(this, resolvableApiException ->
-            enableGpsLauncher.launch(new IntentSenderRequest.Builder(resolvableApiException.getResolution()).build())
-        );
+        viewModel.getShowGpsDialogEvent().observe(this, resolvableApiException -> {
+            showGpsDialogLauncher.launch(
+                new IntentSenderRequest.Builder(resolvableApiException.getResolution()).build()
+            );
+        });
+        viewModel.getShowBlockingDialogEvent().observe(this, unused -> {
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.mandatory_permission_title)
+                .setMessage(R.string.mandatory_permission_message)
+                .setPositiveButton(R.string.positive_button_text, (dialog, which) -> {
+                    startActivity(new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", getPackageName(), null)
+                    ));
+                })
+                .setNegativeButton(R.string.negative_button_text, (dialog, which) -> {
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+            Log.d("Neige", "getShowBlockingDialogEvent");
+        });
 
         // Register GPS receiver in this activity's lifecycle
         registerReceiver(
@@ -93,8 +117,9 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onResume() {
         super.onResume();
 
+        Log.d("Neige", "onResume");
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.onActivityResumed(
+        viewModel.onPermissionChecked(
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
         );
@@ -104,6 +129,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onPause() {
         super.onPause();
 
+        Log.d("Neige", "onPause");
         viewModel.onActivityPaused();
     }
 

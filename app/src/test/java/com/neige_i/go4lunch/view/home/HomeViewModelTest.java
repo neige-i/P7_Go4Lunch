@@ -2,6 +2,7 @@ package com.neige_i.go4lunch.view.home;
 
 import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
@@ -72,9 +73,9 @@ public class HomeViewModelTest {
     // -------------------------------------- LOCATION TESTS ---------------------------------------
 
     @Test
-    public void enableLocationPermissionAndUpdates_when_activityIsResumedWithGrantedLocationPermission() {
+    public void enableLocationPermissionAndUpdates_when_locationPermissionIsGranted() {
         // WHEN
-        homeViewModel.onActivityResumed(true);
+        homeViewModel.onPermissionChecked(true);
 
         // THEN
         verify(setLocationPermissionUseCaseMock).set(true);
@@ -83,9 +84,9 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void disableLocationPermissionAndUpdates_when_activityIsResumedWithDeniedLocationPermission() {
+    public void disableLocationPermissionAndUpdates_when_locationPermissionIsDenied() {
         // WHEN
-        homeViewModel.onActivityResumed(false);
+        homeViewModel.onPermissionChecked(false);
 
         // THEN
         verify(setLocationPermissionUseCaseMock).set(false);
@@ -102,16 +103,6 @@ public class HomeViewModelTest {
         verify(setLocationUpdatesUseCaseMock).set(false);
         verifyNoMoreInteractions(setLocationUpdatesUseCaseMock);
     }
-
-    // ------------------------------------- REQUEST GPS TESTS -------------------------------------
-
-    @Test
-    public void requestGps_when_viewModelIsInitialized() {
-        // THEN
-        verify(requestGpsUseCaseMock).request();
-        verifyNoMoreInteractions(requestGpsUseCaseMock);
-    }
-
 
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
 
@@ -136,6 +127,23 @@ public class HomeViewModelTest {
         assertEquals(1, called[0]); // The permission is only requested once
     }
 
+    // ------------------------------------- REQUEST GPS TESTS -------------------------------------
+
+    @Test
+    public void requestGpsOnce_when_locationPermissionIsGrantedTheFirstTime() {
+        // GIVEN
+        isPermissionGrantedMutableLiveData.setValue(true);
+
+        // WHEN
+        homeViewModel.getRequestLocationPermissionEvent().observeForever(unused -> {
+        });
+        isPermissionGrantedMutableLiveData.setValue(true); // Grant the permission again
+
+        // THEN
+        verify(requestGpsUseCaseMock).request(); // The GPS is only requested once
+        verifyNoMoreInteractions(requestGpsUseCaseMock);
+    }
+
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
@@ -149,6 +157,23 @@ public class HomeViewModelTest {
 
         // THEN
         assertEquals(expectedGpsDialog, actualGpsDialog);
+    }
+
+    // ----------------------------------- BLOCKING DIALOG TESTS -----------------------------------
+
+    @Test
+    public void showBlockingDialog_when_locationPermissionIsDeniedMoreThanOnce() throws InterruptedException {
+        // GIVEN
+        isPermissionGrantedMutableLiveData.setValue(false);
+        homeViewModel.getRequestLocationPermissionEvent().observeForever(unused -> {
+        });
+
+        // WHEN
+        isPermissionGrantedMutableLiveData.setValue(false); // Deny the permission again
+        final Void blockingDialog = getOrAwaitValue(homeViewModel.getShowBlockingDialogEvent());
+
+        // THEN
+        assertNull(blockingDialog); // Blocking dialog is showed
     }
 
     // ---------------------------- BOTTOM NAVIGATION ITEM CLICK TESTS -----------------------------
