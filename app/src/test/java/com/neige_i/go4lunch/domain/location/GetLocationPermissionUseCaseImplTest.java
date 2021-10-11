@@ -1,19 +1,17 @@
 package com.neige_i.go4lunch.domain.location;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 public class GetLocationPermissionUseCaseImplTest {
 
@@ -30,17 +28,10 @@ public class GetLocationPermissionUseCaseImplTest {
 
     private final LocationPermissionRepository locationPermissionRepositoryMock = mock(LocationPermissionRepository.class);
 
-    // ---------------------------------------- MOCK VALUES ----------------------------------------
-
-    private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
-
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
     public void setUp() {
-        // Setup mocks
-        doReturn(locationPermissionMutableLiveData).when(locationPermissionRepositoryMock).getLocationPermission();
-
         // Init UseCase
         getLocationPermissionUseCase = new GetLocationPermissionUseCaseImpl(locationPermissionRepositoryMock);
     }
@@ -48,24 +39,24 @@ public class GetLocationPermissionUseCaseImplTest {
     // ------------------------------------------- TESTS -------------------------------------------
 
     @Test
-    public void returnTrue_when_permissionIsGranted() throws InterruptedException {
+    public void returnTrue_when_permissionIsGranted() {
         // GIVEN
-        locationPermissionMutableLiveData.setValue(true);
+        doReturn(true).when(locationPermissionRepositoryMock).isPermissionGranted();
 
         // WHEN
-        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isGranted());
+        final boolean isPermissionGranted = getLocationPermissionUseCase.isGranted();
 
         // THEN
         assertTrue(isPermissionGranted);
     }
 
     @Test
-    public void returnFalse_when_permissionIsDenied() throws InterruptedException {
+    public void returnFalse_when_permissionIsDenied() {
         // GIVEN
-        locationPermissionMutableLiveData.setValue(false);
+        doReturn(false).when(locationPermissionRepositoryMock).isPermissionGranted();
 
         // WHEN
-        final boolean isPermissionGranted = getOrAwaitValue(getLocationPermissionUseCase.isGranted());
+        final boolean isPermissionGranted = getLocationPermissionUseCase.isGranted();
 
         // THEN
         assertFalse(isPermissionGranted);

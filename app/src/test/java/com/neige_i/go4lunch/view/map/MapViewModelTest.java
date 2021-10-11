@@ -51,7 +51,6 @@ public class MapViewModelTest {
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
-    private final MutableLiveData<Boolean> isLocationPermissionGrantedMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isGpsEnabledMutableLiveData = new MutableLiveData<>();
@@ -78,7 +77,7 @@ public class MapViewModelTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(isLocationPermissionGrantedMutableLiveData).when(getLocationPermissionUseCaseMock).isGranted();
+        doReturn(true).when(getLocationPermissionUseCaseMock).isGranted();
         doReturn(locationMutableLiveData).when(getLocationUseCaseMock).get();
         doReturn(nearbyRestaurantsMutableLiveData).when(getNearbyRestaurantsUseCaseMock).get();
         doReturn(isGpsEnabledMutableLiveData).when(getGpsStatusUseCaseMock).isEnabled();
@@ -86,7 +85,6 @@ public class MapViewModelTest {
         doReturn(DEVICE_LNG).when(deviceLocation).getLongitude();
 
         // Default behaviour
-        isLocationPermissionGrantedMutableLiveData.setValue(true);
         isGpsEnabledMutableLiveData.setValue(true);
         locationMutableLiveData.setValue(deviceLocation);
         nearbyRestaurantsMutableLiveData.setValue(getDefaultRestaurantList());
@@ -105,6 +103,7 @@ public class MapViewModelTest {
             new LatLng(DEFAULT_LAT, DEFAULT_LNG),
             DEFAULT_ZOOM
         ));
+        mapViewModel.onFragmentResumed();
     }
 
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
@@ -133,7 +132,8 @@ public class MapViewModelTest {
     @Test
     public void getEmptyMap_when_locationPermissionIsDenied() throws InterruptedException {
         // GIVEN
-        isLocationPermissionGrantedMutableLiveData.setValue(false);
+        doReturn(false).when(getLocationPermissionUseCaseMock).isGranted();
+        mapViewModel.onFragmentResumed();
 
         // WHEN
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());

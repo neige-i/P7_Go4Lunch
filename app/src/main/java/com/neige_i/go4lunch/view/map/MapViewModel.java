@@ -37,6 +37,8 @@ public class MapViewModel extends ViewModel {
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
+    private final GetLocationPermissionUseCase getLocationPermissionUseCase;
+    @NonNull
     private final RequestGpsUseCase requestGpsUseCase;
 
     // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
@@ -46,6 +48,8 @@ public class MapViewModel extends ViewModel {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
+    @NonNull
+    private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
     /**
      * Source {@code LiveData} to update {@link #mapViewState}.
      */
@@ -85,19 +89,19 @@ public class MapViewModel extends ViewModel {
                         @NonNull GetGpsStatusUseCase getGpsStatusUseCase,
                         @NonNull RequestGpsUseCase requestGpsUseCase
     ) {
+        this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.requestGpsUseCase = requestGpsUseCase;
 
-        final LiveData<Boolean> isLocationPermissionGrantedLiveData = getLocationPermissionUseCase.isGranted();
         final LiveData<Location> locationLiveData = getLocationUseCase.get();
         final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = getNearbyRestaurantsUseCase.get();
         final LiveData<Boolean> isGpsEnabledLiveData = getGpsStatusUseCase.isEnabled();
 
-        mapViewState.addSource(isLocationPermissionGrantedLiveData, isLocationPermissionGranted -> combine(isLocationPermissionGranted, locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(locationLiveData, location -> combine(isLocationPermissionGrantedLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurants, isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(isGpsEnabledLiveData, isGpsEnabled -> combine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabled, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(currentPositionMutableLiveData, currentPosition -> combine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPosition, onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(onLocationButtonClickedPing, locationButtonPing -> combine(isLocationPermissionGrantedLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), locationButtonPing));
+        mapViewState.addSource(locationPermissionMutableLiveData, isLocationPermissionGranted -> combine(isLocationPermissionGranted, locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(locationLiveData, location -> combine(locationPermissionMutableLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurants, isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(isGpsEnabledLiveData, isGpsEnabled -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabled, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(currentPositionMutableLiveData, currentPosition -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPosition, onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(onLocationButtonClickedPing, locationButtonPing -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), locationButtonPing));
     }
 
     private void combine(@Nullable Boolean isLocationPermissionGranted,
@@ -205,6 +209,10 @@ public class MapViewModel extends ViewModel {
     public void onLocationButtonClicked() {
         keepMapCenteredOnLocation = true;
         onLocationButtonClickedPing.setValue(true);
+    }
+
+    public void onFragmentResumed() {
+        locationPermissionMutableLiveData.setValue(getLocationPermissionUseCase.isGranted());
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------

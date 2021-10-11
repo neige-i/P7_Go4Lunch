@@ -1,29 +1,29 @@
 package com.neige_i.go4lunch.data.location;
 
-import android.util.Log;
+import android.Manifest;
+import android.app.Application;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.core.content.ContextCompat;
 
 public class LocationPermissionRepositoryImpl implements LocationPermissionRepository {
 
-    // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
+    private final Application application;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
+    public LocationPermissionRepositoryImpl(@NonNull Application application) {
+        this.application = application;
+    }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
 
-    @NonNull
     @Override
-    public LiveData<Boolean> getLocationPermission() {
-        return locationPermissionMutableLiveData;
-    }
-
-    @Override
-    public void setLocationPermission(boolean locationPermission) {
-        Log.d("Neige", "REPO setLocationPermission: " + locationPermission);
-        locationPermissionMutableLiveData.setValue(locationPermission);
+    public boolean isPermissionGranted() {
+        return ContextCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 }

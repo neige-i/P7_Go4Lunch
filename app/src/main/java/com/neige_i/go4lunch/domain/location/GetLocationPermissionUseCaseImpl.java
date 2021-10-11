@@ -1,7 +1,6 @@
 package com.neige_i.go4lunch.domain.location;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 
@@ -20,9 +19,8 @@ public class GetLocationPermissionUseCaseImpl implements GetLocationPermissionUs
 
     // ------------------------------------- USE CASE METHODS --------------------------------------
 
-    @NonNull
     @Override
-    public LiveData<Boolean> isGranted() {
-        return locationPermissionRepository.getLocationPermission();
+    public boolean isGranted() {
+        return locationPermissionRepository.isPermissionGranted();
     }
 }
