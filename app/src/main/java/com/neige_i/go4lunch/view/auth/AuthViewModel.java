@@ -22,7 +22,12 @@ import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
 // TODO: write tests
+@HiltViewModel
 public class AuthViewModel extends ViewModel {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -45,6 +50,7 @@ public class AuthViewModel extends ViewModel {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
+    @Inject
     public AuthViewModel(@NonNull FirebaseAuth firebaseAuth,
                          @NonNull GetFirestoreUserUseCase getFirestoreUserUseCase,
                          @NonNull CreateFirestoreUserUseCase createFirestoreUserUseCase

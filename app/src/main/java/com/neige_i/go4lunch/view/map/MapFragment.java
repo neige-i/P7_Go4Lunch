@@ -27,11 +27,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentMapBinding;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MapFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
@@ -61,7 +63,7 @@ public class MapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Init ViewModel
-        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MapViewModel.class);
+        viewModel = new ViewModelProvider(this).get(MapViewModel.class);
 
         // Init view binding
         final FragmentMapBinding binding = FragmentMapBinding.bind(view);

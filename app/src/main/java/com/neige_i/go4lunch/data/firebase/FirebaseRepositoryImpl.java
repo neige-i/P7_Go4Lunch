@@ -1,15 +1,13 @@
 package com.neige_i.go4lunch.data.firebase;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 public class FirebaseRepositoryImpl implements FirebaseRepository {
 
@@ -18,6 +16,7 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
     @NonNull
     private final MutableLiveData<List<String>> favoriteRestaurants = new MutableLiveData<>();
 
+    @Inject
     public FirebaseRepositoryImpl() {
         favoriteRestaurants.setValue(new ArrayList<>());
     }
@@ -49,11 +48,11 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
         final List<String> currentFavoriteRestaurants = favoriteRestaurants.getValue();
 
         if (currentFavoriteRestaurants != null) {
-            if (currentFavoriteRestaurants.contains(placeId))
+            if (currentFavoriteRestaurants.contains(placeId)) {
                 currentFavoriteRestaurants.remove(placeId);
-            else
+            } else {
                 currentFavoriteRestaurants.add(placeId);
-
+            }
             favoriteRestaurants.setValue(currentFavoriteRestaurants);
         }
     }

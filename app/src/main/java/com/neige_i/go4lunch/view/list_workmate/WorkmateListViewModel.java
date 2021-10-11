@@ -19,6 +19,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class WorkmateListViewModel extends ViewModel {
 
     @NonNull
@@ -29,6 +34,7 @@ public class WorkmateListViewModel extends ViewModel {
     @NonNull
     private final SingleLiveEvent<String> triggerCallbackEvent = new SingleLiveEvent<>();
 
+    @Inject
     public WorkmateListViewModel(@NonNull GetFirestoreUserListUseCase getFirestoreUserListUseCase, @NonNull Clock clock) {
         this.getFirestoreUserListUseCase = getFirestoreUserListUseCase;
         this.clock = clock;

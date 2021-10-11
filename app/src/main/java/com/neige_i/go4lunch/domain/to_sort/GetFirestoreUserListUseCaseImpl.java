@@ -8,11 +8,14 @@ import com.neige_i.go4lunch.data.firebase.model.User;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class GetFirestoreUserListUseCaseImpl implements GetFirestoreUserListUseCase {
 
     @NonNull
     private final FirestoreRepository firestoreRepository;
 
+    @Inject
     public GetFirestoreUserListUseCaseImpl(@NonNull FirestoreRepository firestoreRepository) {
         this.firestoreRepository = firestoreRepository;
     }

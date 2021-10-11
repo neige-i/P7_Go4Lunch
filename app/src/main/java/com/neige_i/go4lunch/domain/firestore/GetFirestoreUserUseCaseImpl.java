@@ -8,6 +8,8 @@ import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 
 import java.util.Objects;
 
+import javax.inject.Inject;
+
 public class GetFirestoreUserUseCaseImpl implements GetFirestoreUserUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -17,6 +19,7 @@ public class GetFirestoreUserUseCaseImpl implements GetFirestoreUserUseCase {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public GetFirestoreUserUseCaseImpl(@NonNull FirestoreRepository firestoreRepository) {
         this.firestoreRepository = firestoreRepository;
     }

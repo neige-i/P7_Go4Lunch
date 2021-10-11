@@ -10,6 +10,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import javax.inject.Inject;
+
 public class GpsStateChangeReceiver extends BroadcastReceiver {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -24,6 +26,7 @@ public class GpsStateChangeReceiver extends BroadcastReceiver {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
+    @Inject
     public GpsStateChangeReceiver(@NonNull LocationManager locationManager) {
         this.locationManager = locationManager;
 

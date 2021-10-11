@@ -18,6 +18,10 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class LocationRepositoryImpl implements LocationRepository {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -71,8 +75,10 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    public LocationRepositoryImpl(@NonNull FusedLocationProviderClient fusedLocationProviderClient,
-                                  @NonNull SettingsClient settingsClient
+    @Inject
+    public LocationRepositoryImpl(
+        @NonNull FusedLocationProviderClient fusedLocationProviderClient,
+        @NonNull SettingsClient settingsClient
     ) {
         this.fusedLocationProviderClient = fusedLocationProviderClient;
         this.settingsClient = settingsClient;

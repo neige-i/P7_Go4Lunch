@@ -19,6 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class RestaurantListViewModel extends ViewModel {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
@@ -31,6 +36,7 @@ public class RestaurantListViewModel extends ViewModel {
     @NonNull
     private final GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase;
 
+    @Inject
     public RestaurantListViewModel(@NonNull GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase) {
         this.getRestaurantDetailsListUseCase = getRestaurantDetailsListUseCase;
     }

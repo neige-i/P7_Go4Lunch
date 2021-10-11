@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
     id 'jacoco'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -76,6 +77,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore'
 
     implementation 'com.facebook.android:facebook-android-sdk:11.1.1'
+
+    implementation "com.google.dagger:hilt-android:2.39.1"
+    annotationProcessor 'com.google.dagger:hilt-compiler:2.39.1'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'android.arch.core:core-testing:1.1.1' // Helps testing LiveData

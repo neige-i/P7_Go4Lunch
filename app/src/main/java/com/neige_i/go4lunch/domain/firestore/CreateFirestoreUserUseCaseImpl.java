@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.model.User;
 
+import javax.inject.Inject;
+
 public class CreateFirestoreUserUseCaseImpl implements CreateFirestoreUserUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -14,6 +16,7 @@ public class CreateFirestoreUserUseCaseImpl implements CreateFirestoreUserUseCas
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public CreateFirestoreUserUseCaseImpl(@NonNull FirestoreRepository firestoreRepository) {
         this.firestoreRepository = firestoreRepository;
     }

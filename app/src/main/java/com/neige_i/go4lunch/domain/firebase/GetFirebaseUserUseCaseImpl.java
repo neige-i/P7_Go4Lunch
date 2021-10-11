@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import javax.inject.Inject;
+
 public class GetFirebaseUserUseCaseImpl implements GetFirebaseUserUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -15,6 +17,7 @@ public class GetFirebaseUserUseCaseImpl implements GetFirebaseUserUseCase {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public GetFirebaseUserUseCaseImpl(@NonNull FirebaseAuth firebaseAuth) {
         this.firebaseAuth = firebaseAuth;
     }

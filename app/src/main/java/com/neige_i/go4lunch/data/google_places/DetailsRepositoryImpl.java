@@ -10,8 +10,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.BuildConfig;
-import com.neige_i.go4lunch.MainApplication;
-import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 
@@ -19,6 +17,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class DetailsRepositoryImpl implements DetailsRepository {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
@@ -27,7 +29,9 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
+    @NonNull
     private final ExecutorService executorService;
+    @NonNull
     private final Handler handler;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
@@ -37,7 +41,11 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    public DetailsRepositoryImpl(ExecutorService executorService, Handler handler) {
+    @Inject
+    public DetailsRepositoryImpl(
+        @NonNull ExecutorService executorService,
+        @NonNull Handler handler
+    ) {
         this.executorService = executorService;
         this.handler = handler;
     }
@@ -65,7 +73,10 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     // --------------------------------- BACKGROUND ASYNC METHODS ----------------------------------
 
-    private void executeAsync(@NonNull String placeId, @NonNull MutableLiveData<DetailsRestaurant> detailsRestaurantsMutableLiveData) {
+    private void executeAsync(
+        @NonNull String placeId,
+        @NonNull MutableLiveData<DetailsRestaurant> detailsRestaurantsMutableLiveData
+    ) {
         executorService.execute(() -> {
             // Background thread
             final DetailsRestaurant detailsRestaurant = fetchDetailsRestaurantsInBackground(placeId);
@@ -87,9 +98,10 @@ public class DetailsRepositoryImpl implements DetailsRepository {
         }
     }
 
-    private void onBackgroundTaskComplete(@Nullable DetailsRestaurant detailsRestaurant,
-                                          @NonNull MutableLiveData<DetailsRestaurant> detailsRestaurantMutableLiveData,
-                                          @NonNull String latLng
+    private void onBackgroundTaskComplete(
+        @Nullable DetailsRestaurant detailsRestaurant,
+        @NonNull MutableLiveData<DetailsRestaurant> detailsRestaurantMutableLiveData,
+        @NonNull String latLng
     ) {
         if (detailsRestaurant != null) {
             Log.d("Neige", "REPO getDetailsResponse: from API");
@@ -128,14 +140,14 @@ public class DetailsRepositoryImpl implements DetailsRepository {
     @NonNull
     private String setupName(@Nullable String restaurantName) {
         return restaurantName == null ?
-            MainApplication.getInstance().getString(R.string.name_not_available) :
+            "" :
             restaurantName;
     }
 
     @NonNull
     private String setupAddress(@Nullable String restaurantAddress) {
         if (restaurantAddress == null) {
-            return MainApplication.getInstance().getString(R.string.address_not_available);
+            return "";
         } else {
             final int commaIndex = restaurantAddress.indexOf(',');
             return commaIndex != -1 ?

@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
+import javax.inject.Inject;
+
 public class ShowGpsDialogUseCaseImpl implements ShowGpsDialogUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -15,6 +17,7 @@ public class ShowGpsDialogUseCaseImpl implements ShowGpsDialogUseCase {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public ShowGpsDialogUseCaseImpl(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }

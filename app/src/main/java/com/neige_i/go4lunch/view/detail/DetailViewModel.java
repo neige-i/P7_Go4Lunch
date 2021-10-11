@@ -12,11 +12,11 @@ import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.firebase.model.User;
 import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
+import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
+import com.neige_i.go4lunch.domain.model.DetailsModel;
 import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCase;
 import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCase;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
-import com.neige_i.go4lunch.domain.model.DetailsModel;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -25,6 +25,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class DetailViewModel extends ViewModel {
 
     @NonNull
@@ -42,12 +47,14 @@ public class DetailViewModel extends ViewModel {
 
     private final MediatorLiveData<DetailViewState> viewState = new MediatorLiveData<>();
 
-    public DetailViewModel(@NonNull GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase,
-                           @NonNull UpdateInterestedWorkmatesUseCase updateInterestedWorkmatesUseCase,
-                           @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase,
-                           @NonNull GetFirebaseUserUseCase getFirebaseUserUseCase,
-                           @NonNull Clock clock,
-                           @NonNull FirestoreRepository firestoreRepository
+    @Inject
+    public DetailViewModel(
+        @NonNull GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase,
+        @NonNull UpdateInterestedWorkmatesUseCase updateInterestedWorkmatesUseCase,
+        @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase,
+        @NonNull GetFirebaseUserUseCase getFirebaseUserUseCase,
+        @NonNull Clock clock,
+        @NonNull FirestoreRepository firestoreRepository
     ) {
         this.getRestaurantDetailsItemUseCase = getRestaurantDetailsItemUseCase;
         this.updateInterestedWorkmatesUseCase = updateInterestedWorkmatesUseCase;
@@ -74,8 +81,9 @@ public class DetailViewModel extends ViewModel {
     }
 
     private void combine(@Nullable DetailsModel detailsModel, @Nullable Restaurant restaurant) {
-        if (detailsModel.getDetailsResponse() == null)
+        if (detailsModel.getDetailsResponse() == null) {
             return;
+        }
 
         final DetailsRestaurant detailsRestaurant = detailsModel.getDetailsResponse();
         final String restaurantId = detailsRestaurant.getPlaceId();

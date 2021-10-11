@@ -7,10 +7,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.auth.AuthActivity;
 import com.neige_i.go4lunch.view.home.HomeActivity;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class DispatcherActivity extends AppCompatActivity {
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
@@ -22,8 +24,7 @@ public class DispatcherActivity extends AppCompatActivity {
         // Dispatcher does not set content view
 
         // Init ViewModel and update UI when events are triggered
-        new ViewModelProvider(this, ViewModelFactory.getInstance())
-            .get(DispatcherViewModel.class)
+        new ViewModelProvider(this).get(DispatcherViewModel.class)
             .getStartActivityEvent()
             .observe(this, activityToStart -> {
                 switch (activityToStart) {
