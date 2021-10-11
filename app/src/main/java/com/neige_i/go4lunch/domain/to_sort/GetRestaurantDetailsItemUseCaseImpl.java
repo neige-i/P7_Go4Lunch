@@ -13,6 +13,8 @@ import com.neige_i.go4lunch.domain.model.DetailsModel;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetailsItemUseCase {
 
     @NonNull
@@ -23,7 +25,11 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
     @NonNull
     private final MediatorLiveData<DetailsModel> detailsModel = new MediatorLiveData<>();
 
-    public GetRestaurantDetailsItemUseCaseImpl(@NonNull DetailsRepository detailsRepository, @NonNull FirebaseRepository firebaseRepository) {
+    @Inject
+    public GetRestaurantDetailsItemUseCaseImpl(
+        @NonNull DetailsRepository detailsRepository,
+        @NonNull FirebaseRepository firebaseRepository
+    ) {
         this.detailsRepository = detailsRepository;
         this.firebaseRepository = firebaseRepository;
     }
@@ -54,15 +60,17 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
         return detailsModel;
     }
 
-    private void combine(@Nullable DetailsRestaurant detailsRestaurant,
-                         @Nullable String selectedRestaurant,
-                         @NonNull List<String> favoriteRestaurants
+    private void combine(
+        @Nullable DetailsRestaurant detailsRestaurant,
+        @Nullable String selectedRestaurant,
+        @NonNull List<String> favoriteRestaurants
     ) {
         final List<String> favorites;
-        if (favoriteRestaurants == null) // Should never happen
+        if (favoriteRestaurants == null) { // Should never happen
             favorites = Collections.emptyList();
-        else
+        } else {
             favorites = favoriteRestaurants;
+        }
 
         detailsModel.setValue(new DetailsModel(detailsRestaurant, selectedRestaurant, favorites));
     }

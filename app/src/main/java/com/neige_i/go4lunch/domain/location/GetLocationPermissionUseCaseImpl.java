@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 
+import javax.inject.Inject;
+
 public class GetLocationPermissionUseCaseImpl implements GetLocationPermissionUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -13,6 +15,7 @@ public class GetLocationPermissionUseCaseImpl implements GetLocationPermissionUs
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public GetLocationPermissionUseCaseImpl(@NonNull LocationPermissionRepository locationPermissionRepository) {
         this.locationPermissionRepository = locationPermissionRepository;
     }

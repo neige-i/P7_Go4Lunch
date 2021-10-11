@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import javax.inject.Inject;
+
 public class LocationPermissionRepositoryImpl implements LocationPermissionRepository {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -16,6 +18,7 @@ public class LocationPermissionRepositoryImpl implements LocationPermissionRepos
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public LocationPermissionRepositoryImpl(@NonNull Application application) {
         this.application = application;
     }

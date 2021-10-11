@@ -14,8 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class WorkmateListFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
@@ -39,7 +41,11 @@ public class WorkmateListFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+        @NonNull LayoutInflater inflater,
+        @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState
+    ) {
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
@@ -49,7 +55,7 @@ public class WorkmateListFragment extends Fragment {
 
         // Init ViewModel
         final WorkmateListViewModel viewModel =
-            new ViewModelProvider(this, ViewModelFactory.getInstance()).get(WorkmateListViewModel.class);
+            new ViewModelProvider(this).get(WorkmateListViewModel.class);
 
         // Init binding
         final FragmentListBinding binding = FragmentListBinding.bind(view);

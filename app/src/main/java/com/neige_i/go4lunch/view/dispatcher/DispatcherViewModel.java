@@ -7,6 +7,11 @@ import androidx.lifecycle.ViewModel;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class DispatcherViewModel extends ViewModel {
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
@@ -16,6 +21,7 @@ public class DispatcherViewModel extends ViewModel {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
+    @Inject
     public DispatcherViewModel(@NonNull GetFirebaseUserUseCase getFirebaseUserUseCase) {
         startActivityEvent.setValue(
             getFirebaseUserUseCase.getUser() != null ?

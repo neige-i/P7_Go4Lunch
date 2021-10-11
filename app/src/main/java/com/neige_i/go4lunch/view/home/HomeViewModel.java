@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
@@ -15,6 +14,11 @@ import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class HomeViewModel extends ViewModel {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -25,8 +29,6 @@ public class HomeViewModel extends ViewModel {
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCase;
     @NonNull
     private final RequestGpsUseCase requestGpsUseCase;
-    @NonNull
-    private final GpsStateChangeReceiver gpsStateChangeReceiver;
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
@@ -52,16 +54,15 @@ public class HomeViewModel extends ViewModel {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
+    @Inject
     public HomeViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
                          @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
                          @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
-                         @NonNull RequestGpsUseCase requestGpsUseCase,
-                         @NonNull GpsStateChangeReceiver gpsStateChangeReceiver
+                         @NonNull RequestGpsUseCase requestGpsUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
         this.requestGpsUseCase = requestGpsUseCase;
-        this.gpsStateChangeReceiver = gpsStateChangeReceiver;
 
         // Retrieve the GPS dialog from the UseCase and prompt it to the user with a SingleLiveEvent
         showGpsDialogEvent.addSource(showGpsDialogUseCase.getDialog(), resolvableApiException -> {
@@ -87,11 +88,6 @@ public class HomeViewModel extends ViewModel {
     @NonNull
     public LiveData<Void> getShowBlockingDialogEvent() {
         return showBlockingDialogEvent;
-    }
-
-    @NonNull
-    public GpsStateChangeReceiver getGpsStateChangeReceiver() {
-        return gpsStateChangeReceiver;
     }
 
     // ------------------------------------- LOCATION METHODS --------------------------------------

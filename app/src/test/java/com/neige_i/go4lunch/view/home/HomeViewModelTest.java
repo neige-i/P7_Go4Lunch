@@ -15,7 +15,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
@@ -42,7 +41,6 @@ public class HomeViewModelTest {
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCaseMock = mock(SetLocationUpdatesUseCase.class);
     private final ShowGpsDialogUseCase showGpsDialogUseCaseMock = mock(ShowGpsDialogUseCase.class);
     private final RequestGpsUseCase requestGpsUseCaseMock = mock(RequestGpsUseCase.class);
-    private final GpsStateChangeReceiver gpsStateChangeReceiverMock = mock(GpsStateChangeReceiver.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -61,8 +59,7 @@ public class HomeViewModelTest {
             getLocationPermissionUseCaseMock,
             setLocationUpdatesUseCaseMock,
             showGpsDialogUseCaseMock,
-            requestGpsUseCaseMock,
-            gpsStateChangeReceiverMock
+            requestGpsUseCaseMock
         );
     }
 
@@ -222,17 +219,5 @@ public class HomeViewModelTest {
             "onBottomNavigationItemClicked() was called with a wrong MenuItem ID: -1",
             thrownException.getMessage()
         );
-    }
-
-    // ---------------------------------- RECEIVER INSTANCE TESTS ----------------------------------
-
-
-    @Test
-    public void returnReceiverInstance_when_isRequired() {
-        // WHEN
-        final GpsStateChangeReceiver actualReceiver = homeViewModel.getGpsStateChangeReceiver();
-
-        // THEN
-        assertEquals(gpsStateChangeReceiverMock, actualReceiver);
     }
 }

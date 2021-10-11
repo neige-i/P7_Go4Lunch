@@ -10,6 +10,8 @@ import com.neige_i.go4lunch.data.location.LocationRepository;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class GetNearbyRestaurantsUseCaseImpl implements GetNearbyRestaurantsUseCase {
 
     // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
@@ -19,7 +21,11 @@ public class GetNearbyRestaurantsUseCaseImpl implements GetNearbyRestaurantsUseC
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    public GetNearbyRestaurantsUseCaseImpl(@NonNull LocationRepository locationRepository, @NonNull NearbyRepository nearbyRepository) {
+    @Inject
+    public GetNearbyRestaurantsUseCaseImpl(
+        @NonNull LocationRepository locationRepository,
+        @NonNull NearbyRepository nearbyRepository
+    ) {
         nearbyRestaurantsLiveData =
             Transformations.switchMap(locationRepository.getCurrentLocation(), location ->
                 nearbyRepository.getNearbyRestaurants(location)

@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
+import javax.inject.Inject;
+
 public class SetLocationUpdatesUseCaseImpl implements SetLocationUpdatesUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -13,6 +15,7 @@ public class SetLocationUpdatesUseCaseImpl implements SetLocationUpdatesUseCase 
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
+    @Inject
     public SetLocationUpdatesUseCaseImpl(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }

@@ -8,7 +8,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -21,11 +20,16 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityMainBinding;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
@@ -35,6 +39,8 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     // ---------------------------------------- LOCAL FIELDS ---------------------------------------
 
     private HomeViewModel viewModel;
+    @Inject
+    GpsStateChangeReceiver gpsStateChangeReceiver;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -43,7 +49,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         super.onCreate(savedInstanceState);
 
         // Init ViewModel
-        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(HomeViewModel.class);
+        viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         // Init view binding
         final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -79,7 +85,6 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
         // Setup actions when events are triggered
         viewModel.getRequestLocationPermissionEvent().observe(this, unused -> {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-            Log.d("Neige", "getRequestLocationPermissionEvent");
         });
         viewModel.getShowGpsDialogEvent().observe(this, resolvableApiException -> {
             showGpsDialogLauncher.launch(
@@ -101,12 +106,11 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
                 })
                 .setCancelable(false)
                 .show();
-            Log.d("Neige", "getShowBlockingDialogEvent");
         });
 
         // Register GPS receiver in this activity's lifecycle
         registerReceiver(
-            viewModel.getGpsStateChangeReceiver(), // TODO: Hilt
+            gpsStateChangeReceiver,
             new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         );
     }
@@ -115,7 +119,6 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onResume() {
         super.onResume();
 
-        Log.d("Neige", "onResume");
         // Check location permission here in case the user manually changes it outside the app
         viewModel.onActivityResumed();
     }
@@ -124,7 +127,6 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onPause() {
         super.onPause();
 
-        Log.d("Neige", "onPause");
         viewModel.onActivityPaused();
     }
 
@@ -132,7 +134,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     protected void onDestroy() {
         super.onDestroy();
 
-        unregisterReceiver(viewModel.getGpsStateChangeReceiver());
+        unregisterReceiver(gpsStateChangeReceiver);
     }
 
     // ------------------------------------ OPTIONS MENU METHODS -----------------------------------

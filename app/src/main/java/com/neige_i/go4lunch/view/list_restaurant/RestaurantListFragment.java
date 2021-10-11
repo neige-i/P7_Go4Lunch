@@ -14,8 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class RestaurantListFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
@@ -39,7 +41,11 @@ public class RestaurantListFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+        @NonNull LayoutInflater inflater,
+        @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState
+    ) {
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
@@ -56,8 +62,7 @@ public class RestaurantListFragment extends Fragment {
         binding.recyclerview.setAdapter(restaurantAdapter);
 
         // Update UI when state is changed
-        new ViewModelProvider(this, ViewModelFactory.getInstance())
-            .get(RestaurantListViewModel.class)
+        new ViewModelProvider(this).get(RestaurantListViewModel.class)
             .getViewState()
             .observe(getViewLifecycleOwner(), restaurantAdapter::submitList);
     }

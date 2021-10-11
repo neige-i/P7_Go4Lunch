@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetailsListUseCase {
 
     @NonNull
@@ -37,10 +39,12 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
     @Nullable
     private Location deviceLocation;
 
-    public GetRestaurantDetailsListUseCaseImpl(@NonNull LocationRepository locationRepository,
-                                               @NonNull NearbyRepository nearbyRepository,
-                                               @NonNull DetailsRepository detailsRepository,
-                                               @NonNull FirestoreRepository firestoreRepository
+    @Inject
+    public GetRestaurantDetailsListUseCaseImpl(
+        @NonNull LocationRepository locationRepository,
+        @NonNull NearbyRepository nearbyRepository,
+        @NonNull DetailsRepository detailsRepository,
+        @NonNull FirestoreRepository firestoreRepository
     ) {
         this.detailsRepository = detailsRepository;
 
@@ -66,9 +70,10 @@ public class GetRestaurantDetailsListUseCaseImpl implements GetRestaurantDetails
         );
     }
 
-    private void combine(@Nullable List<NearbyRestaurant> nearbyRestaurants,
-                         @Nullable Map<String, DetailsRestaurant> placeIdDetailsResponseMap,
-                         @Nullable List<Restaurant> restaurantList
+    private void combine(
+        @Nullable List<NearbyRestaurant> nearbyRestaurants,
+        @Nullable Map<String, DetailsRestaurant> placeIdDetailsResponseMap,
+        @Nullable List<Restaurant> restaurantList
     ) {
         if (nearbyRestaurants == null) {
             return;

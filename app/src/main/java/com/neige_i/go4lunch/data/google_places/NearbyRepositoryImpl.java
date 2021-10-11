@@ -11,8 +11,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.BuildConfig;
-import com.neige_i.go4lunch.MainApplication;
-import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
@@ -21,11 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class NearbyRepositoryImpl implements NearbyRepository {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
+    @NonNull
     private final ExecutorService executorService;
+    @NonNull
     private final Handler handler;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
@@ -35,7 +39,11 @@ public class NearbyRepositoryImpl implements NearbyRepository {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    public NearbyRepositoryImpl(ExecutorService executorService, Handler handler) {
+    @Inject
+    public NearbyRepositoryImpl(
+        @NonNull ExecutorService executorService,
+        @NonNull Handler handler
+    ) {
         this.executorService = executorService;
         this.handler = handler;
     }
@@ -65,7 +73,10 @@ public class NearbyRepositoryImpl implements NearbyRepository {
 
     // --------------------------------- BACKGROUND ASYNC METHODS ----------------------------------
 
-    private void executeAsync(@NonNull String latLng, @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData) {
+    private void executeAsync(
+        @NonNull String latLng,
+        @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData
+    ) {
         executorService.execute(() -> {
             // Background thread
             final List<NearbyRestaurant> nearbyRestaurants = fetchNearbyRestaurantsInBackground(latLng);
@@ -93,9 +104,10 @@ public class NearbyRepositoryImpl implements NearbyRepository {
         }
     }
 
-    private void onBackgroundTaskComplete(@Nullable List<NearbyRestaurant> nearbyRestaurants,
-                                          @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyResponseMutableLiveData,
-                                          @NonNull String latLng
+    private void onBackgroundTaskComplete(
+        @Nullable List<NearbyRestaurant> nearbyRestaurants,
+        @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyResponseMutableLiveData,
+        @NonNull String latLng
     ) {
         if (nearbyRestaurants != null) {
             Log.d("Neige", "REPO getNearbyRestaurants: from API");
@@ -138,14 +150,14 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     private String setupName(@Nullable String restaurantName) {
         // TODO: do not consider object if null
         return restaurantName == null ?
-            MainApplication.getInstance().getString(R.string.name_not_available) :
+            "" :
             restaurantName;
     }
 
     @NonNull
     private String setupAddress(@Nullable String restaurantVicinity) {
         if (restaurantVicinity == null) {
-            return MainApplication.getInstance().getString(R.string.address_not_available);
+            return "";
         } else {
             final int commaIndex = restaurantVicinity.indexOf(',');
             return commaIndex != -1 ?

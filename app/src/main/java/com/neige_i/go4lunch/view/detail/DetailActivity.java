@@ -21,10 +21,12 @@ import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 
 import static com.neige_i.go4lunch.view.home.HomeActivity.EXTRA_PLACE_ID;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class DetailActivity extends AppCompatActivity {
 
     @Override
@@ -32,7 +34,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        final DetailViewModel viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(DetailViewModel.class);
+        final DetailViewModel viewModel = new ViewModelProvider(this).get(DetailViewModel.class);
         viewModel.onInfoQueried(getIntent().getStringExtra(EXTRA_PLACE_ID));
 
         final ImageView photoImg = findViewById(R.id.photo_img);

@@ -27,11 +27,13 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.ActivityAuthBinding;
-import com.neige_i.go4lunch.view.ViewModelFactory;
 import com.neige_i.go4lunch.view.home.HomeActivity;
 
 import java.util.Arrays;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class AuthActivity extends AppCompatActivity {
 
     // -------------------------------------- LOCAL FIELDS --------------------------------------
@@ -47,7 +49,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Init ViewModel
-        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(AuthViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         // Init view binding
         final ActivityAuthBinding binding = ActivityAuthBinding.inflate(getLayoutInflater());

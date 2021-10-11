@@ -28,6 +28,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class MapViewModel extends ViewModel {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
@@ -83,6 +88,7 @@ public class MapViewModel extends ViewModel {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
+    @Inject
     public MapViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
                         @NonNull GetLocationUseCase getLocationUseCase,
                         @NonNull GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase,

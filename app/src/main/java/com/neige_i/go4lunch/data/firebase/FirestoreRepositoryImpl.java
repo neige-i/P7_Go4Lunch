@@ -13,6 +13,8 @@ import com.neige_i.go4lunch.data.firebase.model.User;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @NonNull
@@ -23,6 +25,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     @NonNull
     private final FirebaseFirestore firebaseFirestore;
 
+    @Inject
     public FirestoreRepositoryImpl(@NonNull FirebaseFirestore firebaseFirestore) {
         this.firebaseFirestore = firebaseFirestore;
     }
@@ -72,7 +75,10 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     }
 
     @Override
-    public void setSelectedRestaurant(@NonNull String userId, @NonNull User.SelectedRestaurant selectedRestaurant) {
+    public void setSelectedRestaurant(
+        @NonNull String userId,
+        @NonNull User.SelectedRestaurant selectedRestaurant
+    ) {
         firebaseFirestore.collection(USER_COLLECTION).document(userId).update("selectedRestaurant", selectedRestaurant);
     }
 
