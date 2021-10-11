@@ -36,6 +36,7 @@ public class MapFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
+    private MapViewModel viewModel;
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
     @NonNull
     private final List<String> displayedMarkerIds = new ArrayList<>();
@@ -60,8 +61,7 @@ public class MapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Init ViewModel
-        final MapViewModel viewModel =
-            new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MapViewModel.class);
+        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MapViewModel.class);
 
         // Init view binding
         final FragmentMapBinding binding = FragmentMapBinding.bind(view);
@@ -146,5 +146,12 @@ public class MapFragment extends Fragment {
             100,
             false
         );
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        viewModel.onFragmentResumed();
     }
 }

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,7 +17,6 @@ import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.BuildConfig;
@@ -108,7 +106,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         // Register GPS receiver in this activity's lifecycle
         registerReceiver(
-            viewModel.getGpsStateChangeReceiver(),
+            viewModel.getGpsStateChangeReceiver(), // TODO: Hilt
             new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         );
     }
@@ -119,10 +117,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
 
         Log.d("Neige", "onResume");
         // Check location permission here in case the user manually changes it outside the app
-        viewModel.onPermissionChecked(
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
-        );
+        viewModel.onActivityResumed();
     }
 
     @Override

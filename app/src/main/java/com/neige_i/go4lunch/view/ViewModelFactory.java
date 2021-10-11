@@ -37,7 +37,6 @@ import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
@@ -99,7 +98,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                             Executors.newSingleThreadExecutor(),
                             new Handler(Looper.getMainLooper())
                         ),
-                        new LocationPermissionRepositoryImpl(),
+                        new LocationPermissionRepositoryImpl(application),
                         new LocationRepositoryImpl(
                             LocationServices.getFusedLocationProviderClient(application),
                             LocationServices.getSettingsClient(application)
@@ -155,7 +154,6 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(HomeViewModel.class)) {
             return (T) new HomeViewModel(
                 new GetLocationPermissionUseCaseImpl(locationPermissionRepository),
-                new SetLocationPermissionUseCaseImpl(locationPermissionRepository),
                 new SetLocationUpdatesUseCaseImpl(locationRepository),
                 new ShowGpsDialogUseCaseImpl(locationRepository),
                 new RequestGpsUseCaseImpl(locationRepository),

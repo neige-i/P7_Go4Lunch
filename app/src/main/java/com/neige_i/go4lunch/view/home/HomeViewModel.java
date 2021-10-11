@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.view.home;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -13,7 +11,6 @@ import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
@@ -23,9 +20,11 @@ public class HomeViewModel extends ViewModel {
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final SetLocationPermissionUseCase setLocationPermissionUseCase;
+    private final GetLocationPermissionUseCase getLocationPermissionUseCase;
     @NonNull
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCase;
+    @NonNull
+    private final RequestGpsUseCase requestGpsUseCase;
     @NonNull
     private final GpsStateChangeReceiver gpsStateChangeReceiver;
 
@@ -45,7 +44,7 @@ public class HomeViewModel extends ViewModel {
     /**
      * Flag to avoid requesting the location permission repeatedly if the user denies it.
      */
-    private boolean isLocationPermissionDenied;
+    private boolean isLocationPermissionAlreadyDenied;
     /**
      * Flag to automatically request the GPS dialog the first time location permission is granted.
      */
@@ -54,34 +53,15 @@ public class HomeViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     public HomeViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
-                         @NonNull SetLocationPermissionUseCase setLocationPermissionUseCase,
                          @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
                          @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
                          @NonNull RequestGpsUseCase requestGpsUseCase,
                          @NonNull GpsStateChangeReceiver gpsStateChangeReceiver
     ) {
-        Log.d("Neige", "HomeViewModel created");
-        this.setLocationPermissionUseCase = setLocationPermissionUseCase;
+        this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
+        this.requestGpsUseCase = requestGpsUseCase;
         this.gpsStateChangeReceiver = gpsStateChangeReceiver;
-
-        // Request the permission if it is not granted
-        requestLocationPermissionEvent.addSource(getLocationPermissionUseCase.isGranted(), isPermissionGranted -> {
-            if (isPermissionGranted) {
-                isLocationPermissionDenied = false; // Reset flag
-
-                // Request the GPS the first time location permission is granted
-                if (!isGpsAlreadyRequested) {
-                    requestGpsUseCase.request();
-                    isGpsAlreadyRequested = true;
-                }
-            } else if (isLocationPermissionDenied) {
-                showBlockingDialogEvent.call(); // TODO: is displayed twice if user exits and opens the app again
-            } else {
-                requestLocationPermissionEvent.call();
-                isLocationPermissionDenied = true;
-            }
-        });
 
         // Retrieve the GPS dialog from the UseCase and prompt it to the user with a SingleLiveEvent
         showGpsDialogEvent.addSource(showGpsDialogUseCase.getDialog(), resolvableApiException -> {
@@ -116,9 +96,27 @@ public class HomeViewModel extends ViewModel {
 
     // ------------------------------------- LOCATION METHODS --------------------------------------
 
-    public void onPermissionChecked(boolean locationPermission) {
-        setLocationPermissionUseCase.set(locationPermission);
-        setLocationUpdatesUseCase.set(locationPermission);
+    public void onActivityResumed() {
+        final boolean isLocationPermissionGranted = getLocationPermissionUseCase.isGranted();
+
+        // Setup location updates (enable it or not)
+        setLocationUpdatesUseCase.set(isLocationPermissionGranted);
+
+        // Setup permission & GPS requests
+        if (isLocationPermissionGranted) {
+            isLocationPermissionAlreadyDenied = false; // Reset flag
+
+            // Request the GPS the first time location permission is granted
+            if (!isGpsAlreadyRequested) {
+                requestGpsUseCase.request();
+                isGpsAlreadyRequested = true;
+            }
+        } else if (isLocationPermissionAlreadyDenied) {
+            showBlockingDialogEvent.call();
+        } else {
+            requestLocationPermissionEvent.call();
+            isLocationPermissionAlreadyDenied = true;
+        }
     }
 
     public void onActivityPaused() {
