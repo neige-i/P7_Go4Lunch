@@ -17,7 +17,7 @@ class HomePagerAdapter extends FragmentStateAdapter {
      * Fragments to put in the {@code ViewPager}.
      */
     private static final Fragment[] FRAGMENTS_TO_DISPLAY = new Fragment[]{
-        new MapFragment(), // ASKME: use Hilt to inject
+        new MapFragment(),
         RestaurantListFragment.newInstance(),
         WorkmateListFragment.newInstance()
     };

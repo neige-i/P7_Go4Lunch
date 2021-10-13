@@ -3,8 +3,7 @@ package com.neige_i.go4lunch.domain.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,21 +11,21 @@ import java.util.Objects;
 public class DetailsModel {
 
     @Nullable
-    private final DetailsRestaurant detailsRestaurant;
+    private final RestaurantDetails restaurantDetails;
     @Nullable
     private final String selectedRestaurant;
     @NonNull
     private final List<String> favoriteRestaurants;
 
-    public DetailsModel(@Nullable DetailsRestaurant detailsRestaurant, @Nullable String selectedRestaurant, @NonNull List<String> favoriteRestaurants) {
-        this.detailsRestaurant = detailsRestaurant;
+    public DetailsModel(@Nullable RestaurantDetails restaurantDetails, @Nullable String selectedRestaurant, @NonNull List<String> favoriteRestaurants) {
+        this.restaurantDetails = restaurantDetails;
         this.selectedRestaurant = selectedRestaurant;
         this.favoriteRestaurants = favoriteRestaurants;
     }
 
     @Nullable
-    public DetailsRestaurant getDetailsResponse() {
-        return detailsRestaurant;
+    public RestaurantDetails getDetailsResponse() {
+        return restaurantDetails;
     }
 
     @Nullable
@@ -46,11 +45,11 @@ public class DetailsModel {
         DetailsModel that = (DetailsModel) o;
         return Objects.equals(selectedRestaurant, that.selectedRestaurant) &&
             favoriteRestaurants.equals(that.favoriteRestaurants) &&
-            Objects.equals(detailsRestaurant, that.detailsRestaurant);
+            Objects.equals(restaurantDetails, that.restaurantDetails);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(detailsRestaurant, selectedRestaurant, favoriteRestaurants);
+        return Objects.hash(restaurantDetails, selectedRestaurant, favoriteRestaurants);
     }
 }

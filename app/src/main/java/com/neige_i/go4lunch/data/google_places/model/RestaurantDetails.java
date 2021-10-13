@@ -3,9 +3,10 @@ package com.neige_i.go4lunch.data.google_places.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 
-public class DetailsRestaurant {
+public class RestaurantDetails {
 
     @NonNull
     private final String placeId;
@@ -20,8 +21,19 @@ public class DetailsRestaurant {
     private final String phoneNumber;
     @Nullable
     private final String website;
+    @Nullable
+    private final List<String> openingHours;
 
-    public DetailsRestaurant(@NonNull String placeId, @NonNull String name, @NonNull String address, int rating, @Nullable String photoUrl, @Nullable String phoneNumber, @Nullable String website) {
+    public RestaurantDetails(
+        @NonNull String placeId,
+        @NonNull String name,
+        @NonNull String address,
+        int rating,
+        @Nullable String photoUrl,
+        @Nullable String phoneNumber,
+        @Nullable String website,
+        @Nullable List<String> openingHours
+    ) {
         this.placeId = placeId;
         this.name = name;
         this.address = address;
@@ -29,6 +41,7 @@ public class DetailsRestaurant {
         this.photoUrl = photoUrl;
         this.phoneNumber = phoneNumber;
         this.website = website;
+        this.openingHours = openingHours;
     }
 
     @NonNull
@@ -65,6 +78,11 @@ public class DetailsRestaurant {
         return website;
     }
 
+    @Nullable
+    public List<String> getOpeningHours() {
+        return openingHours;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -73,19 +91,26 @@ public class DetailsRestaurant {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DetailsRestaurant that = (DetailsRestaurant) o;
-        return rating == that.rating && placeId.equals(that.placeId) && name.equals(that.name) && address.equals(that.address) && Objects.equals(photoUrl, that.photoUrl) && Objects.equals(phoneNumber, that.phoneNumber) && Objects.equals(website, that.website);
+        RestaurantDetails that = (RestaurantDetails) o;
+        return rating == that.rating &&
+            placeId.equals(that.placeId) &&
+            name.equals(that.name) &&
+            address.equals(that.address) &&
+            Objects.equals(photoUrl, that.photoUrl) &&
+            Objects.equals(phoneNumber, that.phoneNumber) &&
+            Objects.equals(website, that.website) &&
+            Objects.equals(openingHours, that.openingHours);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, address, rating, photoUrl, phoneNumber, website);
+        return Objects.hash(placeId, name, address, rating, photoUrl, phoneNumber, website, openingHours);
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "DetailsRestaurant{" +
+        return "RestaurantDetails{" +
             "placeId='" + placeId + '\'' +
             ", name='" + name + '\'' +
             ", address='" + address + '\'' +
@@ -93,6 +118,7 @@ public class DetailsRestaurant {
             ", photoUrl='" + photoUrl + '\'' +
             ", phoneNumber='" + phoneNumber + '\'' +
             ", website='" + website + '\'' +
+            ", openingHours=" + openingHours +
             '}';
     }
 }

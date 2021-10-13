@@ -11,7 +11,11 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class GpsStateChangeReceiver extends BroadcastReceiver {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
@@ -27,8 +31,8 @@ public class GpsStateChangeReceiver extends BroadcastReceiver {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public GpsStateChangeReceiver(@NonNull LocationManager locationManager) {
-        this.locationManager = locationManager;
+    public GpsStateChangeReceiver(@ApplicationContext @NonNull Context applicationContext) {
+        locationManager = (LocationManager) applicationContext.getSystemService(Context.LOCATION_SERVICE);
 
         // Init GPS state (the receiver is only triggered when the state is CHANGED)
         setGpsState();

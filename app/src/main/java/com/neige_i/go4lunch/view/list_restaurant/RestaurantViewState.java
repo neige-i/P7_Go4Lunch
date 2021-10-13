@@ -21,7 +21,6 @@ class RestaurantViewState {
     private final int textColor;
     @NonNull
     private final String openingHours;
-    private final boolean interestedWorkmates;
     private final int interestedWorkmatesCount;
     private final int rating;
     private final boolean noRatingLblVisibility;
@@ -29,7 +28,11 @@ class RestaurantViewState {
     private final String photoUrl;
 
 
-    public RestaurantViewState(@NonNull String placeId, @NonNull String name, float distance, @NonNull String formattedDistance, @NonNull String address, int textStyle, int textColor, @NonNull String openingHours, boolean interestedWorkmates, int interestedWorkmatesCount, int rating, boolean noRatingLblVisibility, @NonNull String photoUrl) {
+    public RestaurantViewState(
+        @NonNull String placeId, @NonNull String name, float distance, @NonNull String formattedDistance,
+        @NonNull String address, int textStyle, int textColor, @NonNull String openingHours,
+        int interestedWorkmatesCount, int rating, boolean noRatingLblVisibility, @NonNull String photoUrl
+    ) {
         this.placeId = placeId;
         this.name = name;
         this.distance = distance;
@@ -38,7 +41,6 @@ class RestaurantViewState {
         this.textStyle = textStyle;
         this.textColor = textColor;
         this.openingHours = openingHours;
-        this.interestedWorkmates = interestedWorkmates;
         this.interestedWorkmatesCount = interestedWorkmatesCount;
         this.rating = rating;
         this.noRatingLblVisibility = noRatingLblVisibility;
@@ -82,10 +84,6 @@ class RestaurantViewState {
         return openingHours;
     }
 
-    public boolean areWorkmatesInterested() {
-        return interestedWorkmates;
-    }
-
     public int getInterestedWorkmatesCount() {
         return interestedWorkmatesCount;
     }
@@ -115,7 +113,6 @@ class RestaurantViewState {
         return Float.compare(that.distance, distance) == 0 &&
             textStyle == that.textStyle &&
             textColor == that.textColor &&
-            interestedWorkmates == that.interestedWorkmates &&
             interestedWorkmatesCount == that.interestedWorkmatesCount &&
             rating == that.rating &&
             noRatingLblVisibility == that.noRatingLblVisibility &&
@@ -129,6 +126,6 @@ class RestaurantViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmates, interestedWorkmatesCount, rating, noRatingLblVisibility, photoUrl);
+        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmatesCount, rating, noRatingLblVisibility, photoUrl);
     }
 }

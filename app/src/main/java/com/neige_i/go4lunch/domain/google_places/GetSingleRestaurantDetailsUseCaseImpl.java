@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.to_sort;
+package com.neige_i.go4lunch.domain.google_places;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,7 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 
 import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
-import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.domain.model.DetailsModel;
 
 import java.util.Collections;
@@ -15,7 +15,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetailsItemUseCase {
+public class GetSingleRestaurantDetailsUseCaseImpl implements GetSingleRestaurantDetailsUseCase {
 
     @NonNull
     private final DetailsRepository detailsRepository;
@@ -26,7 +26,7 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
     private final MediatorLiveData<DetailsModel> detailsModel = new MediatorLiveData<>();
 
     @Inject
-    public GetRestaurantDetailsItemUseCaseImpl(
+    public GetSingleRestaurantDetailsUseCaseImpl(
         @NonNull DetailsRepository detailsRepository,
         @NonNull FirebaseRepository firebaseRepository
     ) {
@@ -37,7 +37,7 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
     @NonNull
     @Override
     public LiveData<DetailsModel> getDetailsItem(@NonNull String placeId) {
-        final LiveData<DetailsRestaurant> detailsResponseLiveData = detailsRepository.getDetailsRestaurant(placeId);
+        final LiveData<RestaurantDetails> detailsResponseLiveData = detailsRepository.getRestaurantDetails(placeId);
         final LiveData<String> selectedRestaurantLiveData = firebaseRepository.getSelectedRestaurant();
         final LiveData<List<String>> favRestaurantsLiveData = firebaseRepository.getFavoriteRestaurants();
 
@@ -61,7 +61,7 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
     }
 
     private void combine(
-        @Nullable DetailsRestaurant detailsRestaurant,
+        @Nullable RestaurantDetails restaurantDetails,
         @Nullable String selectedRestaurant,
         @NonNull List<String> favoriteRestaurants
     ) {
@@ -72,6 +72,6 @@ public class GetRestaurantDetailsItemUseCaseImpl implements GetRestaurantDetails
             favorites = favoriteRestaurants;
         }
 
-        detailsModel.setValue(new DetailsModel(detailsRestaurant, selectedRestaurant, favorites));
+        detailsModel.setValue(new DetailsModel(restaurantDetails, selectedRestaurant, favorites));
     }
 }

@@ -26,7 +26,9 @@ public interface FirestoreRepository {
     LiveData<List<Restaurant>> getAllRestaurants();
 
     @NonNull
-    LiveData<Restaurant> getRestaurant(@NonNull String restaurantId);
+    LiveData<Restaurant> getRestaurantById(@NonNull String restaurantId);
 
     void addInterestedWorkmate(@NonNull String restaurantId, @NonNull String workmateId);
+
+    void removeListenerRegistrations();
 }

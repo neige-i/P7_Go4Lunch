@@ -26,6 +26,15 @@ public class RawDetailsResponse {
     @Expose
     private String status;
 
+    @Override
+    public String toString() {
+        return "RawDetailsResponse{" +
+            "htmlAttributions=" + htmlAttributions +
+            ", result=" + result +
+            ", status='" + status + '\'' +
+            '}';
+    }
+
     @Nullable
     public List<Object> getHtmlAttributions() {
         return htmlAttributions;
@@ -263,6 +272,22 @@ public class RawDetailsResponse {
     }
 
     public static class Result {
+        @Override
+        public String toString() {
+            return "Result{" +
+                "businessStatus='" + businessStatus + '\'' +
+                ", formattedAddress='" + formattedAddress + '\'' +
+                ", internationalPhoneNumber='" + internationalPhoneNumber + '\'' +
+                ", geometry=" + geometry +
+                ", name='" + name + '\'' +
+                ", obfuscatedType=" + obfuscatedType +
+                ", openingHours=" + openingHours +
+                ", photos=" + photos +
+                ", placeId='" + placeId + '\'' +
+                ", rating=" + rating +
+                ", website='" + website + '\'' +
+                '}';
+        }
 
         @Nullable
         @SerializedName("business_status")

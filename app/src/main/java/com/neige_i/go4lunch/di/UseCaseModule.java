@@ -4,8 +4,11 @@ import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCase;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCase;
 import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
@@ -18,18 +21,15 @@ import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
-import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCase;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsListUseCase;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsListUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCase;
-import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCaseImpl;
 
@@ -98,13 +98,18 @@ public abstract class UseCaseModule {
     );
 
     @Binds
-    public abstract GetRestaurantDetailsItemUseCase bindGetRestaurantDetailsItemUseCase(
-        GetRestaurantDetailsItemUseCaseImpl getRestaurantDetailsItemUseCaseImpl
+    public abstract GetSingleRestaurantDetailsUseCase bindGetRestaurantDetailsItemUseCase(
+        GetSingleRestaurantDetailsUseCaseImpl getRestaurantDetailsItemUseCaseImpl
     );
 
     @Binds
-    public abstract GetRestaurantDetailsListUseCase bindGetRestaurantDetailsListUseCase(
-        GetRestaurantDetailsListUseCaseImpl getRestaurantDetailsListUseCaseImpl
+    public abstract GetNearbyRestaurantDetailsUseCase bindGetRestaurantDetailsListUseCase(
+        GetNearbyRestaurantDetailsUseCaseImpl getRestaurantDetailsListUseCaseImpl
+    );
+
+    @Binds
+    public abstract GetNearbyFirestoreRestaurantsUseCase bindGetFirestoreRestaurantsByIdUseCase(
+        GetNearbyFirestoreRestaurantsUseCaseImpl getFirestoreRestaurantsByIdUseCaseImpl
     );
 
     @Binds
@@ -112,10 +117,10 @@ public abstract class UseCaseModule {
         ToggleFavRestaurantUseCaseImpl toggleFavRestaurantUseCaseImpl
     );
 
-    @Binds
-    public abstract UpdateInterestedWorkmatesUseCase bindUpdateInterestedWorkmatesUseCase(
-        UpdateInterestedWorkmatesUseCaseImpl updateInterestedWorkmatesUseCaseImpl
-    );
+//    @Binds
+//    public abstract UpdateInterestedWorkmatesUseCase bindUpdateInterestedWorkmatesUseCase(
+//        UpdateInterestedWorkmatesUseCaseImpl updateInterestedWorkmatesUseCaseImpl
+//    );
 
     @Binds
     public abstract UpdateSelectedRestaurantUseCase bindUpdateSelectedRestaurantUseCase(

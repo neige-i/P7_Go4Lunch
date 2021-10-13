@@ -31,6 +31,8 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     private final ExecutorService executorService;
     @NonNull
     private final Handler handler;
+    @NonNull
+    private final PlacesApi placesApi;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -42,10 +44,12 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     @Inject
     public NearbyRepositoryImpl(
         @NonNull ExecutorService executorService,
-        @NonNull Handler handler
+        @NonNull Handler handler,
+        @NonNull PlacesApi placesApi
     ) {
         this.executorService = executorService;
         this.handler = handler;
+        this.placesApi = placesApi;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -91,10 +95,8 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     @Nullable
     private List<NearbyRestaurant> fetchNearbyRestaurantsInBackground(@NonNull String latLng) {
         try {
-            return setupNearbyRestaurants(
-                // TODO: inject dependency
-                PlacesApi.getInstance()
-                    .getNearbyRestaurants(latLng)
+            return getCleanNearbyRestaurants(
+                placesApi.getNearbyRestaurants(latLng)
                     .execute()
                     .body()
             );
@@ -119,7 +121,7 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     // --------------------------------- SETUP CLEAN POJO METHODS ----------------------------------
 
     @NonNull
-    private List<NearbyRestaurant> setupNearbyRestaurants(@Nullable RawNearbyResponse rawNearbyResponse) {
+    private List<NearbyRestaurant> getCleanNearbyRestaurants(@Nullable RawNearbyResponse rawNearbyResponse) {
         final List<NearbyRestaurant> nearbyRestaurants = new ArrayList<>();
 
         if (rawNearbyResponse != null && rawNearbyResponse.getResults() != null) {
@@ -128,12 +130,14 @@ public class NearbyRepositoryImpl implements NearbyRepository {
                     result.getBusinessStatus().equals("OPERATIONAL") &&
                     result.getGeometry() != null && result.getGeometry().getLocation() != null &&
                     result.getGeometry().getLocation().getLat() != null &&
-                    result.getGeometry().getLocation().getLng() != null) {
+                    result.getGeometry().getLocation().getLng() != null &&
+                    result.getName() != null && result.getVicinity() != null
+                ) {
 
                     nearbyRestaurants.add(new NearbyRestaurant(
                         result.getPlaceId(),
-                        setupName(result.getName()),
-                        setupAddress(result.getVicinity()),
+                        result.getName(),
+                        result.getVicinity(),
                         result.getGeometry().getLocation().getLat(),
                         result.getGeometry().getLocation().getLng(),
                         setupRating(result.getRating()),
@@ -144,26 +148,6 @@ public class NearbyRepositoryImpl implements NearbyRepository {
         }
 
         return nearbyRestaurants;
-    }
-
-    @NonNull
-    private String setupName(@Nullable String restaurantName) {
-        // TODO: do not consider object if null
-        return restaurantName == null ?
-            "" :
-            restaurantName;
-    }
-
-    @NonNull
-    private String setupAddress(@Nullable String restaurantVicinity) {
-        if (restaurantVicinity == null) {
-            return "";
-        } else {
-            final int commaIndex = restaurantVicinity.indexOf(',');
-            return commaIndex != -1 ?
-                restaurantVicinity.substring(0, commaIndex) :
-                restaurantVicinity;
-        }
     }
 
     /**
