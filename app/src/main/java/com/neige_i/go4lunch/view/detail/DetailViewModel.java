@@ -11,11 +11,10 @@ import androidx.lifecycle.ViewModel;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.firebase.model.User;
-import com.neige_i.go4lunch.data.google_places.model.DetailsRestaurant;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.model.DetailsModel;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsItemUseCase;
-import com.neige_i.go4lunch.domain.to_sort.UpdateInterestedWorkmatesUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
 
 import java.time.Clock;
@@ -33,9 +32,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 public class DetailViewModel extends ViewModel {
 
     @NonNull
-    private final GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase;
-    @NonNull
-    private final UpdateInterestedWorkmatesUseCase updateInterestedWorkmatesUseCase;
+    private final GetSingleRestaurantDetailsUseCase getSingleRestaurantDetailsUseCase;
     @NonNull
     private final UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase;
     @NonNull
@@ -49,15 +46,13 @@ public class DetailViewModel extends ViewModel {
 
     @Inject
     public DetailViewModel(
-        @NonNull GetRestaurantDetailsItemUseCase getRestaurantDetailsItemUseCase,
-        @NonNull UpdateInterestedWorkmatesUseCase updateInterestedWorkmatesUseCase,
+        @NonNull GetSingleRestaurantDetailsUseCase getSingleRestaurantDetailsUseCase,
         @NonNull UpdateSelectedRestaurantUseCase updateSelectedRestaurantUseCase,
         @NonNull GetFirebaseUserUseCase getFirebaseUserUseCase,
         @NonNull Clock clock,
         @NonNull FirestoreRepository firestoreRepository
     ) {
-        this.getRestaurantDetailsItemUseCase = getRestaurantDetailsItemUseCase;
-        this.updateInterestedWorkmatesUseCase = updateInterestedWorkmatesUseCase;
+        this.getSingleRestaurantDetailsUseCase = getSingleRestaurantDetailsUseCase;
         this.updateSelectedRestaurantUseCase = updateSelectedRestaurantUseCase;
         this.getFirebaseUserUseCase = getFirebaseUserUseCase;
         this.clock = clock;
@@ -69,8 +64,8 @@ public class DetailViewModel extends ViewModel {
     }
 
     public void onInfoQueried(@NonNull String placeId) {
-        final LiveData<DetailsModel> detailsModelLiveData = getRestaurantDetailsItemUseCase.getDetailsItem(placeId);
-        final LiveData<Restaurant> restaurantLiveData = firestoreRepository.getRestaurant(placeId);
+        final LiveData<DetailsModel> detailsModelLiveData = getSingleRestaurantDetailsUseCase.getDetailsItem(placeId);
+        final LiveData<Restaurant> restaurantLiveData = firestoreRepository.getRestaurantById(placeId);
 
         viewState.addSource(detailsModelLiveData, detailsModel -> {
             combine(detailsModel, restaurantLiveData.getValue());
@@ -85,23 +80,23 @@ public class DetailViewModel extends ViewModel {
             return;
         }
 
-        final DetailsRestaurant detailsRestaurant = detailsModel.getDetailsResponse();
-        final String restaurantId = detailsRestaurant.getPlaceId();
+        final RestaurantDetails restaurantDetails = detailsModel.getDetailsResponse();
+        final String restaurantId = restaurantDetails.getPlaceId();
 
         final List<String> interestedWorkmates = restaurant != null ?
-            Collections.singletonList(restaurant.getWorkmateId()) :
+            Collections.singletonList("") :
             new ArrayList<>();
 
         // TODO: handle empty field case
         viewState.setValue(new DetailViewState(
             restaurantId,
-            detailsRestaurant.getName(),
-            detailsRestaurant.getPhotoUrl(),
-            detailsRestaurant.getAddress(),
-            detailsRestaurant.getRating(),
-            detailsRestaurant.getRating() == -1,
-            detailsRestaurant.getPhoneNumber(),
-            detailsRestaurant.getWebsite(),
+            restaurantDetails.getName(),
+            restaurantDetails.getPhotoUrl(),
+            restaurantDetails.getAddress(),
+            restaurantDetails.getRating(),
+            restaurantDetails.getRating() == -1,
+            restaurantDetails.getPhoneNumber(),
+            restaurantDetails.getWebsite(),
             restaurantId.equals(detailsModel.getSelectedRestaurant()),
             detailsModel.getFavoriteRestaurants().contains(restaurantId),
             interestedWorkmates

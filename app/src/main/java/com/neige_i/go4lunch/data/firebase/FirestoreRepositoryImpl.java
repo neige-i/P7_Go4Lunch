@@ -3,11 +3,13 @@ package com.neige_i.go4lunch.data.firebase;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.firebase.model.User;
 
@@ -17,13 +19,24 @@ import javax.inject.Inject;
 
 public class FirestoreRepositoryImpl implements FirestoreRepository {
 
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
+
     @NonNull
-    public static final String USER_COLLECTION = "users";
+    private static final String USER_COLLECTION = "users";
     @NonNull
-    public static final String RESTAURANT_COLLECTION = "restaurants";
+    private static final String RESTAURANT_COLLECTION = "restaurants";
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
     private final FirebaseFirestore firebaseFirestore;
+
+    // --------------------------------------- LOCAL FIELDS ----------------------------------------
+
+    @Nullable
+    ListenerRegistration getRestaurantsByIdListener;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
     public FirestoreRepositoryImpl(@NonNull FirebaseFirestore firebaseFirestore) {
@@ -108,19 +121,18 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @NonNull
     @Override
-    public LiveData<Restaurant> getRestaurant(@NonNull String restaurantId) {
+    public LiveData<Restaurant> getRestaurantById(@NonNull String restaurantId) {
         final MutableLiveData<Restaurant> restaurantMutableLiveData = new MutableLiveData<>();
 
-        firebaseFirestore.collection(RESTAURANT_COLLECTION)
+        getRestaurantsByIdListener = firebaseFirestore.collection(RESTAURANT_COLLECTION)
             .document(restaurantId)
-            .addSnapshotListener((value, error) -> {
+            .addSnapshotListener((documentSnapshot, error) -> {
                 if (error != null) {
-                    // Display error to user
                     return;
                 }
 
-                if (value != null) {
-                    restaurantMutableLiveData.setValue(value.toObject(Restaurant.class));
+                if (documentSnapshot != null) {
+                    restaurantMutableLiveData.setValue(documentSnapshot.toObject(Restaurant.class));
                 }
             });
 
@@ -134,5 +146,12 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 //            .addOnCompleteListener(task -> Log.d("Neige", "FirestoreRepositoryImpl::onComplete: " + task.isSuccessful()));
             .update("interestedWorkmates", FieldValue.arrayUnion(workmateId))
             .addOnCompleteListener(task -> Log.d("Neige", "FirestoreRepositoryImpl::onComplete update: " + task.isSuccessful()));
+    }
+
+    @Override
+    public void removeListenerRegistrations() {
+        if (getRestaurantsByIdListener != null) {
+            getRestaurantsByIdListener.remove();
+        }
     }
 }

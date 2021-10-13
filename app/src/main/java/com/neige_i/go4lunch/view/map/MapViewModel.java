@@ -18,7 +18,7 @@ import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.place_nearby.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

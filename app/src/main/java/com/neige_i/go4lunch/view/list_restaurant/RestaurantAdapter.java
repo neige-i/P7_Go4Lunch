@@ -52,17 +52,26 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         final Context context = holder.itemView.getContext();
 
         holder.itemView.setTag(viewState.getPlaceId());
+
         holder.binding.nameLbl.setText(viewState.getName());
+
         holder.binding.distanceLbl.setText(viewState.getFormattedDistance());
+
         holder.binding.addressLbl.setText(viewState.getAddress());
+
         holder.binding.openingHoursLbl.setText(viewState.getOpeningHours());
         holder.binding.openingHoursLbl.setTypeface(null, viewState.getTextStyle());
         holder.binding.openingHoursLbl.setTextColor(ContextCompat.getColor(context, viewState.getTextColor()));
-        holder.binding.coworkerCountLbl.setText(String.format(context.getString(R.string.workmate_count), viewState.getInterestedWorkmatesCount()));
-        holder.binding.coworkerCountLbl.setVisibility(viewState.areWorkmatesInterested() ? View.VISIBLE : View.GONE);
-        holder.binding.coworkerImg.setVisibility(viewState.areWorkmatesInterested() ? View.VISIBLE : View.GONE);
+
+        final int interestedWorkmateCount = viewState.getInterestedWorkmatesCount();
+        holder.binding.coworkerCountLbl.setText(String.format(context.getString(R.string.workmate_count), interestedWorkmateCount));
+        holder.binding.coworkerCountLbl.setVisibility(interestedWorkmateCount > 0 ? View.VISIBLE : View.GONE);
+        holder.binding.coworkerImg.setVisibility(interestedWorkmateCount > 0 ? View.VISIBLE : View.GONE);
+
         setRatingImgVisibility(viewState.getRating(), holder.binding.star1Img, holder.binding.star2Img, holder.binding.star3Img);
+
         holder.binding.noRatingLbl.setVisibility(viewState.isNoRatingLblVisible() ? View.VISIBLE : View.GONE);
+
         setPhotoSrcWithGlide(holder.binding.thumbnailImg, viewState.getPhotoUrl());
     }
 

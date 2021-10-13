@@ -2,22 +2,34 @@ package com.neige_i.go4lunch.view.list_restaurant;
 
 import android.graphics.Typeface;
 import android.location.Location;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.firebase.model.Restaurant;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.to_sort.GetRestaurantDetailsListUseCase;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
+import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -29,183 +41,185 @@ public class RestaurantListViewModel extends ViewModel {
     // -------------------------------------- CLASS VARIABLES --------------------------------------
 
     @NonNull
-    private static final DateTimeFormatter HOUR_FORMAT = DateTimeFormatter.ofPattern("HHmm");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmm");
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase;
+    private final Clock clock;
+
+    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+
+    @NonNull
+    private final MediatorLiveData<List<RestaurantViewState>> restaurantsViewState = new MediatorLiveData<>();
+
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public RestaurantListViewModel(@NonNull GetRestaurantDetailsListUseCase getRestaurantDetailsListUseCase) {
-        this.getRestaurantDetailsListUseCase = getRestaurantDetailsListUseCase;
+    public RestaurantListViewModel(
+        @NonNull GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase,
+        @NonNull GetNearbyRestaurantDetailsUseCase getNearbyRestaurantDetailsUseCase,
+        @NonNull GetLocationUseCase getLocationUseCase,
+        @NonNull GetNearbyFirestoreRestaurantsUseCase getNearbyFirestoreRestaurantsUseCase,
+        @NonNull Clock clock
+    ) {
+        this.clock = clock;
+
+        final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = getNearbyRestaurantsUseCase.get();
+        final LiveData<Map<String, RestaurantDetails>> restaurantsDetailsLiveData = getNearbyRestaurantDetailsUseCase.get();
+        final LiveData<Location> locationLiveData = getLocationUseCase.get();
+        final LiveData<List<Restaurant>> firestoreRestaurantListLiveData = getNearbyFirestoreRestaurantsUseCase.get();
+
+        restaurantsViewState.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(nearbyRestaurants, restaurantsDetailsLiveData.getValue(), locationLiveData.getValue(), firestoreRestaurantListLiveData.getValue()));
+        restaurantsViewState.addSource(restaurantsDetailsLiveData, restaurantDetails -> combine(nearbyRestaurantsLiveData.getValue(), restaurantDetails, locationLiveData.getValue(), firestoreRestaurantListLiveData.getValue()));
+        restaurantsViewState.addSource(locationLiveData, location -> combine(nearbyRestaurantsLiveData.getValue(), restaurantsDetailsLiveData.getValue(), location, firestoreRestaurantListLiveData.getValue()));
+        restaurantsViewState.addSource(firestoreRestaurantListLiveData, firestoreRestaurantList -> combine(nearbyRestaurantsLiveData.getValue(), restaurantsDetailsLiveData.getValue(), locationLiveData.getValue(), firestoreRestaurantList));
+    }
+
+    private void combine(
+        @Nullable List<NearbyRestaurant> nearbyRestaurants,
+        @Nullable Map<String, RestaurantDetails> restaurantsDetails,
+        @Nullable Location currentLocation,
+        @Nullable List<Restaurant> firestoreRestaurantList
+    ) {
+        if (nearbyRestaurants == null || currentLocation == null) {
+            return;
+        }
+
+        final List<RestaurantViewState> viewStates = new ArrayList<>();
+
+        for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
+            final String restaurantId = nearbyRestaurant.getPlaceId();
+
+            final float distance = computeDistance(currentLocation, nearbyRestaurant);
+
+            final PlaceHourWrapper placeHourWrapper = getPlaceHour(restaurantsDetails, restaurantId);
+//            final PlaceHourWrapper placeHourWrapper = new PlaceHourWrapper("Unknown hours", R.color.gray_dark, Typeface.NORMAL);
+
+            viewStates.add(new RestaurantViewState(
+                restaurantId,
+                nearbyRestaurant.getName(),
+                distance,
+                getFormattedDistance(distance),
+                nearbyRestaurant.getAddress(),
+                placeHourWrapper.getFontStyle(),
+                placeHourWrapper.getFontColor(),
+                placeHourWrapper.getHours(),
+                computeInterestedWorkmateCount(firestoreRestaurantList, restaurantId),
+                nearbyRestaurant.getRating(),
+                nearbyRestaurant.getRating() == -1,
+                nearbyRestaurant.getPhotoUrl() != null ? nearbyRestaurant.getPhotoUrl() : "" // TODO: replace
+            ));
+
+            // SORT the restaurant list by distance in ascending order
+            Collections.sort(viewStates, (viewState1, viewState2) ->
+                (int) (viewState1.getDistance() - viewState2.getDistance()));
+        }
+
+        restaurantsViewState.setValue(viewStates);
+    }
+
+    private float computeDistance(
+        @NonNull Location currentLocation,
+        @NonNull NearbyRestaurant nearbyRestaurant
+    ) {
+        final float[] distances = new float[3];
+
+        Location.distanceBetween(
+            currentLocation.getLatitude(),
+            currentLocation.getLongitude(),
+            nearbyRestaurant.getLatitude(),
+            nearbyRestaurant.getLongitude(),
+            distances
+        );
+
+        return distances[0];
+    }
+
+    @NonNull
+    private String getFormattedDistance(float originalDistance) {
+        final boolean isLessThan1Km = originalDistance < 1000;
+        return String.format(
+            Locale.getDefault(),
+            isLessThan1Km ? "%.0fm" : "%.2fkm",
+            isLessThan1Km ? originalDistance : originalDistance / 1000
+        );
+    }
+
+    private int computeInterestedWorkmateCount(
+        @Nullable List<Restaurant> firestoreRestaurantList,
+        @NonNull String restaurantId
+    ) {
+        if (firestoreRestaurantList == null) {
+            return 0;
+        }
+
+        Log.d("Neige", "computeInterestedWorkmateCount: restaurant=" + firestoreRestaurantList);
+        final Restaurant firestoreRestaurant = firestoreRestaurantList.stream()
+            .filter(restaurant -> Objects.equals(restaurant.getRestaurantId(), restaurantId))
+            .findFirst()
+            .orElse(null);
+
+        if (firestoreRestaurant == null || firestoreRestaurant.getWorkmateMap() == null) {
+            return 0;
+        } else {
+            return firestoreRestaurant.getWorkmateMap().size(); // TODO: filter to get only today's interested workmates
+        }
+    }
+
+    @NonNull
+    public LiveData<List<RestaurantViewState>> getViewState() {
+        return restaurantsViewState;
     }
 
     // ------------------------------------ VIEW STATE METHODS -------------------------------------
 
     @NonNull
-    public LiveData<List<RestaurantViewState>> getViewState() {
-        return Transformations.map(getRestaurantDetailsListUseCase.getDetailsList(), listWrapper -> {
-            // The view state to return
-            final List<RestaurantViewState> viewStates = new ArrayList<>();
+    private PlaceHourWrapper getPlaceHour(@Nullable Map<String, RestaurantDetails> restaurantDetailsMap, @NonNull String restaurantId) {
+        if (restaurantDetailsMap == null) {
+            return new PlaceHourWrapper("...", R.color.gray_dark, Typeface.NORMAL);
+        }
 
-            if (listWrapper != null) {
-                for (NearbyRestaurant nearbyRestaurant : listWrapper.getNearbyRestaurants()) {
-                    // 3. Setup the distance
-                    final Location currentLocation = listWrapper.getCurrentLocation();
-                    final float distance;
-                    final String formattedDistance;
-                    if (currentLocation == null) {
-                        // TODO: remove this condition, should never happen
-                        distance = Integer.MAX_VALUE; // View state list is sorted by ascending distance, this way "null" value will be at the end of the list
-                        formattedDistance = "---m";
-                    } else {
-                        final float[] distances = new float[3];
-                        Location.distanceBetween(
-                            currentLocation.getLatitude(),
-                            currentLocation.getLongitude(),
-                            nearbyRestaurant.getLatitude(),
-                            nearbyRestaurant.getLongitude(),
-                            distances
-                        );
-                        distance = distances[0];
-                        formattedDistance = getFormattedDistance(distance);
-                    }
+        final RestaurantDetails restaurantDetails = restaurantDetailsMap.get(restaurantId);
+        if (restaurantDetails == null) {
+            return new PlaceHourWrapper("...", R.color.gray_dark, Typeface.NORMAL);
+        }
 
-                    // GET opening hours
-//                    final PlaceHourWrapper placeHourWrapper = getPlaceHour(listWrapper.getDetailsResponses(), nearbyRestaurant.getPlaceId());
-                    final PlaceHourWrapper placeHourWrapper = new PlaceHourWrapper("Unknown hours", R.color.gray_dark, Typeface.NORMAL);
+        final List<String> openingHours = restaurantDetails.getOpeningHours();
+        if (openingHours == null || openingHours.isEmpty()) {
+            return new PlaceHourWrapper("Unknown hours", R.color.gray_dark, Typeface.NORMAL);
+        }
 
-                    final Restaurant firestoreRestaurant = listWrapper.getRestaurants()
-                        .stream()
-                        .filter(restaurant -> restaurant.getRestaurantId().equals(nearbyRestaurant.getPlaceId()))
-                        .findFirst().orElseGet(Restaurant::new);
+        Log.d("Neige", "getPlaceHour: " + openingHours);
+        if (openingHours.size() == 2 &&
+            openingHours.get(0).equals("70000") && // getDay() has been converted in the repository
+            openingHours.get(1) == null
+        ) {
+            return new PlaceHourWrapper("Open 24/7", R.color.lime_dark, Typeface.ITALIC);
+        }
 
-                    // MAPPING
-                    viewStates.add(new RestaurantViewState(
-                        nearbyRestaurant.getPlaceId(),
-                        nearbyRestaurant.getName(),
-                        distance,
-                        formattedDistance,
-                        nearbyRestaurant.getAddress(),
-                        placeHourWrapper.getFontStyle(),
-                        placeHourWrapper.getFontColor(),
-                        placeHourWrapper.getHours(),
-                        firestoreRestaurant.getWorkmateId() != null,
-                        firestoreRestaurant.getWorkmateId() != null ? 1 : 0,
-                        nearbyRestaurant.getRating(),
-                        nearbyRestaurant.getRating() == -1,
-                        nearbyRestaurant.getPhotoUrl() != null ? nearbyRestaurant.getPhotoUrl() : "" // TODO: replace
-                    ));
-
-                    // SORT the restaurant list by distance in ascending order
-                    Collections.sort(viewStates, (viewState1, viewState2) ->
-                        (int) (viewState1.getDistance() - viewState2.getDistance()));
-                }
-            }
-
-            return viewStates;
-        });
-    }
-
-//    private PlaceHourWrapper getPlaceHour(@Nullable List<DetailsRestaurant> detailsRestaurants, @Nullable String nearbyPlaceId) {
-//        final PlaceHourWrapper unknownHours = new PlaceHourWrapper("Unknown hours", R.color.gray_dark, Typeface.NORMAL);
-//
-//        if (detailsRestaurants == null || nearbyPlaceId == null) {
-//            return unknownHours;
-//        }
-//
-//        final List<RawDetailsResponse.Period> periodList = new ArrayList<>();
-//        for (DetailsRestaurant detailsRestaurant : detailsRestaurants) {
-//            if (detailsRestaurant != null) {
-//
-//                final String detailsPlaceId = detailsRestaurant.getPlaceId();
-//                if (detailsPlaceId != null && detailsPlaceId.equals(nearbyPlaceId)) {
-//
-//                    if (detailsRestaurant.getResult().getOpeningHours() != null) {
-//                        periodList.addAll(detailsRestaurant.getResult().getOpeningHours().getPeriods());
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (periodList.isEmpty()) {
-//            return unknownHours;
-//        }
-//
-//        // 1. Check if the place is never closed
-//        if (periodList.stream().allMatch(period -> period.getClose() == null)) {
-//            return new PlaceHourWrapper("Open 24/7", R.color.lime_dark, Typeface.ITALIC);
-//        }
-//
-//        // Day values: from 1 (Monday) to 7 (Sunday) for java.time and from 0 (Sunday) to 6 (Saturday) for Places API
-//        final DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+        final LocalDateTime localDateTime = LocalDateTime.now(clock);
+        // Day starts at Monday=1 for java.time and at Sunday=0 for Places API
+//        final DayOfWeek dayOfWeek = localDateTime.getDayOfWeek();
 //        final int currentDay = dayOfWeek == DayOfWeek.SUNDAY ? 0 : dayOfWeek.getValue();
-//
-//        // 2. Find the first opened period for today
-//        RawDetailsResponse.Period firstTodayOpenPeriod = null;
-//        for (RawDetailsResponse.Period period : periodList) {
-//            if (period.getOpen() != null && period.getOpen().getDay() != null && period.getOpen().getDay() == currentDay) {
-//                firstTodayOpenPeriod = period;
-//                break;
-//            }
-//        }
-//
-//        // 3. Check if the place is opened today
-//        if (firstTodayOpenPeriod == null) {
-//            return new PlaceHourWrapper("Closed today", android.R.color.holo_red_dark, Typeface.BOLD);
-//        }
-//
-//        PlaceHourWrapper placeHourWrapper = null;
-//        for (int i = periodList.indexOf(firstTodayOpenPeriod); i < periodList.size(); i++) {
-//
-//            final RawDetailsResponse.Open todayOpen = periodList.get(i).getOpen();
-//            if (todayOpen == null) {
-//                break; // Should never happen because at this state we know the place is opened today
-//            } else if (todayOpen.getDay() != null && todayOpen.getDay() != currentDay) {
-//                break; // Break the loop if iterate over a period with an opened day different from today
-//            }
-//
-//            final LocalTime currentTime = LocalTime.now();
-//
-//            // 4. Check if the place isn't opened yet
-//            final LocalTime openTime = LocalTime.parse(todayOpen.getTime(), HOUR_FORMAT);
-//            if (currentTime.isBefore(openTime)) {
-//                // TODO: handle when next open is another day
-//                placeHourWrapper = new PlaceHourWrapper("Closed until " + openTime, android.R.color.holo_red_dark, Typeface.BOLD);
-//                break;
-//            }
-//
-//            if (firstTodayOpenPeriod.getClose() == null) {
-//                break;
-//            }
-//
-//            final LocalTime closeTime = LocalTime.parse(firstTodayOpenPeriod.getClose().getTime(), HOUR_FORMAT);
-//
-//            final int closedNextDay;
-//            if (firstTodayOpenPeriod.getClose().getDay() != null && firstTodayOpenPeriod.getClose().getDay() != currentDay) {
-//                closedNextDay = 24; // 24 hours a day
-//            } else {
-//                closedNextDay = 0;
-//            }
-//
-//            if (currentTime.isBefore(closeTime) || closedNextDay != 0) {
-//                if (Duration.between(currentTime, closeTime).toHours() + closedNextDay < 1) {
-//                    placeHourWrapper = new PlaceHourWrapper("Closing soon", android.R.color.holo_red_dark, Typeface.BOLD);
-//                } else {
-//                    placeHourWrapper = new PlaceHourWrapper("Open until " + closeTime, R.color.lime_dark, Typeface.ITALIC);
-//                }
-//                break;
-//            }
-//        }
-//
-//        return placeHourWrapper == null ? unknownHours : placeHourWrapper;
-//    }
 
-    private String getFormattedDistance(float originalDistance) {
-        return originalDistance < 1000
-            ? String.format(Locale.getDefault(), "%.0fm", originalDistance)
-            : String.format(Locale.getDefault(), "%.2fkm", originalDistance / 1000);
+//        int openingHoursIndex = 0;
+//        for (String openingHour : openingHours) {
+//            if (!localDateTime.isBefore(LocalDateTime.parse(openingHour, DATE_TIME_FORMATTER))) {
+//                break;
+//            }
+//            openingHoursIndex++;
+//        }
+
+        return new PlaceHourWrapper("Other", R.color.gray_dark, Typeface.NORMAL);
+//        if () {
+//
+//        }
+
+        // TODO: handle when next open is another day
+//        new PlaceHourWrapper("Closed today", android.R.color.holo_red_dark, Typeface.BOLD);
+//        new PlaceHourWrapper("Closing soon", android.R.color.holo_red_dark, Typeface.BOLD);
+//        new PlaceHourWrapper("Open until " + closeTime, R.color.lime_dark, Typeface.ITALIC);
+//        new PlaceHourWrapper("Closed until " + openTime, android.R.color.holo_red_dark, Typeface.BOLD);
     }
 }

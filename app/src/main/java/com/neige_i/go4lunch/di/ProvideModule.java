@@ -1,8 +1,6 @@
 package com.neige_i.go4lunch.di;
 
 import android.app.Application;
-import android.content.Context;
-import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -11,27 +9,31 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.SettingsClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
+import com.neige_i.go4lunch.data.google_places.PlacesApi;
 
 import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.inject.Singleton;
-
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.components.SingletonComponent;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
 @InstallIn(SingletonComponent.class)
 public class ProvideModule {
 
+    // ---------------------------------------- JAVA TIME ----------------------------------------
+
     @Provides
     public static Clock provideClock() {
         return Clock.systemDefaultZone();
     }
+
+    // -------------------------------------- BACKGROUND WORK --------------------------------------
 
     @Provides
     public static ExecutorService provideExecutorService() {
@@ -42,6 +44,19 @@ public class ProvideModule {
     public static Handler provideHandler() {
         return new Handler(Looper.getMainLooper());
     }
+
+    // ----------------------------------------- RETROFIT ------------------------------------------
+
+    @Provides
+    public static PlacesApi providePlacesApi() {
+        return new Retrofit.Builder()
+            .baseUrl("https://maps.googleapis.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PlacesApi.class);
+    }
+
+    // -------------------------------------- GOOGLE LOCATION --------------------------------------
 
     @Provides
     public static FusedLocationProviderClient provideFusedLocationProviderClient(
@@ -55,6 +70,8 @@ public class ProvideModule {
         return LocationServices.getSettingsClient(application);
     }
 
+    // ----------------------------------------- FIREBASE ------------------------------------------
+
     @Provides
     public static FirebaseAuth provideFirebaseAuth() {
         return FirebaseAuth.getInstance();
@@ -63,13 +80,5 @@ public class ProvideModule {
     @Provides
     public static FirebaseFirestore provideFirebaseFirestore() {
         return FirebaseFirestore.getInstance();
-    }
-
-    @Singleton // ASKME: binding/InstallIn/scope/ (scope only repo with cache)
-    @Provides
-    public static GpsStateChangeReceiver provideGpsStateChangeReceiver(Application application) {
-        return new GpsStateChangeReceiver(
-            (LocationManager) application.getSystemService(Context.LOCATION_SERVICE)
-        );
     }
 }
