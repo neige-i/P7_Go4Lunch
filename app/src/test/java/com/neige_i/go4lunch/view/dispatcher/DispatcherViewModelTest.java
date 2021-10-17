@@ -7,8 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
-import com.google.firebase.auth.FirebaseUser;
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
+import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.view.dispatcher.DispatcherViewModel.ActivityToStart;
 
 import org.junit.Rule;
@@ -23,17 +22,20 @@ public class DispatcherViewModelTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
-    private final GetFirebaseUserUseCase getFirebaseUserUseCaseMock = mock(GetFirebaseUserUseCase.class);
+    private final GetAuthUseCase getAuthUseCaseMock = mock(GetAuthUseCase.class);
+
+    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
+
+    private final DispatcherViewModel dispatcherViewModel = new DispatcherViewModel(getAuthUseCaseMock);
 
     // ------------------------------------- REDIRECTION TESTS -------------------------------------
 
     @Test
-    public void redirectToHomeActivity_when_firebaseUserIsNotNull() throws InterruptedException {
+    public void redirectToHomeActivity_when_userIsAuthenticated() throws InterruptedException {
         // GIVEN
-        doReturn(mock(FirebaseUser.class)).when(getFirebaseUserUseCaseMock).getUser();
+        doReturn(true).when(getAuthUseCaseMock).isAuthenticated();
 
         // WHEN
-        final DispatcherViewModel dispatcherViewModel = new DispatcherViewModel(getFirebaseUserUseCaseMock);
         final ActivityToStart activityToStart = getOrAwaitValue(dispatcherViewModel.getStartActivityEvent());
 
         // THEN
@@ -41,12 +43,11 @@ public class DispatcherViewModelTest {
     }
 
     @Test
-    public void redirectToAuthActivity_when_firebaseUserIsNull() throws InterruptedException {
+    public void redirectToAuthActivity_when_userIsNotAuthenticated() throws InterruptedException {
         // GIVEN
-        doReturn(null).when(getFirebaseUserUseCaseMock).getUser();
+        doReturn(false).when(getAuthUseCaseMock).isAuthenticated();
 
         // WHEN
-        final DispatcherViewModel dispatcherViewModel = new DispatcherViewModel(getFirebaseUserUseCaseMock);
         final ActivityToStart activityToStart = getOrAwaitValue(dispatcherViewModel.getStartActivityEvent());
 
         // THEN
