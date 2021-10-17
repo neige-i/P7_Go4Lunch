@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
+import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import javax.inject.Inject;
@@ -14,24 +14,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class DispatcherViewModel extends ViewModel {
 
-    // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final SingleLiveEvent<ActivityToStart> startActivityEvent = new SingleLiveEvent<>();
+    private final GetAuthUseCase getAuthUseCase;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public DispatcherViewModel(@NonNull GetFirebaseUserUseCase getFirebaseUserUseCase) {
-        startActivityEvent.setValue(
-            getFirebaseUserUseCase.getUser() != null ?
-                ActivityToStart.HOME_ACTIVITY :
-                ActivityToStart.AUTH_ACTIVITY
-        );
+    public DispatcherViewModel(@NonNull GetAuthUseCase getAuthUseCase) {
+        this.getAuthUseCase = getAuthUseCase;
     }
 
     @NonNull
     public LiveData<ActivityToStart> getStartActivityEvent() {
+        final SingleLiveEvent<ActivityToStart> startActivityEvent = new SingleLiveEvent<>();
+
+        startActivityEvent.setValue(
+            getAuthUseCase.isAuthenticated() ?
+                ActivityToStart.HOME_ACTIVITY :
+                ActivityToStart.AUTH_ACTIVITY
+        );
+
         return startActivityEvent;
     }
 

@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.di;
 
+import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
+import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCase;
@@ -41,6 +43,11 @@ import dagger.hilt.android.components.ViewModelComponent;
 @Module
 @InstallIn(ViewModelComponent.class)
 public abstract class BusinessBindingModule {
+
+    @Binds
+    public abstract GetAuthUseCase getAuthUseCase(
+        GetAuthUseCaseImpl getAuthUseCaseImpl
+    );
 
     @Binds
     public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
