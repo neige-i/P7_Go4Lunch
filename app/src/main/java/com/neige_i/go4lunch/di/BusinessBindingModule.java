@@ -1,13 +1,11 @@
 package com.neige_i.go4lunch.di;
 
+import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCase;
+import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCaseImpl;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCase;
-import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCase;
-import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
 import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
@@ -50,18 +48,13 @@ public abstract class BusinessBindingModule {
     );
 
     @Binds
+    public abstract SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase(
+        SignInAndUpdateDatabaseUseCaseImpl signInAndUpdateDatabaseUseCaseImpl
+    );
+
+    @Binds
     public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
         GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetFirestoreUserUseCase bindGetFirestoreUserUseCase(
-        GetFirestoreUserUseCaseImpl getFirestoreUserUseCaseImpl
-    );
-
-    @Binds
-    public abstract CreateFirestoreUserUseCase bindCreateFirestoreUserUseCase(
-        CreateFirestoreUserUseCaseImpl createFirestoreUserUseCaseImpl
     );
 
     @Binds

@@ -84,10 +84,10 @@ public class AuthActivity extends AppCompatActivity {
         );
 
         // Update UI when state is changed
-        viewModel.getAuthViewState().observe(this, authViewState -> {
-            binding.progressBar.setVisibility(authViewState.isProgressBarVisible() ? View.VISIBLE : View.GONE);
-            binding.googleSignInBtn.setEnabled(authViewState.isButtonEnabled());
-            binding.facebookSignInBtn.setEnabled(authViewState.isButtonEnabled());
+        viewModel.getLoggingViewState().observe(this, isLogging -> {
+            binding.progressBar.setVisibility(isLogging ? View.VISIBLE : View.GONE);
+            binding.googleSignInBtn.setEnabled(!isLogging);
+            binding.facebookSignInBtn.setEnabled(!isLogging);
         });
 
         // Setup actions when events are triggered
