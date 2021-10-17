@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -58,8 +59,8 @@ public class LocationRepositoryImpl implements LocationRepository {
     /**
      * Callback triggered when location is updated.
      */
-    @NonNull
-    private final LocationCallback locationCallback;
+    @Nullable
+    private LocationCallback locationCallback;
     /**
      * Location Settings to be checked. Used to prompt the Google Services GPS dialog to the user.
      */
@@ -82,15 +83,6 @@ public class LocationRepositoryImpl implements LocationRepository {
     ) {
         this.fusedLocationProviderClient = fusedLocationProviderClient;
         this.settingsClient = settingsClient;
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                final Location lastLocation = locationResult.getLastLocation();
-                Log.d("Neige", "REPO lastLocation: " + lastLocation.getLatitude() + "," + lastLocation.getLongitude());
-                currentLocationMutableLiveData.setValue(lastLocation);
-            }
-        };
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -104,6 +96,18 @@ public class LocationRepositoryImpl implements LocationRepository {
     @SuppressLint("MissingPermission")
     @Override
     public void startLocationUpdates() {
+        // Init location callback
+        if (locationCallback == null) {
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(@NonNull LocationResult locationResult) {
+                    final Location lastLocation = locationResult.getLastLocation();
+                    Log.d("Neige", "REPO lastLocation: " + lastLocation.getLatitude() + "," + lastLocation.getLongitude());
+                    currentLocationMutableLiveData.setValue(lastLocation);
+                }
+            };
+        }
+
         if (!areLocationUpdatesRequested) {
             Log.d("Neige", "REPO startLocationUpdates");
             fusedLocationProviderClient.requestLocationUpdates(
@@ -117,9 +121,16 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @Override
     public void removeLocationUpdates() {
-        Log.d("Neige", "REPO removeLocationUpdates");
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        areLocationUpdatesRequested = false;
+        if (locationCallback != null) {
+            Log.d("Neige", "REPO removeLocationUpdates");
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+            areLocationUpdatesRequested = false;
+        }
+    }
+
+    @Override
+    public boolean areLocationUpdatesNeverStarted() {
+        return locationCallback == null;
     }
 
     @NonNull

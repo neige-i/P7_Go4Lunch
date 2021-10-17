@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.location;
+package com.neige_i.go4lunch.domain.home;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -20,13 +20,13 @@ public class GetLocationPermissionUseCaseImplTest {
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
-
-    private GetLocationPermissionUseCase getLocationPermissionUseCase;
-
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     private final LocationPermissionRepository locationPermissionRepositoryMock = mock(LocationPermissionRepository.class);
+
+    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
+
+    private GetLocationPermissionUseCase getLocationPermissionUseCase;
 
     // ------------------------------------------- SETUP -------------------------------------------
 
