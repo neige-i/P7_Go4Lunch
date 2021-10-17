@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.location;
+package com.neige_i.go4lunch.domain.home;
 
 import androidx.annotation.NonNull;
 
@@ -16,7 +16,7 @@ public class GetLocationPermissionUseCaseImpl implements GetLocationPermissionUs
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
-    public GetLocationPermissionUseCaseImpl(@NonNull LocationPermissionRepository locationPermissionRepository) {
+    GetLocationPermissionUseCaseImpl(@NonNull LocationPermissionRepository locationPermissionRepository) {
         this.locationPermissionRepository = locationPermissionRepository;
     }
 

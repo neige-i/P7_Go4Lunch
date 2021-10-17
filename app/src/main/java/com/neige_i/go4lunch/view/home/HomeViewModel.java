@@ -7,10 +7,10 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
+import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
+import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
@@ -28,14 +28,14 @@ public class HomeViewModel extends ViewModel {
     @NonNull
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCase;
     @NonNull
-    private final RequestGpsUseCase requestGpsUseCase;
+    private final FreeResourcesUseCase freeResourcesUseCase;
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
     @NonNull
     private final MutableLiveData<HomeViewState> homeViewState = new MutableLiveData<>();
     @NonNull
-    private final MediatorSingleLiveEvent<Void> requestLocationPermissionEvent = new MediatorSingleLiveEvent<>();
+    private final SingleLiveEvent<Void> requestLocationPermissionEvent = new SingleLiveEvent<>();
     @NonNull
     private final MediatorSingleLiveEvent<ResolvableApiException> showGpsDialogEvent = new MediatorSingleLiveEvent<>();
     @NonNull
@@ -47,22 +47,19 @@ public class HomeViewModel extends ViewModel {
      * Flag to avoid requesting the location permission repeatedly if the user denies it.
      */
     private boolean isLocationPermissionAlreadyDenied;
-    /**
-     * Flag to automatically request the GPS dialog the first time location permission is granted.
-     */
-    private boolean isGpsAlreadyRequested;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public HomeViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
-                         @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
-                         @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
-                         @NonNull RequestGpsUseCase requestGpsUseCase
+    public HomeViewModel(
+        @NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
+        @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
+        @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
+        @NonNull FreeResourcesUseCase freeResourcesUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
-        this.requestGpsUseCase = requestGpsUseCase;
+        this.freeResourcesUseCase = freeResourcesUseCase;
 
         // Retrieve the GPS dialog from the UseCase and prompt it to the user with a SingleLiveEvent
         showGpsDialogEvent.addSource(showGpsDialogUseCase.getDialog(), resolvableApiException -> {
@@ -95,18 +92,12 @@ public class HomeViewModel extends ViewModel {
     public void onActivityResumed() {
         final boolean isLocationPermissionGranted = getLocationPermissionUseCase.isGranted();
 
-        // Setup location updates (enable it or not)
+        // Set location updates (enable it or not)
         setLocationUpdatesUseCase.set(isLocationPermissionGranted);
 
         // Setup permission & GPS requests
         if (isLocationPermissionGranted) {
             isLocationPermissionAlreadyDenied = false; // Reset flag
-
-            // Request the GPS the first time location permission is granted
-            if (!isGpsAlreadyRequested) {
-                requestGpsUseCase.request();
-                isGpsAlreadyRequested = true;
-            }
         } else if (isLocationPermissionAlreadyDenied) {
             showBlockingDialogEvent.call();
         } else {
@@ -116,7 +107,7 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void onActivityPaused() {
-        setLocationUpdatesUseCase.set(false);
+        freeResourcesUseCase.execute();
     }
 
     // --------------------------------- BOTTOM NAVIGATION METHODS ---------------------------------

@@ -15,10 +15,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
+import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,16 +31,16 @@ public class HomeViewModelTest {
     @Rule
     public final InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
-
-    private HomeViewModel homeViewModel;
-
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     private final GetLocationPermissionUseCase getLocationPermissionUseCaseMock = mock(GetLocationPermissionUseCase.class);
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCaseMock = mock(SetLocationUpdatesUseCase.class);
     private final ShowGpsDialogUseCase showGpsDialogUseCaseMock = mock(ShowGpsDialogUseCase.class);
-    private final RequestGpsUseCase requestGpsUseCaseMock = mock(RequestGpsUseCase.class);
+    private final FreeResourcesUseCase freeResourcesUseCaseMock = mock(FreeResourcesUseCase.class);
+
+    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
+
+    private HomeViewModel homeViewModel;
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -59,7 +59,7 @@ public class HomeViewModelTest {
             getLocationPermissionUseCaseMock,
             setLocationUpdatesUseCaseMock,
             showGpsDialogUseCaseMock,
-            requestGpsUseCaseMock
+            freeResourcesUseCaseMock
         );
     }
 
@@ -89,13 +89,13 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void disableLocationUpdates_when_activityIsPaused() {
+    public void freeResources_when_activityIsPaused() {
         // WHEN
         homeViewModel.onActivityPaused();
 
         // THEN
-        verify(setLocationUpdatesUseCaseMock).set(false);
-        verifyNoMoreInteractions(setLocationUpdatesUseCaseMock);
+        verify(freeResourcesUseCaseMock).execute();
+        verifyNoMoreInteractions(freeResourcesUseCaseMock);
     }
 
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
@@ -120,21 +120,6 @@ public class HomeViewModelTest {
 
         // THEN
         assertEquals(1, called[0]); // The permission is only requested once
-    }
-
-    // ------------------------------------- REQUEST GPS TESTS -------------------------------------
-
-    @Test
-    public void requestGpsOnce_when_activityIsResumedMultipleTimesWithGrantedLocationPermission() {
-        // GIVEN
-        homeViewModel.onActivityResumed(); // Resumed once
-
-        // WHEN
-        homeViewModel.onActivityResumed(); // Resumed twice
-
-        // THEN
-        verify(requestGpsUseCaseMock).request(); // The GPS is requested once
-        verifyNoMoreInteractions(requestGpsUseCaseMock);
     }
 
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------

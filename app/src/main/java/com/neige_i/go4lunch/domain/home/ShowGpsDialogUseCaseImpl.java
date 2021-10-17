@@ -1,12 +1,14 @@
-package com.neige_i.go4lunch.domain.location;
+package com.neige_i.go4lunch.domain.home;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
 import javax.inject.Inject;
 
-public class SetLocationUpdatesUseCaseImpl implements SetLocationUpdatesUseCase {
+public class ShowGpsDialogUseCaseImpl implements ShowGpsDialogUseCase {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -16,18 +18,15 @@ public class SetLocationUpdatesUseCaseImpl implements SetLocationUpdatesUseCase 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
-    public SetLocationUpdatesUseCaseImpl(@NonNull LocationRepository locationRepository) {
+    ShowGpsDialogUseCaseImpl(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }
 
     // ------------------------------------- USE CASE METHODS --------------------------------------
 
+    @NonNull
     @Override
-    public void set(boolean enableUpdates) {
-        if (enableUpdates) {
-            locationRepository.startLocationUpdates();
-        } else {
-            locationRepository.removeLocationUpdates();
-        }
+    public LiveData<ResolvableApiException> getDialog() {
+        return locationRepository.getGpsDialog();
     }
 }

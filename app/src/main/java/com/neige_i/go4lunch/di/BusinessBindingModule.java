@@ -18,14 +18,16 @@ import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
+import com.neige_i.go4lunch.domain.home.FreeResourcesUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
+import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
-import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
@@ -42,14 +44,40 @@ import dagger.hilt.android.components.ViewModelComponent;
 @InstallIn(ViewModelComponent.class)
 public abstract class BusinessBindingModule {
 
+    // ---------------------------------------- DISPATCHER -----------------------------------------
+
     @Binds
     public abstract GetAuthUseCase getAuthUseCase(
         GetAuthUseCaseImpl getAuthUseCaseImpl
     );
 
+    // ------------------------------------------- AUTH --------------------------------------------
+
     @Binds
     public abstract SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase(
         SignInAndUpdateDatabaseUseCaseImpl signInAndUpdateDatabaseUseCaseImpl
+    );
+
+    // ------------------------------------------- HOME --------------------------------------------
+
+    @Binds
+    public abstract FreeResourcesUseCase freeResourcesUseCase(
+        FreeResourcesUseCaseImpl freeResourcesUseCaseImpl
+    );
+
+    @Binds
+    public abstract GetLocationPermissionUseCase bindGetLocationPermissionUseCase(
+        GetLocationPermissionUseCaseImpl getLocationPermissionUseCaseImpl
+    );
+
+    @Binds
+    public abstract SetLocationUpdatesUseCase bindSetLocationUpdatesUseCase(
+        SetLocationUpdatesUseCaseImpl setLocationUpdatesUseCaseImpl
+    );
+
+    @Binds
+    public abstract ShowGpsDialogUseCase bindShowGpsDialogUseCase(
+        ShowGpsDialogUseCaseImpl showGpsDialogUseCaseImpl
     );
 
     @Binds
@@ -68,23 +96,8 @@ public abstract class BusinessBindingModule {
     );
 
     @Binds
-    public abstract ShowGpsDialogUseCase bindShowGpsDialogUseCase(
-        ShowGpsDialogUseCaseImpl showGpsDialogUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetLocationPermissionUseCase bindGetLocationPermissionUseCase(
-        GetLocationPermissionUseCaseImpl getLocationPermissionUseCaseImpl
-    );
-
-    @Binds
     public abstract GetLocationUseCase bindGetLocationUseCase(
         GetLocationUseCaseImpl getLocationUseCaseImpl
-    );
-
-    @Binds
-    public abstract SetLocationUpdatesUseCase bindSetLocationUpdatesUseCase(
-        SetLocationUpdatesUseCaseImpl setLocationUpdatesUseCaseImpl
     );
 
     @Binds

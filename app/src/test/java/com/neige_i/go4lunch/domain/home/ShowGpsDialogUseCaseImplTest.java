@@ -1,21 +1,19 @@
-package com.neige_i.go4lunch.domain.location;
+package com.neige_i.go4lunch.domain.home;
+
+import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCase;
-import com.neige_i.go4lunch.domain.gps.ShowGpsDialogUseCaseImpl;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 public class ShowGpsDialogUseCaseImplTest {
 
@@ -24,13 +22,13 @@ public class ShowGpsDialogUseCaseImplTest {
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
-
-    private ShowGpsDialogUseCase showGpsDialogUseCase;
-
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     private final LocationRepository locationRepositoryMock = mock(LocationRepository.class);
+
+    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
+
+    private ShowGpsDialogUseCase showGpsDialogUseCase;
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 

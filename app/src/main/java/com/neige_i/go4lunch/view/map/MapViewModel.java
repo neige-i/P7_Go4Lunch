@@ -15,7 +15,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
