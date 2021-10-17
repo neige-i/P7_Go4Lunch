@@ -4,11 +4,16 @@ import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCase;
 import com.neige_i.go4lunch.domain.firestore.CreateFirestoreUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCase;
 import com.neige_i.go4lunch.domain.firestore.GetFirestoreUserUseCaseImpl;
+import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCaseImpl;
+import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
+import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
 import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
@@ -21,13 +26,8 @@ import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.location.SetLocationUpdatesUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
@@ -39,8 +39,8 @@ import dagger.hilt.InstallIn;
 import dagger.hilt.android.components.ViewModelComponent;
 
 @Module
-@InstallIn(ViewModelComponent.class) // ASKME: tips for how to group module's functions
-public abstract class UseCaseModule {
+@InstallIn(ViewModelComponent.class)
+public abstract class BusinessBindingModule {
 
     @Binds
     public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
