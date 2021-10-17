@@ -1,7 +1,6 @@
 package com.neige_i.go4lunch.data.google_places;
 
 import android.location.Location;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -10,17 +9,18 @@ import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @Singleton
 public class NearbyRepositoryImpl implements NearbyRepository {
@@ -28,11 +28,9 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final ExecutorService executorService;
-    @NonNull
-    private final Handler handler;
-    @NonNull
     private final PlacesApi placesApi;
+    @NonNull
+    private final CleanRestaurantDelegate cleanRestaurantDelegate;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -43,13 +41,11 @@ public class NearbyRepositoryImpl implements NearbyRepository {
 
     @Inject
     public NearbyRepositoryImpl(
-        @NonNull ExecutorService executorService,
-        @NonNull Handler handler,
-        @NonNull PlacesApi placesApi
+        @NonNull PlacesApi placesApi,
+        @NonNull CleanRestaurantDelegate cleanRestaurantDelegate
     ) {
-        this.executorService = executorService;
-        this.handler = handler;
         this.placesApi = placesApi;
+        this.cleanRestaurantDelegate = cleanRestaurantDelegate;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -57,118 +53,84 @@ public class NearbyRepositoryImpl implements NearbyRepository {
     @NonNull
     @Override
     public LiveData<List<NearbyRestaurant>> getNearbyRestaurants(@Nullable Location location) {
+        if (location == null) {
+            return new MutableLiveData<>();
+        }
+
         final MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData = new MutableLiveData<>();
 
-        if (location != null) {
-            final String latLng = location.getLatitude() + "," + location.getLongitude();
+        final String latLng = location.getLatitude() + "," + location.getLongitude();
 
-            // Check if the request has already been executed
-            final List<NearbyRestaurant> cachedNearbyRestaurants = nearbyCache.get(latLng);
-            if (cachedNearbyRestaurants != null) {
-                Log.d("Neige", "REPO getNearbyRestaurants: from cache");
-                nearbyRestaurantsMutableLiveData.setValue(cachedNearbyRestaurants);
-            } else {
-                executeAsync(latLng, nearbyRestaurantsMutableLiveData);
-            }
+        // Check if the request has already been executed
+        final List<NearbyRestaurant> cachedNearbyRestaurants = nearbyCache.get(latLng);
+
+        if (cachedNearbyRestaurants != null) {
+            Log.d("Neige", "REPO getNearbyRestaurants: from cache");
+            nearbyRestaurantsMutableLiveData.setValue(cachedNearbyRestaurants);
+        } else {
+            placesApi.getNearbyRestaurants(latLng).enqueue(new Callback<RawNearbyResponse>() {
+                @Override
+                public void onResponse(
+                    @NonNull Call<RawNearbyResponse> call,
+                    @NonNull Response<RawNearbyResponse> response
+                ) {
+                    if (response.isSuccessful()) {
+                        final List<NearbyRestaurant> nearbyRestaurants = cleanDataFromRetrofit(response.body());
+
+                        if (nearbyRestaurants != null) {
+                            Log.d("Neige", "REPO getNearbyRestaurants: from API");
+                            nearbyRestaurantsMutableLiveData.setValue(nearbyRestaurants);
+                            nearbyCache.put(latLng, nearbyRestaurants);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<RawNearbyResponse> call, @NonNull Throwable t) {
+                }
+            });
         }
 
         return nearbyRestaurantsMutableLiveData;
     }
 
-    // --------------------------------- BACKGROUND ASYNC METHODS ----------------------------------
-
-    private void executeAsync(
-        @NonNull String latLng,
-        @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData
-    ) {
-        executorService.execute(() -> {
-            // Background thread
-            final List<NearbyRestaurant> nearbyRestaurants = fetchNearbyRestaurantsInBackground(latLng);
-
-            handler.post(() -> {
-                // UI thread
-                onBackgroundTaskComplete(nearbyRestaurants, nearbyRestaurantsMutableLiveData, latLng);
-            });
-        });
-    }
+    // ---------------------------------- CLEAN RESPONSE METHODS -----------------------------------
 
     @Nullable
-    private List<NearbyRestaurant> fetchNearbyRestaurantsInBackground(@NonNull String latLng) {
-        try {
-            return getCleanNearbyRestaurants(
-                placesApi.getNearbyRestaurants(latLng)
-                    .execute()
-                    .body()
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
+    private List<NearbyRestaurant> cleanDataFromRetrofit(@Nullable RawNearbyResponse rawNearbyResponse) {
+        if (rawNearbyResponse == null || rawNearbyResponse.getResults() == null) {
             return null;
         }
-    }
 
-    private void onBackgroundTaskComplete(
-        @Nullable List<NearbyRestaurant> nearbyRestaurants,
-        @NonNull MutableLiveData<List<NearbyRestaurant>> nearbyResponseMutableLiveData,
-        @NonNull String latLng
-    ) {
-        if (nearbyRestaurants != null) {
-            Log.d("Neige", "REPO getNearbyRestaurants: from API");
-            nearbyResponseMutableLiveData.setValue(nearbyRestaurants);
-            nearbyCache.put(latLng, nearbyRestaurants);
-        }
-    }
-
-    // --------------------------------- SETUP CLEAN POJO METHODS ----------------------------------
-
-    @NonNull
-    private List<NearbyRestaurant> getCleanNearbyRestaurants(@Nullable RawNearbyResponse rawNearbyResponse) {
         final List<NearbyRestaurant> nearbyRestaurants = new ArrayList<>();
 
-        if (rawNearbyResponse != null && rawNearbyResponse.getResults() != null) {
-            for (RawNearbyResponse.Result result : rawNearbyResponse.getResults()) {
-                if (result.getPlaceId() != null && result.getBusinessStatus() != null &&
-                    result.getBusinessStatus().equals("OPERATIONAL") &&
-                    result.getGeometry() != null && result.getGeometry().getLocation() != null &&
-                    result.getGeometry().getLocation().getLat() != null &&
-                    result.getGeometry().getLocation().getLng() != null &&
-                    result.getName() != null && result.getVicinity() != null
-                ) {
-
-                    nearbyRestaurants.add(new NearbyRestaurant(
-                        result.getPlaceId(),
-                        result.getName(),
-                        result.getVicinity(),
-                        result.getGeometry().getLocation().getLat(),
-                        result.getGeometry().getLocation().getLng(),
-                        setupRating(result.getRating()),
-                        setupPhoto(result.getPhotos())
-                    ));
+        for (RawNearbyResponse.Result result : rawNearbyResponse.getResults()) {
+            if (result != null && result.getPlaceId() != null && result.getBusinessStatus() != null &&
+                result.getBusinessStatus().equals("OPERATIONAL") &&
+                result.getGeometry() != null && result.getGeometry().getLocation() != null &&
+                result.getGeometry().getLocation().getLat() != null &&
+                result.getGeometry().getLocation().getLng() != null &&
+                result.getName() != null && result.getVicinity() != null
+            ) {
+                final String photoUrl;
+                if (result.getPhotos() == null || result.getPhotos().isEmpty()) {
+                    photoUrl = null;
+                } else {
+                    photoUrl = cleanRestaurantDelegate.getPhotoUrl(result.getPhotos().get(0).getPhotoReference());
                 }
+
+                nearbyRestaurants.add(new NearbyRestaurant(
+                    result.getPlaceId(),
+                    result.getName(),
+                    result.getVicinity(),
+                    result.getGeometry().getLocation().getLat(),
+                    result.getGeometry().getLocation().getLng(),
+                    cleanRestaurantDelegate.getRating(result.getRating()),
+                    photoUrl
+                ));
             }
         }
 
-        return nearbyRestaurants;
-    }
-
-    /**
-     * Converts Google rating from 1.0 to 5.0 into Go4Lunch rating from 0 to 3
-     * (or -1 if no rating is available).<br />
-     * [1.0,5.0] -> (-1) -> [0.0,4.0] -> (*.75) -> [0.0,3.0] -> (round) -> [0,3]
-     */
-    private int setupRating(@Nullable Double rating) {
-        return rating == null ? -1 : (int) Math.round((rating - 1) * .75);
-    }
-
-    @Nullable
-    private String setupPhoto(@Nullable List<RawNearbyResponse.Photo> photoList) {
-        if (photoList == null || photoList.isEmpty() || photoList.get(0).getPhotoReference() == null) {
-            return null;
-        } else {
-            return "https://maps.googleapis.com/" +
-                "maps/api/place/photo?" +
-                "maxheight=720" +
-                "&key=" + BuildConfig.MAPS_API_KEY +
-                "&photoreference=" + photoList.get(0).getPhotoReference();
-        }
+        return !nearbyRestaurants.isEmpty() ? nearbyRestaurants : null;
     }
 }

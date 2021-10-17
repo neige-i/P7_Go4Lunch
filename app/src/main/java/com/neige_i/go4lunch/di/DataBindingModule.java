@@ -4,6 +4,8 @@ import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
 import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepository;
 import com.neige_i.go4lunch.data.firebase.FirestoreRepositoryImpl;
+import com.neige_i.go4lunch.data.google_places.CleanRestaurantDelegate;
+import com.neige_i.go4lunch.data.google_places.CleanRestaurantDelegateImpl;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepositoryImpl;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
@@ -20,7 +22,7 @@ import dagger.hilt.components.SingletonComponent;
 
 @Module
 @InstallIn(SingletonComponent.class)
-public abstract class RepositoryModule {
+public abstract class DataBindingModule {
 
     @Binds
     public abstract LocationPermissionRepository bindLocationPermissionRepository(
@@ -50,5 +52,10 @@ public abstract class RepositoryModule {
     @Binds
     public abstract FirestoreRepository bindFirestoreRepository(
         FirestoreRepositoryImpl firestoreRepositoryImpl
+    );
+
+    @Binds
+    public abstract CleanRestaurantDelegate bindRestaurantDelegate(
+        CleanRestaurantDelegateImpl restaurantDelegateImpl
     );
 }

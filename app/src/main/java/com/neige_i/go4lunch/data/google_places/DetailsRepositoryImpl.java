@@ -1,6 +1,5 @@
 package com.neige_i.go4lunch.data.google_places;
 
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -9,17 +8,18 @@ import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @Singleton
 public class DetailsRepositoryImpl implements DetailsRepository {
@@ -27,11 +27,9 @@ public class DetailsRepositoryImpl implements DetailsRepository {
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final ExecutorService executorService;
-    @NonNull
-    private final Handler handler;
-    @NonNull
     private final PlacesApi placesApi;
+    @NonNull
+    private final CleanRestaurantDelegate cleanRestaurantDelegate;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -42,13 +40,11 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     @Inject
     public DetailsRepositoryImpl(
-        @NonNull ExecutorService executorService,
-        @NonNull Handler handler,
-        @NonNull PlacesApi placesApi
+        @NonNull PlacesApi placesApi,
+        @NonNull CleanRestaurantDelegate cleanRestaurantDelegate
     ) {
-        this.executorService = executorService;
-        this.handler = handler;
         this.placesApi = placesApi;
+        this.cleanRestaurantDelegate = cleanRestaurantDelegate;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -56,90 +52,85 @@ public class DetailsRepositoryImpl implements DetailsRepository {
     @NonNull
     @Override
     public LiveData<RestaurantDetails> getRestaurantDetails(@Nullable String placeId) {
+        if (placeId == null) {
+            return new MutableLiveData<>();
+        }
+
         final MutableLiveData<RestaurantDetails> detailsRestaurantMutableLiveData = new MutableLiveData<>();
 
-        if (placeId != null) {
-            // Check if the request has already been executed
-            final RestaurantDetails cachedRestaurantsDetails = detailsCache.get(placeId);
-            if (cachedRestaurantsDetails != null) {
-                Log.d("Neige", "REPO getDetailsRestaurant: from cache");
-                detailsRestaurantMutableLiveData.setValue(cachedRestaurantsDetails);
-            } else {
-                executeAsync(placeId, detailsRestaurantMutableLiveData);
-            }
+        // Check if the request has already been executed
+        final RestaurantDetails cachedRestaurantsDetails = detailsCache.get(placeId);
+
+        if (cachedRestaurantsDetails != null) {
+            Log.d("Neige", "REPO getRestaurantDetails: from cache");
+            detailsRestaurantMutableLiveData.setValue(cachedRestaurantsDetails);
+        } else {
+            placesApi.getRestaurantDetails(placeId).enqueue(new Callback<RawDetailsResponse>() {
+                @Override
+                public void onResponse(
+                    @NonNull Call<RawDetailsResponse> call,
+                    @NonNull Response<RawDetailsResponse> response
+                ) {
+                    if (response.isSuccessful()) {
+                        final RestaurantDetails restaurantDetails = cleanDataFromRetrofit(response.body());
+
+                        if (restaurantDetails != null) {
+                            Log.d("Neige", "REPO getRestaurantDetails: from API");
+                            detailsRestaurantMutableLiveData.setValue(restaurantDetails);
+                            detailsCache.put(placeId, restaurantDetails);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(
+                    @NonNull Call<RawDetailsResponse> call,
+                    @NonNull Throwable t
+                ) {
+                }
+            });
         }
 
         return detailsRestaurantMutableLiveData;
     }
 
-    // --------------------------------- BACKGROUND ASYNC METHODS ----------------------------------
-
-    private void executeAsync(
-        @NonNull String placeId,
-        @NonNull MutableLiveData<RestaurantDetails> detailsRestaurantsMutableLiveData
-    ) {
-        executorService.execute(() -> {
-            // Background thread
-            final RestaurantDetails restaurantDetails = fetchDetailsRestaurantsInBackground(placeId);
-
-            handler.post(() -> {
-                // UI thread
-                onBackgroundTaskComplete(restaurantDetails, detailsRestaurantsMutableLiveData, placeId);
-            });
-        });
-    }
+    // ---------------------------------- CLEAN RESPONSE METHODS -----------------------------------
 
     @Nullable
-    private RestaurantDetails fetchDetailsRestaurantsInBackground(@NonNull String placeId) {
-        try {
-            return getCleanDetailsRestaurants(
-                placesApi.getRestaurantDetails(placeId).execute().body()
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
+    private RestaurantDetails cleanDataFromRetrofit(@Nullable RawDetailsResponse rawDetailsResponse) {
+        if (rawDetailsResponse == null || rawDetailsResponse.getResult() == null) {
             return null;
         }
-    }
 
-    private void onBackgroundTaskComplete(
-        @Nullable RestaurantDetails restaurantDetails,
-        @NonNull MutableLiveData<RestaurantDetails> detailsRestaurantMutableLiveData,
-        @NonNull String latLng
-    ) {
-        if (restaurantDetails != null) {
-            Log.d("Neige", "REPO getDetailsResponse: from API");
-            detailsRestaurantMutableLiveData.setValue(restaurantDetails);
-            detailsCache.put(latLng, restaurantDetails);
-        }
-    }
-
-    // --------------------------------- SETUP CLEAN POJO METHODS ----------------------------------
-
-    @Nullable
-    private RestaurantDetails getCleanDetailsRestaurants(@Nullable RawDetailsResponse rawDetailsResponse) {
-        if (rawDetailsResponse != null && rawDetailsResponse.getResult() != null) {
-            final RawDetailsResponse.Result result = rawDetailsResponse.getResult();
-            if (result.getPlaceId() != null && result.getBusinessStatus() != null &&
-                result.getBusinessStatus().equals("OPERATIONAL") &&
-                result.getGeometry() != null && result.getGeometry().getLocation() != null &&
-                result.getGeometry().getLocation().getLat() != null &&
-                result.getGeometry().getLocation().getLng() != null &&
-                result.getName() != null && result.getFormattedAddress() != null
-            ) {
-                return new RestaurantDetails(
-                    result.getPlaceId(),
-                    result.getName(),
-                    result.getFormattedAddress(),
-                    setupRating(result.getRating()),
-                    setupPhoto(result.getPhotos()),
-                    result.getInternationalPhoneNumber(),
-                    result.getWebsite(),
-                    setupOpeningHours(result.getOpeningHours())
-                );
-            }
+        final RawDetailsResponse.Result result = rawDetailsResponse.getResult();
+        if (result.getPlaceId() == null || result.getBusinessStatus() == null ||
+            !result.getBusinessStatus().equals("OPERATIONAL") ||
+            result.getGeometry() == null || result.getGeometry().getLocation() == null ||
+            result.getGeometry().getLocation().getLat() == null ||
+            result.getGeometry().getLocation().getLng() == null ||
+            result.getName() == null || result.getFormattedAddress() == null
+        ) {
+            return null;
         }
 
-        return null;
+        final String photoUrl;
+        if (result.getPhotos() == null || result.getPhotos().isEmpty()) {
+            photoUrl = null;
+        } else {
+            photoUrl = cleanRestaurantDelegate.getPhotoUrl(result.getPhotos().get(0).getPhotoReference());
+        }
+
+        return new RestaurantDetails(
+            result.getPlaceId(),
+            result.getName(),
+            result.getFormattedAddress(),
+            cleanRestaurantDelegate.getRating(result.getRating()),
+            photoUrl,
+            result.getInternationalPhoneNumber(),
+            result.getWebsite(),
+            setupOpeningHours(result.getOpeningHours())
+        );
+
     }
 
     @Nullable
@@ -180,27 +171,5 @@ public class DetailsRepositoryImpl implements DetailsRepository {
      */
     private int toJavaDay(int placesApiDay) {
         return placesApiDay == 0 ? 7 : placesApiDay;
-    }
-
-    /**
-     * Converts Google rating from 1.0 to 5.0 into Go4Lunch rating from 0 to 3
-     * (or -1 if no rating is available).<br />
-     * [1.0,5.0] -> (-1) -> [0.0,4.0] -> (*.75) -> [0.0,3.0] -> (round) -> [0,3]
-     */
-    private int setupRating(@Nullable Double rating) {
-        return rating == null ? -1 : (int) Math.round((rating - 1) * .75);
-    }
-
-    @Nullable
-    private String setupPhoto(@Nullable List<RawDetailsResponse.Photo> photoList) {
-        if (photoList == null || photoList.isEmpty() || photoList.get(0).getPhotoReference() == null) {
-            return null;
-        } else {
-            return "https://maps.googleapis.com/" +
-                "maps/api/place/photo?" +
-                "maxheight=720" +
-                "&key=" + BuildConfig.MAPS_API_KEY + // TODO: to inject
-                "&photoreference=" + photoList.get(0).getPhotoReference();
-        }
     }
 }

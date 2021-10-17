@@ -1,41 +1,46 @@
 package com.neige_i.go4lunch.data.google_places.model;
 
-
 import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
-import java.util.Objects;
 
-@SuppressWarnings({"unused", "RedundantSuppression"})
 public class RawNearbyResponse {
 
     @Nullable
     @SerializedName("html_attributions")
     @Expose
-    private List<Object> htmlAttributions = null;
+    private final List<Object> htmlAttributions;
     @Nullable
     @SerializedName("next_page_token")
     @Expose
-    private String nextPageToken;
+    private final String nextPageToken;
     @Nullable
     @SerializedName("results")
     @Expose
-    private List<Result> results = null;
+    private final List<Result> results;
     @Nullable
     @SerializedName("status")
     @Expose
-    private String status;
+    private final String status;
+
+    public RawNearbyResponse(
+        @Nullable List<Object> htmlAttributions,
+        @Nullable String nextPageToken,
+        @Nullable List<Result> results,
+        @Nullable String status
+    ) {
+        this.htmlAttributions = htmlAttributions;
+        this.nextPageToken = nextPageToken;
+        this.results = results;
+        this.status = status;
+    }
 
     @Nullable
     public List<Object> getHtmlAttributions() {
         return htmlAttributions;
-    }
-
-    public void setHtmlAttributions(@Nullable List<Object> htmlAttributions) {
-        this.htmlAttributions = htmlAttributions;
     }
 
     @Nullable
@@ -43,17 +48,9 @@ public class RawNearbyResponse {
         return nextPageToken;
     }
 
-    public void setNextPageToken(@Nullable String nextPageToken) {
-        this.nextPageToken = nextPageToken;
-    }
-
     @Nullable
     public List<Result> getResults() {
         return results;
-    }
-
-    public void setResults(@Nullable List<Result> results) {
-        this.results = results;
     }
 
     @Nullable
@@ -61,84 +58,112 @@ public class RawNearbyResponse {
         return status;
     }
 
-    public void setStatus(@Nullable String status) {
-        this.status = status;
-    }
-
     public static class Result {
 
         @Nullable
         @SerializedName("business_status")
         @Expose
-        private String businessStatus;
+        private final String businessStatus;
         @Nullable
         @SerializedName("geometry")
         @Expose
-        private Geometry geometry;
+        private final Geometry geometry;
         @Nullable
         @SerializedName("icon")
         @Expose
-        private String icon;
+        private final String icon;
         @Nullable
         @SerializedName("name")
         @Expose
-        private String name;
+        private final String name;
         @Nullable
         @SerializedName("opening_hours")
         @Expose
-        private OpeningHours openingHours;
+        private final OpeningHours openingHours;
         @Nullable
         @SerializedName("photos")
         @Expose
-        private List<Photo> photos = null;
+        private final List<Photo> photos;
         @Nullable
         @SerializedName("place_id")
         @Expose
-        private String placeId;
+        private final String placeId;
         @Nullable
         @SerializedName("plus_code")
         @Expose
-        private PlusCode plusCode;
+        private final PlusCode plusCode;
         @Nullable
         @SerializedName("rating")
         @Expose
-        private Double rating;
+        private final Double rating;
         @Nullable
         @SerializedName("reference")
         @Expose
-        private String reference;
+        private final String reference;
         @Nullable
         @SerializedName("scope")
         @Expose
-        private String scope;
+        private final String scope;
         @Nullable
         @SerializedName("types")
         @Expose
-        private List<String> types = null;
+        private final List<String> types;
         @Nullable
         @SerializedName("user_ratings_total")
         @Expose
-        private Integer userRatingsTotal;
+        private final Integer userRatingsTotal;
         @Nullable
         @SerializedName("vicinity")
         @Expose
-        private String vicinity;
+        private final String vicinity;
         @Nullable
         @SerializedName("price_level")
         @Expose
-        private Integer priceLevel;
+        private final Integer priceLevel;
         @Nullable
         @SerializedName("permanently_closed")
         @Expose
-        private Boolean permanentlyClosed;
+        private final Boolean permanentlyClosed;
+
+        public Result(
+            @Nullable String businessStatus,
+            @Nullable Geometry geometry,
+            @Nullable String icon,
+            @Nullable String name,
+            @Nullable OpeningHours openingHours,
+            @Nullable List<Photo> photos,
+            @Nullable String placeId,
+            @Nullable PlusCode plusCode,
+            @Nullable Double rating,
+            @Nullable String reference,
+            @Nullable String scope,
+            @Nullable List<String> types,
+            @Nullable Integer userRatingsTotal,
+            @Nullable String vicinity,
+            @Nullable Integer priceLevel,
+            @Nullable Boolean permanentlyClosed
+        ) {
+            this.businessStatus = businessStatus;
+            this.geometry = geometry;
+            this.icon = icon;
+            this.name = name;
+            this.openingHours = openingHours;
+            this.photos = photos;
+            this.placeId = placeId;
+            this.plusCode = plusCode;
+            this.rating = rating;
+            this.reference = reference;
+            this.scope = scope;
+            this.types = types;
+            this.userRatingsTotal = userRatingsTotal;
+            this.vicinity = vicinity;
+            this.priceLevel = priceLevel;
+            this.permanentlyClosed = permanentlyClosed;
+        }
 
         @Nullable
         public String getBusinessStatus() {
             return businessStatus;
-        }
-
-        public void setBusinessStatus(@Nullable String businessStatus) {
-            this.businessStatus = businessStatus;
         }
 
         @Nullable
@@ -146,17 +171,9 @@ public class RawNearbyResponse {
             return geometry;
         }
 
-        public void setGeometry(@Nullable Geometry geometry) {
-            this.geometry = geometry;
-        }
-
         @Nullable
         public String getIcon() {
             return icon;
-        }
-
-        public void setIcon(@Nullable String icon) {
-            this.icon = icon;
         }
 
         @Nullable
@@ -164,17 +181,9 @@ public class RawNearbyResponse {
             return name;
         }
 
-        public void setName(@Nullable String name) {
-            this.name = name;
-        }
-
         @Nullable
         public OpeningHours getOpeningHours() {
             return openingHours;
-        }
-
-        public void setOpeningHours(@Nullable OpeningHours openingHours) {
-            this.openingHours = openingHours;
         }
 
         @Nullable
@@ -182,17 +191,9 @@ public class RawNearbyResponse {
             return photos;
         }
 
-        public void setPhotos(@Nullable List<Photo> photos) {
-            this.photos = photos;
-        }
-
         @Nullable
         public String getPlaceId() {
             return placeId;
-        }
-
-        public void setPlaceId(@Nullable String placeId) {
-            this.placeId = placeId;
         }
 
         @Nullable
@@ -200,17 +201,9 @@ public class RawNearbyResponse {
             return plusCode;
         }
 
-        public void setPlusCode(@Nullable PlusCode plusCode) {
-            this.plusCode = plusCode;
-        }
-
         @Nullable
         public Double getRating() {
             return rating;
-        }
-
-        public void setRating(@Nullable Double rating) {
-            this.rating = rating;
         }
 
         @Nullable
@@ -218,17 +211,9 @@ public class RawNearbyResponse {
             return reference;
         }
 
-        public void setReference(@Nullable String reference) {
-            this.reference = reference;
-        }
-
         @Nullable
         public String getScope() {
             return scope;
-        }
-
-        public void setScope(@Nullable String scope) {
-            this.scope = scope;
         }
 
         @Nullable
@@ -236,17 +221,9 @@ public class RawNearbyResponse {
             return types;
         }
 
-        public void setTypes(@Nullable List<String> types) {
-            this.types = types;
-        }
-
         @Nullable
         public Integer getUserRatingsTotal() {
             return userRatingsTotal;
-        }
-
-        public void setUserRatingsTotal(@Nullable Integer userRatingsTotal) {
-            this.userRatingsTotal = userRatingsTotal;
         }
 
         @Nullable
@@ -254,26 +231,14 @@ public class RawNearbyResponse {
             return vicinity;
         }
 
-        public void setVicinity(@Nullable String vicinity) {
-            this.vicinity = vicinity;
-        }
-
         @Nullable
         public Integer getPriceLevel() {
             return priceLevel;
         }
 
-        public void setPriceLevel(@Nullable Integer priceLevel) {
-            this.priceLevel = priceLevel;
-        }
-
         @Nullable
         public Boolean getPermanentlyClosed() {
             return permanentlyClosed;
-        }
-
-        public void setPermanentlyClosed(@Nullable Boolean permanentlyClosed) {
-            this.permanentlyClosed = permanentlyClosed;
         }
     }
 
@@ -282,28 +247,28 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("location")
         @Expose
-        private Location location;
+        private final Location location;
         @Nullable
         @SerializedName("viewport")
         @Expose
-        private Viewport viewport;
+        private final Viewport viewport;
+
+        public Geometry(
+            @Nullable Location location,
+            @Nullable Viewport viewport
+        ) {
+            this.location = location;
+            this.viewport = viewport;
+        }
 
         @Nullable
         public Location getLocation() {
             return location;
         }
 
-        public void setLocation(@Nullable Location location) {
-            this.location = location;
-        }
-
         @Nullable
         public Viewport getViewport() {
             return viewport;
-        }
-
-        public void setViewport(@Nullable Viewport viewport) {
-            this.viewport = viewport;
         }
     }
 
@@ -312,28 +277,25 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("lat")
         @Expose
-        private Double lat;
+        private final Double lat;
         @Nullable
         @SerializedName("lng")
         @Expose
-        private Double lng;
+        private final Double lng;
+
+        public Location(@Nullable Double lat, @Nullable Double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
 
         @Nullable
         public Double getLat() {
             return lat;
         }
 
-        public void setLat(@Nullable Double lat) {
-            this.lat = lat;
-        }
-
         @Nullable
         public Double getLng() {
             return lng;
-        }
-
-        public void setLng(@Nullable Double lng) {
-            this.lng = lng;
         }
     }
 
@@ -342,28 +304,28 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("northeast")
         @Expose
-        private Northeast northeast;
+        private final Northeast northeast;
         @Nullable
         @SerializedName("southwest")
         @Expose
-        private Southwest southwest;
+        private final Southwest southwest;
+
+        public Viewport(
+            @Nullable Northeast northeast,
+            @Nullable Southwest southwest
+        ) {
+            this.northeast = northeast;
+            this.southwest = southwest;
+        }
 
         @Nullable
         public Northeast getNortheast() {
             return northeast;
         }
 
-        public void setNortheast(@Nullable Northeast northeast) {
-            this.northeast = northeast;
-        }
-
         @Nullable
         public Southwest getSouthwest() {
             return southwest;
-        }
-
-        public void setSouthwest(@Nullable Southwest southwest) {
-            this.southwest = southwest;
         }
     }
 
@@ -372,28 +334,25 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("lat")
         @Expose
-        private Double lat;
+        private final Double lat;
         @Nullable
         @SerializedName("lng")
         @Expose
-        private Double lng;
+        private final Double lng;
+
+        public Northeast(@Nullable Double lat, @Nullable Double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
 
         @Nullable
         public Double getLat() {
             return lat;
         }
 
-        public void setLat(@Nullable Double lat) {
-            this.lat = lat;
-        }
-
         @Nullable
         public Double getLng() {
             return lng;
-        }
-
-        public void setLng(@Nullable Double lng) {
-            this.lng = lng;
         }
     }
 
@@ -402,28 +361,25 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("lat")
         @Expose
-        private Double lat;
+        private final Double lat;
         @Nullable
         @SerializedName("lng")
         @Expose
-        private Double lng;
+        private final Double lng;
+
+        public Southwest(@Nullable Double lat, @Nullable Double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
 
         @Nullable
         public Double getLat() {
             return lat;
         }
 
-        public void setLat(@Nullable Double lat) {
-            this.lat = lat;
-        }
-
         @Nullable
         public Double getLng() {
             return lng;
-        }
-
-        public void setLng(@Nullable Double lng) {
-            this.lng = lng;
         }
     }
 
@@ -432,15 +388,15 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("open_now")
         @Expose
-        private Boolean openNow;
+        private final Boolean openNow;
+
+        public OpeningHours(@Nullable Boolean openNow) {
+            this.openNow = openNow;
+        }
 
         @Nullable
         public Boolean getOpenNow() {
             return openNow;
-        }
-
-        public void setOpenNow(@Nullable Boolean openNow) {
-            this.openNow = openNow;
         }
     }
 
@@ -449,28 +405,25 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("compound_code")
         @Expose
-        private String compoundCode;
+        private final String compoundCode;
         @Nullable
         @SerializedName("global_code")
         @Expose
-        private String globalCode;
+        private final String globalCode;
+
+        public PlusCode(@Nullable String compoundCode, @Nullable String globalCode) {
+            this.compoundCode = compoundCode;
+            this.globalCode = globalCode;
+        }
 
         @Nullable
         public String getCompoundCode() {
             return compoundCode;
         }
 
-        public void setCompoundCode(@Nullable String compoundCode) {
-            this.compoundCode = compoundCode;
-        }
-
         @Nullable
         public String getGlobalCode() {
             return globalCode;
-        }
-
-        public void setGlobalCode(@Nullable String globalCode) {
-            this.globalCode = globalCode;
         }
     }
 
@@ -479,27 +432,35 @@ public class RawNearbyResponse {
         @Nullable
         @SerializedName("height")
         @Expose
-        private Integer height;
+        private final Integer height;
         @Nullable
         @SerializedName("html_attributions")
         @Expose
-        private List<String> htmlAttributions = null;
+        private final List<String> htmlAttributions;
         @Nullable
         @SerializedName("photo_reference")
         @Expose
-        private String photoReference;
+        private final String photoReference;
         @Nullable
         @SerializedName("width")
         @Expose
-        private Integer width;
+        private final Integer width;
+
+        public Photo(
+            @Nullable Integer height,
+            @Nullable List<String> htmlAttributions,
+            @Nullable String photoReference,
+            @Nullable Integer width
+        ) {
+            this.height = height;
+            this.htmlAttributions = htmlAttributions;
+            this.photoReference = photoReference;
+            this.width = width;
+        }
 
         @Nullable
         public Integer getHeight() {
             return height;
-        }
-
-        public void setHeight(@Nullable Integer height) {
-            this.height = height;
         }
 
         @Nullable
@@ -507,46 +468,14 @@ public class RawNearbyResponse {
             return htmlAttributions;
         }
 
-        public void setHtmlAttributions(@Nullable List<String> htmlAttributions) {
-            this.htmlAttributions = htmlAttributions;
-        }
-
         @Nullable
         public String getPhotoReference() {
             return photoReference;
-        }
-
-        public void setPhotoReference(@Nullable String photoReference) {
-            this.photoReference = photoReference;
         }
 
         @Nullable
         public Integer getWidth() {
             return width;
         }
-
-        public void setWidth(@Nullable Integer width) {
-            this.width = width;
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RawNearbyResponse that = (RawNearbyResponse) o;
-        return Objects.equals(htmlAttributions, that.htmlAttributions) &&
-            Objects.equals(nextPageToken, that.nextPageToken) &&
-            Objects.equals(results, that.results) &&
-            Objects.equals(status, that.status);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(htmlAttributions, nextPageToken, results, status);
     }
 }
