@@ -22,26 +22,30 @@ public class GpsStateChangeReceiverTest {
     @Rule
     public final InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    private final Context contextMock = mock(Context.class);
+
+    // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
+
+    private final LocationManager locationManagerMock = mock(LocationManager.class);
+    private final Intent intentMock = mock(Intent.class);
+
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
     private GpsStateChangeReceiver gpsStateChangeReceiver;
-
-    // --------------------------------------- DEPENDENCIES ----------------------------------------
-
-    private final LocationManager locationManagerMock = mock(LocationManager.class);
-
-    private final Intent intentMock = mock(Intent.class);
 
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
     public void setUp() throws Exception {
         // Setup mocks
+        doReturn(locationManagerMock).when(contextMock).getSystemService(Context.LOCATION_SERVICE);
         doReturn(LocationManager.PROVIDERS_CHANGED_ACTION).when(intentMock).getAction();
         doReturn(true).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         // Init Receiver
-        gpsStateChangeReceiver = new GpsStateChangeReceiver(locationManagerMock);
+        gpsStateChangeReceiver = new GpsStateChangeReceiver(contextMock);
     }
 
     // -------------------------------------- RECEIVER TESTS ---------------------------------------

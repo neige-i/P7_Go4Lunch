@@ -14,17 +14,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
-import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
+import com.neige_i.go4lunch.domain.map.MapData;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -35,14 +32,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class MapViewModel extends ViewModel {
 
-    // -------------------------------------- CLASS VARIABLES --------------------------------------
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
     static final float DEFAULT_ZOOM_LEVEL = 18; // 2=world, 5=continent, 10=city, 15=streets, 20=buildings
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final GetLocationPermissionUseCase getLocationPermissionUseCase;
+    private final GetMapDataUseCase getMapDataUseCase;
     @NonNull
     private final RequestGpsUseCase requestGpsUseCase;
 
@@ -53,8 +50,6 @@ public class MapViewModel extends ViewModel {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
-    @NonNull
-    private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
     /**
      * Source {@code LiveData} to update {@link #mapViewState}.
      */
@@ -89,37 +84,32 @@ public class MapViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public MapViewModel(@NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
-                        @NonNull GetLocationUseCase getLocationUseCase,
-                        @NonNull GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCase,
-                        @NonNull GetGpsStatusUseCase getGpsStatusUseCase,
-                        @NonNull RequestGpsUseCase requestGpsUseCase
+    public MapViewModel(
+        @NonNull GetMapDataUseCase getMapDataUseCase,
+        @NonNull RequestGpsUseCase requestGpsUseCase
     ) {
-        this.getLocationPermissionUseCase = getLocationPermissionUseCase;
+        this.getMapDataUseCase = getMapDataUseCase;
         this.requestGpsUseCase = requestGpsUseCase;
 
-        final LiveData<Location> locationLiveData = getLocationUseCase.get();
-        final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = getNearbyRestaurantsUseCase.get();
-        final LiveData<Boolean> isGpsEnabledLiveData = getGpsStatusUseCase.isEnabled();
+        final LiveData<MapData> mapDataLiveData = getMapDataUseCase.get();
 
-        mapViewState.addSource(locationPermissionMutableLiveData, isLocationPermissionGranted -> combine(isLocationPermissionGranted, locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(locationLiveData, location -> combine(locationPermissionMutableLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurants, isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(isGpsEnabledLiveData, isGpsEnabled -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabled, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(currentPositionMutableLiveData, currentPosition -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPosition, onLocationButtonClickedPing.getValue()));
-        mapViewState.addSource(onLocationButtonClickedPing, locationButtonPing -> combine(locationPermissionMutableLiveData.getValue(), locationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), isGpsEnabledLiveData.getValue(), currentPositionMutableLiveData.getValue(), locationButtonPing));
+        mapViewState.addSource(mapDataLiveData, mapData -> combine(mapData, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(currentPositionMutableLiveData, currentPosition -> combine(mapDataLiveData.getValue(), currentPosition, onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(onLocationButtonClickedPing, locationButtonPing -> combine(mapDataLiveData.getValue(), currentPositionMutableLiveData.getValue(), locationButtonPing));
     }
 
-    private void combine(@Nullable Boolean isLocationPermissionGranted,
-                         @Nullable Location location,
-                         @Nullable List<NearbyRestaurant> nearbyRestaurants,
-                         @Nullable Boolean isGpsEnabled,
-                         @Nullable CameraPosition currentPosition,
-                         @Nullable Boolean locationButtonPing
+    private void combine(
+        @Nullable MapData mapData,
+        @Nullable CameraPosition currentPosition,
+        @Nullable Boolean locationButtonPing
     ) {
-        if (isLocationPermissionGranted == null || isGpsEnabled == null || currentPosition == null) {
+        if (mapData == null || currentPosition == null) {
             return;
         }
+
+        final boolean isLocationPermissionGranted = mapData.isLocationPermissionGranted();
+        final boolean isGpsEnabled = mapData.isGpsEnabled();
+        final Location currentLocation = mapData.getCurrentLocation();
 
         // Setup whether or not the map camera should be moved
         final boolean moveMapToLocation;
@@ -130,30 +120,28 @@ public class MapViewModel extends ViewModel {
                 requestGpsUseCase.request();
                 return;
             } else {
-                moveMapToLocation = location != null;
+                moveMapToLocation = currentLocation != null;
             }
         } else {
-            moveMapToLocation = keepMapCenteredOnLocation && isGpsEnabled && location != null;
+            moveMapToLocation = keepMapCenteredOnLocation && isGpsEnabled && currentLocation != null;
         }
 
         // Setup markers
-        if (nearbyRestaurants != null) {
-            for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
-                displayedMarkers.add(new MarkerViewState(
-                    nearbyRestaurant.getPlaceId(),
-                    nearbyRestaurant.getName(),
-                    nearbyRestaurant.getLatitude(),
-                    nearbyRestaurant.getLongitude(),
-                    nearbyRestaurant.getAddress()
-                ));
-            }
+        for (NearbyRestaurant nearbyRestaurant : mapData.getNearbyRestaurants()) {
+            displayedMarkers.add(new MarkerViewState(
+                nearbyRestaurant.getPlaceId(),
+                nearbyRestaurant.getName(),
+                nearbyRestaurant.getLatitude(),
+                nearbyRestaurant.getLongitude(),
+                nearbyRestaurant.getAddress()
+            ));
         }
 
         // Setup FAB color
         @ColorRes final int fabColor;
-        if (location == null || !isGpsEnabled) {
+        if (currentLocation == null || !isGpsEnabled) {
             fabColor = android.R.color.holo_red_dark;
-        } else if (equalsCurrentPosition(location.getLatitude(), location.getLongitude())) {
+        } else if (equalsCurrentPosition(currentLocation.getLatitude(), currentLocation.getLongitude())) {
             fabColor = R.color.blue_google;
         } else {
             fabColor = R.color.black;
@@ -166,8 +154,8 @@ public class MapViewModel extends ViewModel {
             isGpsEnabled ? R.drawable.ic_gps_on : R.drawable.ic_gps_off,
             fabColor,
             new ArrayList<>(displayedMarkers),
-            moveMapToLocation ? location.getLatitude() : currentPosition.target.latitude,
-            moveMapToLocation ? location.getLongitude() : currentPosition.target.longitude,
+            moveMapToLocation ? currentLocation.getLatitude() : currentPosition.target.latitude,
+            moveMapToLocation ? currentLocation.getLongitude() : currentPosition.target.longitude,
             moveMapToLocation ? Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom) : currentPosition.zoom
         ));
     }
@@ -218,7 +206,7 @@ public class MapViewModel extends ViewModel {
     }
 
     public void onFragmentResumed() {
-        locationPermissionMutableLiveData.setValue(getLocationPermissionUseCase.isGranted());
+        getMapDataUseCase.refresh();
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------

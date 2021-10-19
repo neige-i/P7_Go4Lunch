@@ -17,11 +17,9 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
-import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
+import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
+import com.neige_i.go4lunch.domain.map.MapData;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,18 +41,16 @@ public class MapViewModelTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
-    private final GetLocationPermissionUseCase getLocationPermissionUseCaseMock = mock(GetLocationPermissionUseCase.class);
-    private final GetLocationUseCase getLocationUseCaseMock = mock(GetLocationUseCase.class);
-    private final GetNearbyRestaurantsUseCase getNearbyRestaurantsUseCaseMock = mock(GetNearbyRestaurantsUseCase.class);
-    private final GetGpsStatusUseCase getGpsStatusUseCaseMock = mock(GetGpsStatusUseCase.class);
+    private final GetMapDataUseCase getMapDataUseCase = mock(GetMapDataUseCase.class);
     private final RequestGpsUseCase requestGpsUseCaseMock = mock(RequestGpsUseCase.class);
+
+    // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
+
+    private final Location deviceLocation = mock(Location.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
-    private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> isGpsEnabledMutableLiveData = new MutableLiveData<>();
-    private final Location deviceLocation = mock(Location.class);
+    private final MutableLiveData<MapData> mapDataMutableLiveData = new MutableLiveData<>();
 
     // --------------------------------- MARKER VIEW STATE FIELDS ----------------------------------
 
@@ -77,33 +73,26 @@ public class MapViewModelTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(true).when(getLocationPermissionUseCaseMock).isGranted();
-        doReturn(locationMutableLiveData).when(getLocationUseCaseMock).get();
-        doReturn(nearbyRestaurantsMutableLiveData).when(getNearbyRestaurantsUseCaseMock).get();
-        doReturn(isGpsEnabledMutableLiveData).when(getGpsStatusUseCaseMock).isEnabled();
+        doReturn(mapDataMutableLiveData).when(getMapDataUseCase).get();
         doReturn(DEVICE_LAT).when(deviceLocation).getLatitude();
         doReturn(DEVICE_LNG).when(deviceLocation).getLongitude();
 
         // Default behaviour
-        isGpsEnabledMutableLiveData.setValue(true);
-        locationMutableLiveData.setValue(deviceLocation);
-        nearbyRestaurantsMutableLiveData.setValue(getDefaultRestaurantList());
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocation,
+            getDefaultRestaurantList(),
+            true
+        ));
 
         // Init ViewModel
-        mapViewModel = new MapViewModel(
-            getLocationPermissionUseCaseMock,
-            getLocationUseCaseMock,
-            getNearbyRestaurantsUseCaseMock,
-            getGpsStatusUseCaseMock,
-            requestGpsUseCaseMock
-        );
+        mapViewModel = new MapViewModel(getMapDataUseCase, requestGpsUseCaseMock);
 
         // Retrieve initial map's CameraPosition when displayed for the first time
         mapViewModel.onCameraStopped(CameraPosition.fromLatLngZoom(
             new LatLng(DEFAULT_LAT, DEFAULT_LNG),
             DEFAULT_ZOOM
         ));
-        mapViewModel.onFragmentResumed();
     }
 
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
@@ -132,8 +121,12 @@ public class MapViewModelTest {
     @Test
     public void getEmptyMap_when_locationPermissionIsDenied() throws InterruptedException {
         // GIVEN
-        doReturn(false).when(getLocationPermissionUseCaseMock).isGranted();
-        mapViewModel.onFragmentResumed();
+        mapDataMutableLiveData.setValue(new MapData(
+            false, // Denied location permission
+            deviceLocation,
+            getDefaultRestaurantList(),
+            true
+        ));
 
         // WHEN
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
@@ -157,7 +150,12 @@ public class MapViewModelTest {
     @Test
     public void getMap_when_gpsIsDisabled() throws InterruptedException {
         // GIVEN
-        isGpsEnabledMutableLiveData.setValue(false);
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocation,
+            getDefaultRestaurantList(),
+            false // Disabled GPS
+        ));
 
         // WHEN
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
@@ -181,7 +179,12 @@ public class MapViewModelTest {
     @Test
     public void getMap_when_locationIsNotAvailable() throws InterruptedException {
         // GIVEN
-        locationMutableLiveData.setValue(null);
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            null, // Unavailable location
+            getDefaultRestaurantList(),
+            true
+        ));
 
         // WHEN
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
@@ -205,7 +208,12 @@ public class MapViewModelTest {
     @Test
     public void getMap_when_restaurantsAreNotAvailable() throws InterruptedException {
         // GIVEN
-        nearbyRestaurantsMutableLiveData.setValue(null);
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocation,
+            Collections.emptyList(), // Unavailable restaurants
+            true
+        ));
 
         // WHEN
         final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
@@ -284,7 +292,12 @@ public class MapViewModelTest {
     @Test
     public void requestGps_when_locationButtonIsClickedAndGpsIsDisabled() throws InterruptedException {
         // GIVEN
-        isGpsEnabledMutableLiveData.setValue(false);
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocation,
+            getDefaultRestaurantList(),
+            false // Disabled GPS
+        ));
 
         // WHEN
         mapViewModel.onLocationButtonClicked();
@@ -356,8 +369,11 @@ public class MapViewModelTest {
     public void doNotDuplicateMarker_when_sameNearbyRestaurantIsAdded() throws InterruptedException {
         // GIVEN
         getOrAwaitValue(mapViewModel.getMapViewState()); // Get the first state with default markers
-        nearbyRestaurantsMutableLiveData.setValue(Collections.singletonList(
-            getDefaultRestaurant(3) // Add the restaurant #3 again
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocation,
+            Collections.singletonList(getDefaultRestaurant(3)), // Add the restaurant #3 again
+            true
         ));
 
         // WHEN

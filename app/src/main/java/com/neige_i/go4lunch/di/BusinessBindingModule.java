@@ -14,8 +14,6 @@ import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
 import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCase;
-import com.neige_i.go4lunch.domain.gps.GetGpsStatusUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
@@ -28,6 +26,8 @@ import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCaseImpl;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
 import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
+import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
+import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
@@ -80,14 +80,16 @@ public abstract class BusinessBindingModule {
         ShowGpsDialogUseCaseImpl showGpsDialogUseCaseImpl
     );
 
+    // -------------------------------------------- MAP --------------------------------------------
+
     @Binds
-    public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
-        GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
+    public abstract GetMapDataUseCase bindGetMapDataUseCase(
+        GetMapDataUseCaseImpl getMapDataUseCaseImpl
     );
 
     @Binds
-    public abstract GetGpsStatusUseCase bindGetGpsStatusUseCase(
-        GetGpsStatusUseCaseImpl getGpsStatusUseCaseImpl
+    public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
+        GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
     );
 
     @Binds
