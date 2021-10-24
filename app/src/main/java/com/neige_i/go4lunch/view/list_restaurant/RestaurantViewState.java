@@ -2,6 +2,7 @@ package com.neige_i.go4lunch.view.list_restaurant;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
@@ -23,15 +24,22 @@ class RestaurantViewState {
     private final String openingHours;
     private final int interestedWorkmatesCount;
     private final int rating;
-    private final boolean noRatingLblVisibility;
-    @NonNull
+    @Nullable
     private final String photoUrl;
 
 
     public RestaurantViewState(
-        @NonNull String placeId, @NonNull String name, float distance, @NonNull String formattedDistance,
-        @NonNull String address, int textStyle, int textColor, @NonNull String openingHours,
-        int interestedWorkmatesCount, int rating, boolean noRatingLblVisibility, @NonNull String photoUrl
+        @NonNull String placeId,
+        @NonNull String name,
+        float distance,
+        @NonNull String formattedDistance,
+        @NonNull String address,
+        int textStyle,
+        int textColor,
+        @NonNull String openingHours,
+        int interestedWorkmatesCount,
+        int rating,
+        @Nullable String photoUrl
     ) {
         this.placeId = placeId;
         this.name = name;
@@ -43,7 +51,6 @@ class RestaurantViewState {
         this.openingHours = openingHours;
         this.interestedWorkmatesCount = interestedWorkmatesCount;
         this.rating = rating;
-        this.noRatingLblVisibility = noRatingLblVisibility;
         this.photoUrl = photoUrl;
     }
 
@@ -92,11 +99,7 @@ class RestaurantViewState {
         return rating;
     }
 
-    public boolean isNoRatingLblVisible() {
-        return noRatingLblVisibility;
-    }
-
-    @NonNull
+    @Nullable
     public String getPhotoUrl() {
         return photoUrl;
     }
@@ -115,17 +118,16 @@ class RestaurantViewState {
             textColor == that.textColor &&
             interestedWorkmatesCount == that.interestedWorkmatesCount &&
             rating == that.rating &&
-            noRatingLblVisibility == that.noRatingLblVisibility &&
             placeId.equals(that.placeId) &&
             name.equals(that.name) &&
             formattedDistance.equals(that.formattedDistance) &&
             address.equals(that.address) &&
             openingHours.equals(that.openingHours) &&
-            photoUrl.equals(that.photoUrl);
+            Objects.equals(photoUrl, that.photoUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmatesCount, rating, noRatingLblVisibility, photoUrl);
+        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmatesCount, rating, photoUrl);
     }
 }

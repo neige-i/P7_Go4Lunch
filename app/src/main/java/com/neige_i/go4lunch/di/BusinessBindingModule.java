@@ -6,12 +6,6 @@ import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
 import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.firestore.GetNearbyFirestoreRestaurantsUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantDetailsUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetNearbyRestaurantsUseCaseImpl;
 import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
 import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
@@ -24,8 +18,8 @@ import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCaseImpl;
-import com.neige_i.go4lunch.domain.location.GetLocationUseCase;
-import com.neige_i.go4lunch.domain.location.GetLocationUseCaseImpl;
+import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCase;
+import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
@@ -87,6 +81,13 @@ public abstract class BusinessBindingModule {
         GetMapDataUseCaseImpl getMapDataUseCaseImpl
     );
 
+    // -------------------------------------- RESTAURANT LIST --------------------------------------
+
+    @Binds
+    public abstract GetNearbyDetailsUseCase bindGetNearbyDetailsUseCase(
+        GetNearbyDetailsUseCaseImpl getNearbyDetailsUseCaseImpl
+    );
+
     @Binds
     public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
         GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
@@ -98,16 +99,6 @@ public abstract class BusinessBindingModule {
     );
 
     @Binds
-    public abstract GetLocationUseCase bindGetLocationUseCase(
-        GetLocationUseCaseImpl getLocationUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetNearbyRestaurantsUseCase bindGetNearbyRestaurantsUseCase(
-        GetNearbyRestaurantsUseCaseImpl getNearbyRestaurantsUseCaseImpl
-    );
-
-    @Binds
     public abstract GetFirestoreUserListUseCase bindGetFirestoreUserListUseCase(
         GetFirestoreUserListUseCaseImpl getFirestoreUserListUseCaseImpl
     );
@@ -115,16 +106,6 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract GetSingleRestaurantDetailsUseCase bindGetRestaurantDetailsItemUseCase(
         GetSingleRestaurantDetailsUseCaseImpl getRestaurantDetailsItemUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetNearbyRestaurantDetailsUseCase bindGetRestaurantDetailsListUseCase(
-        GetNearbyRestaurantDetailsUseCaseImpl getRestaurantDetailsListUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetNearbyFirestoreRestaurantsUseCase bindGetFirestoreRestaurantsByIdUseCase(
-        GetNearbyFirestoreRestaurantsUseCaseImpl getFirestoreRestaurantsByIdUseCaseImpl
     );
 
     @Binds

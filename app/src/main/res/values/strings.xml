@@ -29,13 +29,13 @@
 
     <!-- Placeholder -->
     <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
-    <string name="name_not_available">Name not available</string>
-    <string name="address_not_available">Address not available</string>
     <string name="workmate_count">(%d)</string>
-    <string name="open_until">Open until %s</string>
+    <string name="unknown_hours">Unknown hours</string>
+    <string name="open_until">Open until %s%s</string>
     <string name="always_open">Open 24/7</string>
-    <string name="closing_soon">Closing soon</string>
-    <string name="closed">Closed</string>
+    <string name="closing_soon">Closing in less than an hour</string>
+    <string name="closed_until">Closed. Open %sat %s</string>
+    <string name="tomorrow">tomorrow</string>
     <string name="no_rating_available">No rating available</string>
 
     <!-- Snackbar message -->

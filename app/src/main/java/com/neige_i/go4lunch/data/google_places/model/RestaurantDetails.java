@@ -21,8 +21,8 @@ public class RestaurantDetails {
     private final String phoneNumber;
     @Nullable
     private final String website;
-    @Nullable
-    private final List<String> openingHours;
+    @NonNull
+    private final List<RestaurantHour> openingPeriods;
 
     public RestaurantDetails(
         @NonNull String placeId,
@@ -32,7 +32,7 @@ public class RestaurantDetails {
         @Nullable String photoUrl,
         @Nullable String phoneNumber,
         @Nullable String website,
-        @Nullable List<String> openingHours
+        @NonNull List<RestaurantHour> openingPeriods
     ) {
         this.placeId = placeId;
         this.name = name;
@@ -41,7 +41,7 @@ public class RestaurantDetails {
         this.photoUrl = photoUrl;
         this.phoneNumber = phoneNumber;
         this.website = website;
-        this.openingHours = openingHours;
+        this.openingPeriods = openingPeriods;
     }
 
     @NonNull
@@ -78,9 +78,9 @@ public class RestaurantDetails {
         return website;
     }
 
-    @Nullable
-    public List<String> getOpeningHours() {
-        return openingHours;
+    @NonNull
+    public List<RestaurantHour> getOpeningPeriods() {
+        return openingPeriods;
     }
 
     @Override
@@ -99,26 +99,11 @@ public class RestaurantDetails {
             Objects.equals(photoUrl, that.photoUrl) &&
             Objects.equals(phoneNumber, that.phoneNumber) &&
             Objects.equals(website, that.website) &&
-            Objects.equals(openingHours, that.openingHours);
+            openingPeriods.equals(that.openingPeriods);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, address, rating, photoUrl, phoneNumber, website, openingHours);
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        return "RestaurantDetails{" +
-            "placeId='" + placeId + '\'' +
-            ", name='" + name + '\'' +
-            ", address='" + address + '\'' +
-            ", rating=" + rating +
-            ", photoUrl='" + photoUrl + '\'' +
-            ", phoneNumber='" + phoneNumber + '\'' +
-            ", website='" + website + '\'' +
-            ", openingHours=" + openingHours +
-            '}';
+        return Objects.hash(placeId, name, address, rating, photoUrl, phoneNumber, website, openingPeriods);
     }
 }

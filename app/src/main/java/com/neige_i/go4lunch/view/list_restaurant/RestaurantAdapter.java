@@ -1,11 +1,10 @@
 package com.neige_i.go4lunch.view.list_restaurant;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -13,15 +12,16 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.MultiTransformation;
-import com.bumptech.glide.load.Transformation;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.ItemRestaurantBinding;
+import com.neige_i.go4lunch.view.ImageDelegate;
 
 class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapter.RestaurantViewHolder> {
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @NonNull
+    private final ImageDelegate imageDelegate;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -30,8 +30,12 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
-    protected RestaurantAdapter(@NonNull OnRestaurantClickedCallback onRestaurantClickedCallback) {
+    protected RestaurantAdapter(
+        @NonNull ImageDelegate imageDelegate,
+        @NonNull OnRestaurantClickedCallback onRestaurantClickedCallback
+    ) {
         super(new RestaurantDiffCallback());
+        this.imageDelegate = imageDelegate;
         this.onRestaurantClickedCallback = onRestaurantClickedCallback;
     }
 
@@ -46,6 +50,7 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         );
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
         final RestaurantViewState viewState = getItem(position);
@@ -68,31 +73,15 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         holder.binding.coworkerCountLbl.setVisibility(interestedWorkmateCount > 0 ? View.VISIBLE : View.GONE);
         holder.binding.coworkerImg.setVisibility(interestedWorkmateCount > 0 ? View.VISIBLE : View.GONE);
 
-        setRatingImgVisibility(viewState.getRating(), holder.binding.star1Img, holder.binding.star2Img, holder.binding.star3Img);
+        holder.binding.noRatingLbl.setVisibility(viewState.getRating() == -1 ? View.VISIBLE : View.GONE);
+        imageDelegate.setStarVisibility(
+            viewState.getRating(),
+            holder.binding.star1Img,
+            holder.binding.star2Img,
+            holder.binding.star3Img
+        );
 
-        holder.binding.noRatingLbl.setVisibility(viewState.isNoRatingLblVisible() ? View.VISIBLE : View.GONE);
-
-        setPhotoSrcWithGlide(holder.binding.thumbnailImg, viewState.getPhotoUrl());
-    }
-
-    // TODO: remove
-    private void setRatingImgVisibility(int rating, ImageView... ratingStars) {
-        for (int i = 0; i < ratingStars.length; i++) {
-            ratingStars[i].setVisibility(rating > i ? View.VISIBLE : View.GONE);
-        }
-    }
-
-    public static void setPhotoSrcWithGlide(@NonNull ImageView photoImg, @NonNull String photoUrl) {
-        final Transformation<Bitmap> centerCropTransformation = new CenterCrop();
-        final Transformation<Bitmap> finalTransformation = photoImg.getId() == R.id.photo_img
-            ? centerCropTransformation
-            : new MultiTransformation<>(centerCropTransformation, new RoundedCorners(20));
-
-        Glide
-            .with(photoImg.getContext())
-            .load(photoUrl)
-            .transform(finalTransformation)
-            .into(photoImg);
+        imageDelegate.displayPhotoWithGlide(holder.binding.thumbnailImg, viewState.getPhotoUrl());
     }
 
     // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
@@ -102,7 +91,10 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
         @NonNull
         private final ItemRestaurantBinding binding;
 
-        RestaurantViewHolder(@NonNull View itemView, @NonNull OnRestaurantClickedCallback onRestaurantClickedCallback) {
+        RestaurantViewHolder(
+            @NonNull View itemView,
+            @NonNull OnRestaurantClickedCallback onRestaurantClickedCallback
+        ) {
             super(itemView);
 
             binding = ItemRestaurantBinding.bind(itemView);
@@ -118,12 +110,18 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
     static class RestaurantDiffCallback extends DiffUtil.ItemCallback<RestaurantViewState> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull RestaurantViewState oldItem, @NonNull RestaurantViewState newItem) {
+        public boolean areItemsTheSame(
+            @NonNull RestaurantViewState oldItem,
+            @NonNull RestaurantViewState newItem
+        ) {
             return oldItem.getPlaceId().equals(newItem.getPlaceId());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull RestaurantViewState oldItem, @NonNull RestaurantViewState newItem) {
+        public boolean areContentsTheSame(
+            @NonNull RestaurantViewState oldItem,
+            @NonNull RestaurantViewState newItem
+        ) {
             return oldItem.equals(newItem);
         }
     }
