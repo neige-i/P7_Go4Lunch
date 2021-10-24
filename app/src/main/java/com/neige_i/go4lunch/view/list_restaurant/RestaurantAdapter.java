@@ -12,9 +12,13 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.ItemRestaurantBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
+
+import java.util.Arrays;
 
 class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapter.RestaurantViewHolder> {
 
@@ -81,7 +85,12 @@ class RestaurantAdapter extends ListAdapter<RestaurantViewState, RestaurantAdapt
             holder.binding.star3Img
         );
 
-        imageDelegate.displayPhotoWithGlide(holder.binding.thumbnailImg, viewState.getPhotoUrl());
+        imageDelegate.displayPhotoWithGlide(
+            holder.binding.thumbnailImg,
+            viewState.getPhotoUrl(),
+            R.drawable.ic_no_image,
+            Arrays.asList(new CenterCrop(), new RoundedCorners(20))
+        );
     }
 
     // ------------------------------------- VIEW HOLDER CLASS -------------------------------------

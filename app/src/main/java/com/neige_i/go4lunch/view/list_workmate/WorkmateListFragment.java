@@ -13,22 +13,24 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
-import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.ImageDelegate;
+import com.neige_i.go4lunch.view.StartDetailActivityCallback;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class WorkmateListFragment extends Fragment {
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @Inject
+    ImageDelegate imageDelegate;
+
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
-    private OnDetailsQueriedCallback onDetailsQueriedCallback;
-
-    // -------------------------------------- FACTORY METHODS --------------------------------------
-
-    public static WorkmateListFragment newInstance() {
-        return new WorkmateListFragment();
-    }
+    private StartDetailActivityCallback startDetailActivityCallback;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -36,7 +38,7 @@ public class WorkmateListFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        onDetailsQueriedCallback = (OnDetailsQueriedCallback) context;
+        startDetailActivityCallback = (StartDetailActivityCallback) context;
     }
 
     @Nullable
@@ -53,22 +55,18 @@ public class WorkmateListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Init ViewModel
-        final WorkmateListViewModel viewModel =
-            new ViewModelProvider(this).get(WorkmateListViewModel.class);
-
         // Init binding
         final FragmentListBinding binding = FragmentListBinding.bind(view);
 
         // Setup UI
-        final WorkmateAdapter adapter = new WorkmateAdapter(viewModel::onWorkmateItemClicked);
+        final WorkmateAdapter adapter = new WorkmateAdapter(imageDelegate, placeId -> {
+            startDetailActivityCallback.showDetailedInfo(placeId);
+        });
         binding.recyclerview.setAdapter(adapter);
 
         // Update UI when state is changed
-        viewModel.getViewState().observe(getViewLifecycleOwner(), adapter::submitList);
-
-        // Update UI when event is triggered
-        viewModel.getTriggerCallbackEvent().observe(getViewLifecycleOwner(), placeId ->
-            onDetailsQueriedCallback.onDetailsQueried(placeId));
+        new ViewModelProvider(this).get(WorkmateListViewModel.class)
+            .getViewState()
+            .observe(getViewLifecycleOwner(), viewStates -> adapter.submitList(viewStates));
     }
 }

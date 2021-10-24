@@ -20,10 +20,10 @@ import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCaseImpl;
 import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCase;
 import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCaseImpl;
+import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCase;
+import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
-import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
 import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCaseImpl;
 import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
@@ -88,6 +88,13 @@ public abstract class BusinessBindingModule {
         GetNearbyDetailsUseCaseImpl getNearbyDetailsUseCaseImpl
     );
 
+    // --------------------------------------- WORKMATE LIST ---------------------------------------
+
+    @Binds
+    public abstract GetAllWorkmatesUseCase bindGetFirestoreUserListUseCase(
+        GetAllWorkmatesUseCaseImpl getFirestoreUserListUseCaseImpl
+    );
+
     @Binds
     public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
         GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
@@ -96,11 +103,6 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract RequestGpsUseCase bindRequestGpsUseCase(
         RequestGpsUseCaseImpl requestGpsUseCaseImpl
-    );
-
-    @Binds
-    public abstract GetFirestoreUserListUseCase bindGetFirestoreUserListUseCase(
-        GetFirestoreUserListUseCaseImpl getFirestoreUserListUseCaseImpl
     );
 
     @Binds

@@ -45,7 +45,7 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
 
         // Check if the request has already been executed
         if (cachedCleanResponse != null) {
-            Log.d("Neige", "REPO get " + cachedCleanResponse.getClass().getSimpleName() + " : from cache");
+            Log.d("Neige", "REPO get " + getNameForLog() + " : from cache");
             responseMutableLiveData.setValue(cachedCleanResponse);
         } else {
             getRequest(queryString).enqueue(new Callback<RawData>() {
@@ -57,7 +57,7 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
                     final CleanResponse cleanResponse = cleanDataFromRetrofit(response.body());
 
                     if (cleanResponse != null) {
-                        Log.d("Neige", "REPO get " + cleanResponse.getClass().getSimpleName() + " : from API");
+                        Log.d("Neige", "REPO get " + getNameForLog() + " : from API");
                         responseMutableLiveData.setValue(cleanResponse);
                         dataCache.put(queryString, cleanResponse);
                     }
@@ -77,6 +77,9 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
 
     @NonNull
     abstract Call<RawData> getRequest(@NonNull String queryParameter);
+
+    @NonNull
+    abstract String getNameForLog();
 
     // ---------------------------------- CLEAN RESPONSE METHODS -----------------------------------
 

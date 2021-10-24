@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -34,6 +35,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     ListenerRegistration getUserListener;
     @Nullable
     ListenerRegistration getInterestedWorkmatesListener;
+    @Nullable
+    ListenerRegistration getAllWorkmatesListener;
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -74,11 +77,29 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         final MutableLiveData<List<User>> usersMutableLiveData = new MutableLiveData<>();
 
         getInterestedWorkmatesListener = firebaseFirestore.collection(USER_COLLECTION)
-            .whereEqualTo("selectedRestaurant", restaurantId)
+            .whereEqualTo("selectedRestaurantId", restaurantId)
+            .whereEqualTo("selectedRestaurantDate", LocalDate.now().format(DATE_FORMATTER))
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
                     final List<User> userList = querySnapshot.toObjects(User.class);
-                    Log.d("Neige", "REPO getWorkmates eating at ID='" + restaurantId + "': " + userList.size());
+                    Log.d("Neige", "REPO get workmates eating TODAY at ID='" + restaurantId + "': " + userList.size());
+                    usersMutableLiveData.setValue(userList);
+                }
+            });
+
+        return usersMutableLiveData;
+    }
+
+    @NonNull
+    @Override
+    public LiveData<List<User>> getAllUsers() {
+        final MutableLiveData<List<User>> usersMutableLiveData = new MutableLiveData<>();
+
+        getAllWorkmatesListener = firebaseFirestore.collection(USER_COLLECTION)
+            .addSnapshotListener((querySnapshot, error) -> {
+                if (querySnapshot != null) {
+                    final List<User> userList = querySnapshot.toObjects(User.class);
+                    Log.d("Neige", "REPO get all workmates: " + userList.size());
                     usersMutableLiveData.setValue(userList);
                 }
             });
@@ -93,6 +114,9 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         }
         if (getInterestedWorkmatesListener != null) {
             getInterestedWorkmatesListener.remove();
+        }
+        if (getAllWorkmatesListener != null) {
+            getAllWorkmatesListener.remove();
         }
     }
 }

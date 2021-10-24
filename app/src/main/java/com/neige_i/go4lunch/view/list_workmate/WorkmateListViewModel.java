@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.view.list_workmate;
 
+import android.app.Application;
 import android.graphics.Typeface;
 
 import androidx.annotation.NonNull;
@@ -8,14 +9,9 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.firebase.model.User;
-import com.neige_i.go4lunch.domain.to_sort.GetFirestoreUserListUseCase;
-import com.neige_i.go4lunch.view.SingleLiveEvent;
+import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCase;
+import com.neige_i.go4lunch.domain.list_workmate.Workmate;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,87 +22,68 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class WorkmateListViewModel extends ViewModel {
 
-    @NonNull
-    private final GetFirestoreUserListUseCase getFirestoreUserListUseCase;
-    @NonNull
-    private final Clock clock;
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
-    private final SingleLiveEvent<String> triggerCallbackEvent = new SingleLiveEvent<>();
+    private final GetAllWorkmatesUseCase getAllWorkmatesUseCase;
+    @NonNull
+    private final Application application;
+
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public WorkmateListViewModel(@NonNull GetFirestoreUserListUseCase getFirestoreUserListUseCase, @NonNull Clock clock) {
-        this.getFirestoreUserListUseCase = getFirestoreUserListUseCase;
-        this.clock = clock;
+    public WorkmateListViewModel(
+        @NonNull GetAllWorkmatesUseCase getAllWorkmatesUseCase,
+        @NonNull Application application
+    ) {
+        this.getAllWorkmatesUseCase = getAllWorkmatesUseCase;
+        this.application = application;
     }
 
-    @NonNull
-    public LiveData<String> getTriggerCallbackEvent() {
-        return triggerCallbackEvent;
-    }
+    // ------------------------------------ VIEW STATE METHODS -------------------------------------
 
     @NonNull
     public LiveData<List<WorkmateViewState>> getViewState() {
-        return Transformations.map(getFirestoreUserListUseCase.getAllUsers(), userList -> {
+        return Transformations.map(getAllWorkmatesUseCase.get(), workmates -> {
             final List<WorkmateViewState> viewStates = new ArrayList<>();
 
-            if (userList != null) {
+            for (Workmate workmate : workmates) {
+                final int textStyle;
+                final int textColor;
+                final String nameAndSelectedRestaurant;
+                final String selectedRestaurantId;
 
-                for (User user : userList) {
-
-                    final User.SelectedRestaurant selectedRestaurant = user.getSelectedRestaurant();
-
-                    // Check if user has selected a restaurant FOR TODAY
-                    final boolean hasUserSelectedARestaurant;
-                    if (selectedRestaurant != null) {
-
-                        final LocalDate selectedLocalDate = Instant
-                            .ofEpochMilli(selectedRestaurant.getSelectedDate())
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-
-                        hasUserSelectedARestaurant = selectedLocalDate.isEqual(LocalDate.now(clock));
-                    } else {
-                        hasUserSelectedARestaurant = false;
-                    }
-
-                    // Set the WorkmateViewState fields
-                    final int textStyle;
-                    final int textColor;
-                    final String nameAndSelectedRestaurant;
-                    final String selectedRestaurantId;
-
-                    if (hasUserSelectedARestaurant) {
-                        textStyle = Typeface.NORMAL;
-                        textColor = R.color.black;
-                        nameAndSelectedRestaurant = user.getName() + " is eating in " + selectedRestaurant.getRestaurantName();
-                        selectedRestaurantId = selectedRestaurant.getRestaurantId();
-                    } else {
-                        textStyle = Typeface.ITALIC;
-                        textColor = android.R.color.darker_gray;
-                        nameAndSelectedRestaurant = user.getName() + " hasn't decided yet";
-                        selectedRestaurantId = WorkmateViewState.NO_SELECTED_RESTAURANT;
-                    }
-
-                    // Add the view state to the list
-                    viewStates.add(new WorkmateViewState(
-                        user.getEmail(),
-                        user.getPhotoUrl(),
-                        textStyle,
-                        textColor,
-                        nameAndSelectedRestaurant,
-                        selectedRestaurantId
-                    ));
+                if (workmate instanceof Workmate.WithRestaurant) {
+                    textStyle = Typeface.NORMAL;
+                    textColor = R.color.black;
+                    nameAndSelectedRestaurant = application.getString(
+                        R.string.eating_at,
+                        workmate.getName(),
+                        ((Workmate.WithRestaurant) workmate).getRestaurantName()
+                    );
+                    selectedRestaurantId = ((Workmate.WithRestaurant) workmate).getRestaurantId();
+                } else {
+                    textStyle = Typeface.ITALIC;
+                    textColor = android.R.color.darker_gray;
+                    nameAndSelectedRestaurant = application.getString(
+                        R.string.not_decided,
+                        workmate.getName()
+                    );
+                    selectedRestaurantId = null;
                 }
+
+                // Add the view state to the list
+                viewStates.add(new WorkmateViewState(
+                    workmate.getEmail(),
+                    workmate.getPhotoUrl(),
+                    textStyle,
+                    textColor,
+                    nameAndSelectedRestaurant,
+                    selectedRestaurantId
+                ));
             }
 
             return viewStates;
         });
-    }
-
-    public void onWorkmateItemClicked(@NonNull String placeId) {
-        if (!placeId.equals(WorkmateViewState.NO_SELECTED_RESTAURANT)) {
-            triggerCallbackEvent.setValue(placeId);
-        }
     }
 }

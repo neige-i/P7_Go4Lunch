@@ -22,7 +22,7 @@ import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityMainBinding;
-import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 
 import javax.inject.Inject;
@@ -30,7 +30,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedCallback {
+public class HomeActivity extends AppCompatActivity implements StartDetailActivityCallback {
 
     // -------------------------------------- CLASS VARIABLES --------------------------------------
 
@@ -156,7 +156,7 @@ public class HomeActivity extends AppCompatActivity implements OnDetailsQueriedC
     // ------------------------------------- CALLBACK METHODS --------------------------------------
 
     @Override
-    public void onDetailsQueried(@NonNull String placeId) {
+    public void showDetailedInfo(@NonNull String placeId) {
         startActivity(new Intent(this, DetailActivity.class).putExtra(EXTRA_PLACE_ID, placeId));
     }
 }

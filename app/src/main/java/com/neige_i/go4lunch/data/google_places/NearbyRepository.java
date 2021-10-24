@@ -46,6 +46,12 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
         return placesApi.getNearbyRestaurants(queryParameter);
     }
 
+    @NonNull
+    @Override
+    String getNameForLog() {
+        return "Nearby";
+    }
+
     @Nullable
     @Override
     List<NearbyRestaurant> cleanDataFromRetrofit(@Nullable RawNearbyResponse rawNearbyResponse) {

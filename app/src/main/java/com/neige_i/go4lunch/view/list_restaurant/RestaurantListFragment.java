@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
-import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 
 import javax.inject.Inject;
 
@@ -30,7 +30,7 @@ public class RestaurantListFragment extends Fragment {
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
-    private OnDetailsQueriedCallback onDetailsQueriedCallback;
+    private StartDetailActivityCallback startDetailActivityCallback;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -38,7 +38,7 @@ public class RestaurantListFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        onDetailsQueriedCallback = (OnDetailsQueriedCallback) context;
+        startDetailActivityCallback = (StartDetailActivityCallback) context;
     }
 
     @Nullable
@@ -60,7 +60,7 @@ public class RestaurantListFragment extends Fragment {
 
         // Setup UI
         final RestaurantAdapter restaurantAdapter = new RestaurantAdapter(imageDelegate, placeId -> {
-            onDetailsQueriedCallback.onDetailsQueried(placeId);
+            startDetailActivityCallback.showDetailedInfo(placeId);
         });
         binding.recyclerview.setAdapter(restaurantAdapter);
 
