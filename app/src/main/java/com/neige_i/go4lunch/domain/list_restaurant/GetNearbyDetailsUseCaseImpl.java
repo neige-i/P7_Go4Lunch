@@ -75,7 +75,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
 
         final LiveData<Location> currentLocationLiveData = locationRepository.getCurrentLocation();
         final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = Transformations.switchMap(
-            currentLocationLiveData, location -> nearbyRepository.getNearbyRestaurants(location)
+            currentLocationLiveData, location -> nearbyRepository.getData(location)
         );
 
         nearbyDetailList.addSource(currentLocationLiveData, location -> combine(location, nearbyRestaurantsLiveData.getValue(), restaurantHoursMediatorLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue()));
@@ -108,7 +108,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
 
                 // Query opening hours
                 restaurantHoursMediatorLiveData.addSource(
-                    detailsRepository.getRestaurantDetails(restaurantId), restaurantDetails -> {
+                    detailsRepository.getData(restaurantId), restaurantDetails -> {
 
                         restaurantHours.put(restaurantId, restaurantDetails.getOpeningPeriods());
                         restaurantHoursMediatorLiveData.setValue(restaurantHours);

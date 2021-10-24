@@ -50,11 +50,10 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
 
         final LiveData<Location> currentLocationLiveData = locationRepository.getCurrentLocation();
         final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = Transformations.switchMap(
-            currentLocationLiveData, location -> nearbyRepository.getNearbyRestaurants(location)
+            currentLocationLiveData, location -> nearbyRepository.getData(location)
         );
         final LiveData<Boolean> gpsStateLiveData = gpsStateChangeReceiver.getGpsState();
 
-        // ASKME: nearby should be the first source to make the tests pass (no problem when running)
         mapData.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurants, gpsStateLiveData.getValue()));
         mapData.addSource(locationPermissionMutableLiveData, locationPermission -> combine(locationPermission, currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue()));
         mapData.addSource(currentLocationLiveData, location -> combine(locationPermissionMutableLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue()));

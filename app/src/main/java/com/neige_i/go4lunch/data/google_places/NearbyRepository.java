@@ -4,17 +4,84 @@ import android.location.Location;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.LiveData;
 
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
+import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface NearbyRepository {
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-    /**
-     * Returns the nearby restaurants around the specified location.
-     */
+import retrofit2.Call;
+
+@Singleton
+public class NearbyRepository extends PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> {
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
     @NonNull
-    LiveData<List<NearbyRestaurant>> getNearbyRestaurants(@Nullable Location location);
+    private final PlacesApi placesApi;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
+    @Inject
+    NearbyRepository(@NonNull PlacesApi placesApi, @NonNull String mapsApiKey) {
+        super(mapsApiKey);
+        this.placesApi = placesApi;
+    }
+
+    // ------------------------------------ REPOSITORY METHODS -------------------------------------
+
+    @NonNull
+    @Override
+    String toQueryString(@NonNull Location location) {
+        return location.getLatitude() + "," + location.getLongitude();
+    }
+
+    @NonNull
+    @Override
+    Call<RawNearbyResponse> getRequest(@NonNull String queryParameter) {
+        return placesApi.getNearbyRestaurants(queryParameter);
+    }
+
+    @Nullable
+    @Override
+    List<NearbyRestaurant> cleanDataFromRetrofit(@Nullable RawNearbyResponse rawNearbyResponse) {
+        if (rawNearbyResponse == null || rawNearbyResponse.getResults() == null) {
+            return null;
+        }
+
+        final List<NearbyRestaurant> nearbyRestaurants = new ArrayList<>();
+
+        for (RawNearbyResponse.Result result : rawNearbyResponse.getResults()) {
+            if (result != null && result.getPlaceId() != null && result.getBusinessStatus() != null &&
+                result.getBusinessStatus().equals("OPERATIONAL") &&
+                result.getGeometry() != null && result.getGeometry().getLocation() != null &&
+                result.getGeometry().getLocation().getLat() != null &&
+                result.getGeometry().getLocation().getLng() != null &&
+                result.getName() != null && result.getVicinity() != null
+            ) {
+                final String photoUrl;
+                if (result.getPhotos() == null || result.getPhotos().isEmpty()) {
+                    photoUrl = null;
+                } else {
+                    photoUrl = getPhotoUrl(result.getPhotos().get(0).getPhotoReference());
+                }
+
+                nearbyRestaurants.add(new NearbyRestaurant(
+                    result.getPlaceId(),
+                    result.getName(),
+                    result.getVicinity(),
+                    result.getGeometry().getLocation().getLat(),
+                    result.getGeometry().getLocation().getLng(),
+                    getRating(result.getRating()),
+                    photoUrl
+                ));
+            }
+        }
+
+        return !nearbyRestaurants.isEmpty() ? nearbyRestaurants : null;
+    }
 }

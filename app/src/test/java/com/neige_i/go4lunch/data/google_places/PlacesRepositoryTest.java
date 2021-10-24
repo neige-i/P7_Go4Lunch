@@ -1,13 +1,20 @@
 package com.neige_i.go4lunch.data.google_places;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+
+import android.location.Location;
 
 import androidx.annotation.NonNull;
 
-import org.junit.Test;
+import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
+import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
-public class CleanRestaurantDelegateImplTest {
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.util.List;
+
+public class PlacesRepositoryTest {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -16,14 +23,17 @@ public class CleanRestaurantDelegateImplTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private final CleanRestaurantDelegate cleanRestaurantDelegate = new CleanRestaurantDelegateImpl(mapsApiKey);
+    private final PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> placesRepository = new NearbyRepository(
+        Mockito.mock(PlacesApi.class),
+        mapsApiKey
+    );
 
     // --------------------------------------- RATING TESTS ----------------------------------------
 
     @Test
     public void returnNegativeInt_when_ratingIsNull() {
         // WHEN
-        final int rating = cleanRestaurantDelegate.getRating(null);
+        final int rating = placesRepository.getRating(null);
 
         // THEN
         assertEquals(-1, rating);
@@ -32,7 +42,7 @@ public class CleanRestaurantDelegateImplTest {
     @Test
     public void return0_when_ratingIs1() {
         // WHEN
-        final int rating = cleanRestaurantDelegate.getRating(1.);
+        final int rating = placesRepository.getRating(1.);
 
         // THEN
         assertEquals(0, rating);
@@ -41,7 +51,7 @@ public class CleanRestaurantDelegateImplTest {
     @Test
     public void return3_when_ratingIs5() {
         // WHEN
-        final int rating = cleanRestaurantDelegate.getRating(5.);
+        final int rating = placesRepository.getRating(5.);
 
         // THEN
         assertEquals(3, rating);
@@ -50,7 +60,7 @@ public class CleanRestaurantDelegateImplTest {
     @Test
     public void return1_when_ratingIs3() {
         // WHEN
-        final int rating = cleanRestaurantDelegate.getRating(3.);
+        final int rating = placesRepository.getRating(3.);
 
         // THEN
         assertEquals(2, rating);
@@ -61,7 +71,7 @@ public class CleanRestaurantDelegateImplTest {
     @Test
     public void returnNull_when_photoReferenceIsNull() {
         // WHEN
-        final String photoUrl = cleanRestaurantDelegate.getPhotoUrl(null);
+        final String photoUrl = placesRepository.getPhotoUrl(null);
 
         // THEN
         assertNull(photoUrl);
@@ -70,7 +80,7 @@ public class CleanRestaurantDelegateImplTest {
     @Test
     public void returnCompleteUrl_when_photoReferenceIsNotNull() {
         // WHEN
-        final String photoUrl = cleanRestaurantDelegate.getPhotoUrl("PHOTO_REFERENCE");
+        final String photoUrl = placesRepository.getPhotoUrl("PHOTO_REFERENCE");
 
         // THEN
         assertEquals(
@@ -82,4 +92,5 @@ public class CleanRestaurantDelegateImplTest {
             photoUrl
         );
     }
+
 }
