@@ -14,8 +14,11 @@ public class User {
     @Nullable
     private final String photoUrl;
     @Nullable
-    private final String selectedRestaurant;
-    private final long selectedDate;
+    private final String selectedRestaurantId;
+    @Nullable
+    private final String selectedRestaurantName;
+    @Nullable
+    private final String selectedRestaurantDate;
     @Nullable
     private final List<String> favoriteRestaurants;
 
@@ -26,8 +29,9 @@ public class User {
         email = null;
         name = null;
         photoUrl = null;
-        selectedRestaurant = null;
-        selectedDate = 0;
+        selectedRestaurantId = null;
+        selectedRestaurantName = null;
+        selectedRestaurantDate = null;
         favoriteRestaurants = null;
     }
 
@@ -35,15 +39,17 @@ public class User {
         @Nullable String email,
         @Nullable String name,
         @Nullable String photoUrl,
-        @Nullable String selectedRestaurant,
-        long selectedDate,
+        @Nullable String selectedRestaurantId,
+        @Nullable String selectedRestaurantName,
+        @Nullable String selectedRestaurantDate,
         @Nullable List<String> favoriteRestaurants
     ) {
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
-        this.selectedRestaurant = selectedRestaurant;
-        this.selectedDate = selectedDate;
+        this.selectedRestaurantId = selectedRestaurantId;
+        this.selectedRestaurantName = selectedRestaurantName;
+        this.selectedRestaurantDate = selectedRestaurantDate;
         this.favoriteRestaurants = favoriteRestaurants;
     }
 
@@ -63,12 +69,18 @@ public class User {
     }
 
     @Nullable
-    public String getSelectedRestaurant() {
-        return selectedRestaurant;
+    public String getSelectedRestaurantId() {
+        return selectedRestaurantId;
     }
 
-    public long getSelectedDate() {
-        return selectedDate;
+    @Nullable
+    public String getSelectedRestaurantName() {
+        return selectedRestaurantName;
+    }
+
+    @Nullable
+    public String getSelectedRestaurantDate() {
+        return selectedRestaurantDate;
     }
 
     @Nullable
@@ -85,16 +97,17 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return selectedDate == user.selectedDate &&
-            Objects.equals(email, user.email) &&
+        return Objects.equals(email, user.email) &&
             Objects.equals(name, user.name) &&
             Objects.equals(photoUrl, user.photoUrl) &&
-            Objects.equals(selectedRestaurant, user.selectedRestaurant) &&
+            Objects.equals(selectedRestaurantId, user.selectedRestaurantId) &&
+            Objects.equals(selectedRestaurantName, user.selectedRestaurantName) &&
+            Objects.equals(selectedRestaurantDate, user.selectedRestaurantDate) &&
             Objects.equals(favoriteRestaurants, user.favoriteRestaurants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, name, photoUrl, selectedRestaurant, selectedDate, favoriteRestaurants);
+        return Objects.hash(email, name, photoUrl, selectedRestaurantId, selectedRestaurantName, selectedRestaurantDate, favoriteRestaurants);
     }
 }

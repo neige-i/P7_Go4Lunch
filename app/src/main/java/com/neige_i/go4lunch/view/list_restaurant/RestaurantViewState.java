@@ -1,6 +1,6 @@
 package com.neige_i.go4lunch.view.list_restaurant;
 
-import androidx.annotation.IdRes;
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -18,7 +18,7 @@ class RestaurantViewState {
     @NonNull
     private final String address;
     private final int textStyle;
-    @IdRes
+    @ColorRes
     private final int textColor;
     @NonNull
     private final String openingHours;
@@ -27,7 +27,6 @@ class RestaurantViewState {
     @Nullable
     private final String photoUrl;
 
-
     public RestaurantViewState(
         @NonNull String placeId,
         @NonNull String name,
@@ -35,7 +34,7 @@ class RestaurantViewState {
         @NonNull String formattedDistance,
         @NonNull String address,
         int textStyle,
-        int textColor,
+        @ColorRes int textColor,
         @NonNull String openingHours,
         int interestedWorkmatesCount,
         int rating,

@@ -26,7 +26,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentMapBinding;
-import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class MapFragment extends Fragment {
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     private MapViewModel viewModel;
-    private OnDetailsQueriedCallback onDetailsQueriedCallback;
+    private StartDetailActivityCallback startDetailActivityCallback;
     @NonNull
     private final List<String> displayedMarkerIds = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class MapFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        onDetailsQueriedCallback = (OnDetailsQueriedCallback) context;
+        startDetailActivityCallback = (StartDetailActivityCallback) context;
     }
 
     @Nullable
@@ -93,7 +93,7 @@ public class MapFragment extends Fragment {
             return false; // Let the default behaviour occur
         });
         googleMap.setOnInfoWindowClickListener(marker -> {
-            onDetailsQueriedCallback.onDetailsQueried((String) marker.getTag());
+            startDetailActivityCallback.showDetailedInfo((String) marker.getTag());
         });
 
         // Setup camera move events

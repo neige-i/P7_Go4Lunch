@@ -65,7 +65,8 @@ public class SignInAndUpdateDatabaseUseCaseImpl implements SignInAndUpdateDataba
                     firebaseUser.getDisplayName(),
                     firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
                     null,
-                    0,
+                    null,
+                    null,
                     null
                 );
                 firestoreRepository.addUser(userId, userToAdd);

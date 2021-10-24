@@ -49,6 +49,12 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
         return placesApi.getRestaurantDetails(queryParameter);
     }
 
+    @NonNull
+    @Override
+    String getNameForLog() {
+        return "Details";
+    }
+
     @Nullable
     @Override
     RestaurantDetails cleanDataFromRetrofit(@Nullable RawDetailsResponse rawDetailsResponse) {

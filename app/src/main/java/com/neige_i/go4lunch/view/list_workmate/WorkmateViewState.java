@@ -1,36 +1,38 @@
 package com.neige_i.go4lunch.view.list_workmate;
 
-import androidx.annotation.IdRes;
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
 class WorkmateViewState {
 
-    /**
-     * Used for the {@link WorkmateViewState#selectedRestaurantId} field because it is used inside a View's tag.<br />
-     * And a null View tag is considered as not set.
-     */
-    static final String NO_SELECTED_RESTAURANT = "NO_SELECTED_RESTAURANT";
-
     @NonNull
     private final String workmateId;
-    @NonNull
+    @Nullable
     private final String profileImageUrl;
     private final int textStyle;
-    @IdRes
+    @ColorRes
     private final int textColor;
     @NonNull
-    private final String nameAndSelectedRestaurant;
-    @NonNull
+    private final String text;
+    @Nullable
     private final String selectedRestaurantId;
 
-    WorkmateViewState(@NonNull String workmateId, @NonNull String profileImageUrl, int textStyle, int textColor, @NonNull String nameAndSelectedRestaurant, @NonNull String selectedRestaurantId) {
+    WorkmateViewState(
+        @NonNull String workmateId,
+        @Nullable String profileImageUrl,
+        int textStyle,
+        @ColorRes int textColor,
+        @NonNull String text,
+        @Nullable String selectedRestaurantId
+    ) {
         this.workmateId = workmateId;
         this.profileImageUrl = profileImageUrl;
         this.textStyle = textStyle;
         this.textColor = textColor;
-        this.nameAndSelectedRestaurant = nameAndSelectedRestaurant;
+        this.text = text;
         this.selectedRestaurantId = selectedRestaurantId;
     }
 
@@ -39,7 +41,7 @@ class WorkmateViewState {
         return workmateId;
     }
 
-    @NonNull
+    @Nullable
     public String getProfileImageUrl() {
         return profileImageUrl;
     }
@@ -53,11 +55,11 @@ class WorkmateViewState {
     }
 
     @NonNull
-    public String getNameAndSelectedRestaurant() {
-        return nameAndSelectedRestaurant;
+    public String getText() {
+        return text;
     }
 
-    @NonNull
+    @Nullable
     public String getSelectedRestaurantId() {
         return selectedRestaurantId;
     }
@@ -74,13 +76,13 @@ class WorkmateViewState {
         return textStyle == viewState.textStyle &&
             textColor == viewState.textColor &&
             workmateId.equals(viewState.workmateId) &&
-            profileImageUrl.equals(viewState.profileImageUrl) &&
-            nameAndSelectedRestaurant.equals(viewState.nameAndSelectedRestaurant) &&
-            selectedRestaurantId.equals(viewState.selectedRestaurantId);
+            Objects.equals(profileImageUrl, viewState.profileImageUrl) &&
+            text.equals(viewState.text) &&
+            Objects.equals(selectedRestaurantId, viewState.selectedRestaurantId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(workmateId, profileImageUrl, textStyle, textColor, nameAndSelectedRestaurant, selectedRestaurantId);
+        return Objects.hash(workmateId, profileImageUrl, textStyle, textColor, text, selectedRestaurantId);
     }
 }
