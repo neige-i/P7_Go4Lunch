@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.data.google_places.generic;
+package com.neige_i.go4lunch.data.google_places;
 
 import android.util.Log;
 
@@ -8,46 +8,47 @@ import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.neige_i.go4lunch.BuildConfig;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-abstract class PlacesRepository<Query, RawData, CleanResponse> {
+abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @NonNull
+    private final String mapsApiKey;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
-    private final LruCache<String, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4MB cache size
+    private final LruCache<String, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4 MB cache size
 
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
-
-    PlacesRepository() {
-
+    PlacesRepository(@NonNull String mapsApiKey) {
+        this.mapsApiKey = mapsApiKey;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
 
     @NonNull
-    public LiveData<CleanResponse> getData(@Nullable Query query) {
-        if (query == null) {
+    public LiveData<CleanResponse> getData(@Nullable QueryParameter queryParameter) {
+        if (queryParameter == null) {
             return new MutableLiveData<>();
         }
 
         final MutableLiveData<CleanResponse> responseMutableLiveData = new MutableLiveData<>();
 
         // Converts the query parameter into a String usable in a HTML request
-        final String stringQuery = toStringQuery(query);
+        final String queryString = toQueryString(queryParameter);
 
-        final CleanResponse cachedCleanResponse = dataCache.get(stringQuery);
+        final CleanResponse cachedCleanResponse = dataCache.get(queryString);
 
         // Check if the request has already been executed
         if (cachedCleanResponse != null) {
             Log.d("Neige", "REPO get " + cachedCleanResponse.getClass().getSimpleName() + " : from cache");
             responseMutableLiveData.setValue(cachedCleanResponse);
         } else {
-            getRequest(stringQuery).enqueue(new Callback<RawData>() {
+            getRequest(queryString).enqueue(new Callback<RawData>() {
                 @Override
                 public void onResponse(
                     @NonNull Call<RawData> call,
@@ -58,7 +59,7 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
                     if (cleanResponse != null) {
                         Log.d("Neige", "REPO get " + cleanResponse.getClass().getSimpleName() + " : from API");
                         responseMutableLiveData.setValue(cleanResponse);
-                        dataCache.put(stringQuery, cleanResponse);
+                        dataCache.put(queryString, cleanResponse);
                     }
                 }
 
@@ -72,7 +73,7 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
     }
 
     @NonNull
-    abstract String toStringQuery(@NonNull Query query);
+    abstract String toQueryString(@NonNull QueryParameter queryParameter);
 
     @NonNull
     abstract Call<RawData> getRequest(@NonNull String queryParameter);
@@ -97,7 +98,7 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
             return "https://maps.googleapis.com/" +
                 "maps/api/place/photo?" +
                 "maxheight=720" +
-                "&key=" + BuildConfig.MAPS_API_KEY +
+                "&key=" + mapsApiKey +
                 "&photoreference=" + photoReference;
         } else {
             return null;

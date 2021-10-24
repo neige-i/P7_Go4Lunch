@@ -59,7 +59,7 @@ public class GetMapDataUseCaseImplTest {
         // Setup mocks
         doReturn(true).when(locationPermissionRepositoryMock).isPermissionGranted();
         doReturn(locationMutableLiveData).when(locationRepositoryMock).getCurrentLocation();
-        doReturn(nearbyRestaurantsMutableLiveData).when(nearbyRepositoryMock).getNearbyRestaurants(locationMock);
+        doReturn(nearbyRestaurantsMutableLiveData).when(nearbyRepositoryMock).getData(locationMock);
         doReturn(gpsStateMutableLiveData).when(gpsStateChangeReceiverMock).getGpsState();
 
         // Init UseCase

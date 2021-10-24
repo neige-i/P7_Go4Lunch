@@ -37,7 +37,7 @@ public class GetSingleRestaurantDetailsUseCaseImpl implements GetSingleRestauran
     @NonNull
     @Override
     public LiveData<DetailsModel> getDetailsItem(@NonNull String placeId) {
-        final LiveData<RestaurantDetails> detailsResponseLiveData = detailsRepository.getRestaurantDetails(placeId);
+        final LiveData<RestaurantDetails> detailsResponseLiveData = detailsRepository.getData(placeId);
         final LiveData<String> selectedRestaurantLiveData = firebaseRepository.getSelectedRestaurant();
         final LiveData<List<String>> favRestaurantsLiveData = firebaseRepository.getFavoriteRestaurants();
 

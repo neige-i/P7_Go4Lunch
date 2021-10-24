@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.neige_i.go4lunch"
         minSdkVersion 19
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -118,6 +118,7 @@ android.applicationVariants.all { variant ->
     def variantName = variant.name.capitalize()
     def filesToAnalyze = [
             '**/*ViewModel.class',
+            '**/*UseCase.class',
             '**/*Repository.class'
     ]
 
