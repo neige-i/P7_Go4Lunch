@@ -18,7 +18,7 @@ class HomePagerAdapter extends FragmentStateAdapter {
      */
     private static final Fragment[] FRAGMENTS_TO_DISPLAY = new Fragment[]{
         new MapFragment(),
-        RestaurantListFragment.newInstance(),
+        new RestaurantListFragment(),
         WorkmateListFragment.newInstance()
     };
 

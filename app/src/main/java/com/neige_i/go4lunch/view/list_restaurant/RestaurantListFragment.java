@@ -13,22 +13,24 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
+import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.OnDetailsQueriedCallback;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class RestaurantListFragment extends Fragment {
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @Inject
+    ImageDelegate imageDelegate;
+
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     private OnDetailsQueriedCallback onDetailsQueriedCallback;
-
-    // -------------------------------------- FACTORY METHODS --------------------------------------
-
-    public static RestaurantListFragment newInstance() {
-        return new RestaurantListFragment();
-    }
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -57,13 +59,14 @@ public class RestaurantListFragment extends Fragment {
         final FragmentListBinding binding = FragmentListBinding.bind(view);
 
         // Setup UI
-        final RestaurantAdapter restaurantAdapter =
-            new RestaurantAdapter(placeId -> onDetailsQueriedCallback.onDetailsQueried(placeId));
+        final RestaurantAdapter restaurantAdapter = new RestaurantAdapter(imageDelegate, placeId -> {
+            onDetailsQueriedCallback.onDetailsQueried(placeId);
+        });
         binding.recyclerview.setAdapter(restaurantAdapter);
 
         // Update UI when state is changed
         new ViewModelProvider(this).get(RestaurantListViewModel.class)
             .getViewState()
-            .observe(getViewLifecycleOwner(), restaurantAdapter::submitList);
+            .observe(getViewLifecycleOwner(), viewStates -> restaurantAdapter.submitList(viewStates));
     }
 }

@@ -10,8 +10,13 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantHour;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -133,43 +138,48 @@ public class DetailsRepositoryImpl implements DetailsRepository {
 
     }
 
-    @Nullable
-    private List<String> setupOpeningHours(@Nullable RawDetailsResponse.OpeningHours openingHours) {
+    @NonNull
+    private List<RestaurantHour> setupOpeningHours(@Nullable RawDetailsResponse.OpeningHours openingHours) {
         if (openingHours == null || openingHours.getPeriods() == null) {
-            return null;
-        } else {
-            final List<String> openingHourList = new ArrayList<>();
+            return Collections.emptyList();
+        }
+        final List<RestaurantHour> restaurantHourList = new ArrayList<>();
 
-            for (RawDetailsResponse.Period period : openingHours.getPeriods()) {
-                final RawDetailsResponse.Open open = period.getOpen();
-                final RawDetailsResponse.Close close = period.getClose();
+        for (RawDetailsResponse.Period period : openingHours.getPeriods()) {
+            final RawDetailsResponse.Open open = period.getOpen();
+            final RawDetailsResponse.Close close = period.getClose();
 
-                if (open != null) {
-                    if (open.getDay() != null && open.getTime() != null) {
-                        openingHourList.add(toJavaDay(open.getDay()) + open.getTime());
-                    } else {
-                        return null;
-                    }
-
-                    if (close == null) { // When the place is always open
-                        openingHourList.add(null);
-                    } else if (close.getDay() != null && close.getTime() != null) {
-                        openingHourList.add(toJavaDay(close.getDay()) + close.getTime());
-                    } else {
-                        return null;
-                    }
-                }
+            if (open != null && open.getDay() != null && open.getTime() != null) {
+                restaurantHourList.add(new RestaurantHour(
+                    true,
+                    getDayOfWeek(open.getDay()),
+                    getTime(open.getTime())
+                ));
             }
 
-            return openingHourList;
+            if (close != null && close.getDay() != null && close.getTime() != null) {
+                restaurantHourList.add(new RestaurantHour(
+                    false,
+                    getDayOfWeek(close.getDay()),
+                    getTime(close.getTime())
+                ));
+            }
         }
+
+        return restaurantHourList;
     }
 
     /**
-     * Converts a day from Places API standard to java.time standard.<br />
-     * The day starts at monday Monday=1 for java.time and Sunday=0 for Places API;
+     * Converts the day from Places API standard to java.time standard.<br />
+     * The day starts at Monday=1 for java.time and Sunday=0 for Places API.
      */
-    private int toJavaDay(int placesApiDay) {
-        return placesApiDay == 0 ? 7 : placesApiDay;
+    @NonNull
+    private DayOfWeek getDayOfWeek(int day) {
+        return DayOfWeek.of(day == 0 ? 7 : day);
+    }
+
+    @NonNull
+    private LocalTime getTime(@NonNull String time) {
+        return LocalTime.parse(time, DateTimeFormatter.ofPattern("HHmm"));
     }
 }

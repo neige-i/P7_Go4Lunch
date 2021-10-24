@@ -74,15 +74,15 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     public LiveData<List<User>> getAllUsers() {
         final MutableLiveData<List<User>> userListMutableLiveData = new MutableLiveData<>();
 
-        firebaseFirestore.collection(USER_COLLECTION).addSnapshotListener((querySnapshot, error) -> {
-            if (error != null) {
-                return;
-            }
-
-            if (querySnapshot != null) {
-                userListMutableLiveData.setValue(querySnapshot.toObjects(User.class));
-            }
-        });
+//        firebaseFirestore.collection(USER_COLLECTION).addSnapshotListener((querySnapshot, error) -> {
+//            if (error != null) {
+//                return;
+//            }
+//
+//            if (querySnapshot != null) {
+//                userListMutableLiveData.setValue(querySnapshot.toObjects(User.class));
+//            }
+//        });
 
         return userListMutableLiveData;
     }
