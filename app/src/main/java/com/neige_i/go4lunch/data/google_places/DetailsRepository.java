@@ -83,7 +83,7 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
         return new RestaurantDetails(
             result.getPlaceId(),
             result.getName(),
-            result.getFormattedAddress(),
+            getAddress(result.getFormattedAddress()),
             getRating(result.getRating()),
             photoUrl,
             result.getInternationalPhoneNumber(),

@@ -27,26 +27,19 @@
         app:layout_constraintTop_toBottomOf="@id/photo_img"
         />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/card_view"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/check_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        app:cardCornerRadius="36dp"
-        app:contentPadding="10dp"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/description_check_button"
+        app:backgroundTint="@color/white"
         app:layout_constraintBottom_toTopOf="@id/header"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/photo_img"
-        >
-
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/selected_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_check"
-            android:button="@color/white"
-            />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="@id/header"
+        tools:src="@drawable/ic_check_on"
+        tools:tint="?attr/colorSecondary"
+        />
 
     <TextView
         android:id="@+id/name_lbl"
@@ -118,7 +111,7 @@
         android:contentDescription="@string/description_star_icon"
         android:src="@drawable/ic_rate"
         android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/card_view"
+        app:layout_constraintEnd_toStartOf="@id/check_btn"
         app:layout_constraintStart_toEndOf="@id/star2_img"
         app:layout_constraintTop_toTopOf="@id/name_lbl"
         tools:visibility="visible"
@@ -128,10 +121,10 @@
         android:id="@+id/no_rating_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
         android:text="@string/no_rating_available"
-        app:layout_constraintStart_toStartOf="@id/star1_img"
+        android:textColor="@color/white"
         app:layout_constraintBaseline_toBaselineOf="@id/name_lbl"
+        app:layout_constraintStart_toStartOf="@id/star1_img"
         />
 
     <Button
@@ -142,7 +135,8 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:drawableTop="@drawable/ic_call"
         android:text="@string/button_call"
-        android:textColor="@color/orange"
+        android:textColor="@drawable/button_color"
+        app:drawableTint="@drawable/button_color"
         app:layout_constraintEnd_toStartOf="@id/like_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/address_lbl"
@@ -153,12 +147,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:drawableTop="@drawable/ic_favorite_off"
         android:text="@string/button_like"
         android:textColor="@color/orange"
         app:layout_constraintEnd_toStartOf="@id/website_btn"
         app:layout_constraintStart_toEndOf="@id/call_btn"
         app:layout_constraintTop_toTopOf="@id/call_btn"
+        tools:drawableTop="@drawable/ic_favorite_off"
         />
 
     <Button
@@ -168,7 +162,8 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:drawableTop="@drawable/ic_website"
         android:text="@string/button_website"
-        android:textColor="@color/orange"
+        android:textColor="@drawable/button_color"
+        app:drawableTint="@drawable/button_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/like_btn"
         app:layout_constraintTop_toTopOf="@id/call_btn"

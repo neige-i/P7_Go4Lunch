@@ -22,5 +22,17 @@ public interface FirestoreRepository {
     @NonNull
     LiveData<List<User>> getAllUsers();
 
+    void addToFavoriteRestaurant(@NonNull String userId, @NonNull String placeId);
+
+    void removeFromFavoriteRestaurant(@NonNull String userId, @NonNull String placeId);
+
+    void setSelectedRestaurant(
+        @NonNull String userId,
+        @NonNull String placeId,
+        @NonNull String restaurantName
+    );
+
+    void clearSelectedRestaurant(@NonNull String userId);
+
     void removeListenerRegistrations();
 }

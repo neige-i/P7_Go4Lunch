@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.di;
 
-import com.neige_i.go4lunch.data.firebase.FirebaseRepository;
-import com.neige_i.go4lunch.data.firebase.FirebaseRepositoryImpl;
 import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.firestore.FirestoreRepositoryImpl;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
@@ -31,15 +29,5 @@ public abstract class DataBindingModule {
     @Binds
     public abstract FirestoreRepository firestoreRepository(
         FirestoreRepositoryImpl firestoreRepositoryImpl
-    );
-
-    @Binds
-    public abstract FirebaseRepository bindFirebaseRepository(
-        FirebaseRepositoryImpl firebaseRepositoryImpl
-    );
-
-    @Binds
-    public abstract com.neige_i.go4lunch.data.firebase.FirestoreRepository bindFirestoreRepository(
-        com.neige_i.go4lunch.data.firebase.FirestoreRepositoryImpl firestoreRepositoryImpl
     );
 }

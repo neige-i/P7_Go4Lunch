@@ -1,13 +1,15 @@
 package com.neige_i.go4lunch.di;
 
+import com.neige_i.go4lunch.domain.MoveListItemDelegate;
+import com.neige_i.go4lunch.domain.MoveListItemDelegateImpl;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCase;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCaseImpl;
+import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCase;
+import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCaseImpl;
+import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCase;
+import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCaseImpl;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCase;
-import com.neige_i.go4lunch.domain.firebase.GetFirebaseUserUseCaseImpl;
-import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCase;
-import com.neige_i.go4lunch.domain.google_places.GetSingleRestaurantDetailsUseCaseImpl;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
@@ -24,10 +26,6 @@ import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCase;
 import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCase;
-import com.neige_i.go4lunch.domain.to_sort.ToggleFavRestaurantUseCaseImpl;
-import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCase;
-import com.neige_i.go4lunch.domain.to_sort.UpdateSelectedRestaurantUseCaseImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -81,6 +79,11 @@ public abstract class BusinessBindingModule {
         GetMapDataUseCaseImpl getMapDataUseCaseImpl
     );
 
+    @Binds
+    public abstract RequestGpsUseCase bindRequestGpsUseCase(
+        RequestGpsUseCaseImpl requestGpsUseCaseImpl
+    );
+
     // -------------------------------------- RESTAURANT LIST --------------------------------------
 
     @Binds
@@ -95,33 +98,22 @@ public abstract class BusinessBindingModule {
         GetAllWorkmatesUseCaseImpl getFirestoreUserListUseCaseImpl
     );
 
+    // ------------------------------------------ DETAIL -------------------------------------------
+
     @Binds
-    public abstract GetFirebaseUserUseCase bindGetFirebaseUserUseCase(
-        GetFirebaseUserUseCaseImpl getFirebaseUserUseCaseImpl
+    public abstract GetRestaurantInfoUseCase bindGetRestaurantInfoUseCase(
+        GetRestaurantInfoUseCaseImpl getRestaurantInfoUseCaseImpl
     );
 
     @Binds
-    public abstract RequestGpsUseCase bindRequestGpsUseCase(
-        RequestGpsUseCaseImpl requestGpsUseCaseImpl
+    public abstract UpdateRestaurantPrefUseCase bindUpdateRestaurantPrefUseCase(
+        UpdateRestaurantPrefUseCaseImpl updateRestaurantPrefUseCaseImpl
     );
 
-    @Binds
-    public abstract GetSingleRestaurantDetailsUseCase bindGetRestaurantDetailsItemUseCase(
-        GetSingleRestaurantDetailsUseCaseImpl getRestaurantDetailsItemUseCaseImpl
-    );
+    // ----------------------------------------- DELEGATE ------------------------------------------
 
     @Binds
-    public abstract ToggleFavRestaurantUseCase bindToggleFavRestaurantUseCase(
-        ToggleFavRestaurantUseCaseImpl toggleFavRestaurantUseCaseImpl
-    );
-
-//    @Binds
-//    public abstract UpdateInterestedWorkmatesUseCase bindUpdateInterestedWorkmatesUseCase(
-//        UpdateInterestedWorkmatesUseCaseImpl updateInterestedWorkmatesUseCaseImpl
-//    );
-
-    @Binds
-    public abstract UpdateSelectedRestaurantUseCase bindUpdateSelectedRestaurantUseCase(
-        UpdateSelectedRestaurantUseCaseImpl updateSelectedRestaurantUseCaseImpl
+    public abstract MoveListItemDelegate bindMoveListItemDelegate(
+        MoveListItemDelegateImpl moveListItemDelegateImpl
     );
 }

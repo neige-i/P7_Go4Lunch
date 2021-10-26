@@ -86,6 +86,12 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
     @Nullable
     abstract CleanResponse cleanDataFromRetrofit(@Nullable RawData rawData);
 
+    @NonNull
+    String getAddress(@NonNull String completeAddress) {
+        int commaIndex = completeAddress.indexOf(",");
+        return commaIndex == -1 ? completeAddress : completeAddress.substring(0, commaIndex);
+    }
+
     /**
      * Converts Google rating from 1.0 to 5.0 into Go4Lunch rating from 0 to 3
      * (or -1 if no rating is available).<br />

@@ -79,7 +79,7 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
                 nearbyRestaurants.add(new NearbyRestaurant(
                     result.getPlaceId(),
                     result.getName(),
-                    result.getVicinity(),
+                    getAddress(result.getVicinity()),
                     result.getGeometry().getLocation().getLat(),
                     result.getGeometry().getLocation().getLng(),
                     getRating(result.getRating()),

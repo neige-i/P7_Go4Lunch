@@ -3,24 +3,34 @@ package com.neige_i.go4lunch.view.detail;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.databinding.ItemWorkmateBinding;
+import com.neige_i.go4lunch.view.ImageDelegate;
 
-class InterestedWorkmateAdapter extends ListAdapter<String, InterestedWorkmateAdapter.WorkmateViewHolder> {
+import java.util.Collections;
 
-    protected InterestedWorkmateAdapter() {
+class InterestedWorkmateAdapter extends ListAdapter<WorkmateViewState, InterestedWorkmateAdapter.WorkmateViewHolder> {
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @NonNull
+    private final ImageDelegate imageDelegate;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
+    protected InterestedWorkmateAdapter(@NonNull ImageDelegate imageDelegate) {
         super(new WorkmateDiffCallback());
+        this.imageDelegate = imageDelegate;
     }
+
+    // ----------------------------------- LIST ADAPTER METHODS ------------------------------------
 
     @NonNull
     @Override
@@ -32,43 +42,51 @@ class InterestedWorkmateAdapter extends ListAdapter<String, InterestedWorkmateAd
 
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
-//        final String viewState = getItem(position);
+        final WorkmateViewState viewState = getItem(position);
 
-//        holder.itemView.setTag(viewState.getSelectedRestaurantId());
+        holder.binding.workmateRestaurantLbl.setText(viewState.getText());
 
-//        Glide
-//            .with(holder.profileImg.getContext())
-//            .load(viewState.getProfileImageUrl())
-//            .transform(new CircleCrop())
-//            .into(holder.profileImg);
-        holder.workmateAndRestaurantTxt.setText(getItem(position));
-//        holder.workmateAndRestaurantTxt.setText(viewState.getNameAndSelectedRestaurant());
-//        holder.workmateAndRestaurantTxt.setTypeface(null, viewState.getTextStyle());
-//        holder.workmateAndRestaurantTxt.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), viewState.getTextColor()));
+        imageDelegate.displayPhotoWithGlide(
+            holder.binding.profileImg,
+            viewState.getPhotoUrl(),
+            R.drawable.ic_person,
+            Collections.singletonList(new CircleCrop())
+        );
+
+        holder.binding.horizontalLine.setVisibility(View.GONE);
     }
+
+    // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
 
     static class WorkmateViewHolder extends RecyclerView.ViewHolder {
 
-//        private final ImageView profileImg;
-        private final TextView workmateAndRestaurantTxt;
+        @NonNull
+        private final ItemWorkmateBinding binding;
 
         public WorkmateViewHolder(@NonNull View itemView) {
             super(itemView);
 
-//            profileImg = itemView.findViewById(R.id.profile_img);
-            workmateAndRestaurantTxt = itemView.findViewById(R.id.workmate_restaurant_lbl);
+            binding = ItemWorkmateBinding.bind(itemView);
         }
     }
 
-    static class WorkmateDiffCallback extends DiffUtil.ItemCallback<String> {
+    // ------------------------------------ DIFF UTIL CALLBACK -------------------------------------
+
+    static class WorkmateDiffCallback extends DiffUtil.ItemCallback<WorkmateViewState> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-            return oldItem.equals(newItem);
+        public boolean areItemsTheSame(
+            @NonNull WorkmateViewState oldItem,
+            @NonNull WorkmateViewState newItem
+        ) {
+            return oldItem.getEmail().equals(newItem.getEmail());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+        public boolean areContentsTheSame(
+            @NonNull WorkmateViewState oldItem,
+            @NonNull WorkmateViewState newItem
+        ) {
             return oldItem.equals(newItem);
         }
     }
