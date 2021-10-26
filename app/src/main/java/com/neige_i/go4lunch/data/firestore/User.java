@@ -8,6 +8,7 @@ import java.util.Objects;
 
 public class User {
 
+    // ASKME: possible to annotate fields as @NonNull and queries data with condition, how to deal with null fields
     @Nullable
     private final String email;
     @Nullable

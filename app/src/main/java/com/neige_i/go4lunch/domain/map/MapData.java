@@ -8,26 +8,32 @@ import androidx.annotation.Nullable;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class MapData {
+
     private final boolean locationPermissionGranted;
     @Nullable
     private final Location currentLocation;
     @NonNull
     private final List<NearbyRestaurant> nearbyRestaurants;
     private final boolean gpsEnabled;
+    @NonNull
+    private final Map<String, Integer> interestedWorkmates;
 
-    public MapData(
+    MapData(
         boolean locationPermissionGranted,
         @Nullable Location currentLocation,
         @NonNull List<NearbyRestaurant> nearbyRestaurants,
-        boolean gpsEnabled
+        boolean gpsEnabled,
+        @NonNull Map<String, Integer> interestedWorkmates
     ) {
         this.locationPermissionGranted = locationPermissionGranted;
         this.currentLocation = currentLocation;
         this.nearbyRestaurants = nearbyRestaurants;
         this.gpsEnabled = gpsEnabled;
+        this.interestedWorkmates = interestedWorkmates;
     }
 
     public boolean isLocationPermissionGranted() {
@@ -48,6 +54,11 @@ public class MapData {
         return gpsEnabled;
     }
 
+    @NonNull
+    public Map<String, Integer> getInterestedWorkmates() {
+        return interestedWorkmates;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -60,12 +71,13 @@ public class MapData {
         return locationPermissionGranted == mapData.locationPermissionGranted &&
             gpsEnabled == mapData.gpsEnabled &&
             Objects.equals(currentLocation, mapData.currentLocation) &&
-            nearbyRestaurants.equals(mapData.nearbyRestaurants);
+            nearbyRestaurants.equals(mapData.nearbyRestaurants) &&
+            interestedWorkmates.equals(mapData.interestedWorkmates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationPermissionGranted, currentLocation, nearbyRestaurants, gpsEnabled);
+        return Objects.hash(locationPermissionGranted, currentLocation, nearbyRestaurants, gpsEnabled, interestedWorkmates);
     }
 
     @NonNull
@@ -76,6 +88,7 @@ public class MapData {
             ", currentLocation=" + currentLocation +
             ", nearbyRestaurants=" + nearbyRestaurants +
             ", gpsEnabled=" + gpsEnabled +
+            ", interestedWorkmates=" + interestedWorkmates +
             '}';
     }
 }

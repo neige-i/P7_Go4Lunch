@@ -20,16 +20,18 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentMapBinding;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -41,7 +43,7 @@ public class MapFragment extends Fragment {
     private MapViewModel viewModel;
     private StartDetailActivityCallback startDetailActivityCallback;
     @NonNull
-    private final List<String> displayedMarkerIds = new ArrayList<>();
+    private final Map<String, Marker> displayedMarkers = new HashMap<>();
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -54,7 +56,11 @@ public class MapFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+        @NonNull LayoutInflater inflater,
+        @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState
+    ) {
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
@@ -104,9 +110,10 @@ public class MapFragment extends Fragment {
     }
 
     @SuppressLint("MissingPermission")
-    private void updateMap(@NonNull MapViewState mapViewState,
-                           @NonNull GoogleMap googleMap,
-                           @NonNull FloatingActionButton locationBtn
+    private void updateMap(
+        @NonNull MapViewState mapViewState,
+        @NonNull GoogleMap googleMap,
+        @NonNull FloatingActionButton locationBtn
     ) {
         // Update location layer
         googleMap.setMyLocationEnabled(mapViewState.isLocationLayerEnabled());
@@ -120,16 +127,20 @@ public class MapFragment extends Fragment {
         for (MarkerViewState markerViewState : mapViewState.getMarkers()) {
             final String placeId = markerViewState.getPlaceId();
 
-            if (!displayedMarkerIds.contains(placeId)) {
-                googleMap.addMarker(
+            final Marker currentMarker = displayedMarkers.get(placeId);
+            if (currentMarker == null) { // ASKME: handle marker list
+                final Marker marker = googleMap.addMarker(
                     new MarkerOptions()
                         .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
                         .title(markerViewState.getName())
                         .snippet(markerViewState.getAddress())
-                        .icon(BitmapDescriptorFactory.fromBitmap(getSmallMarker(R.drawable.ic_marker_orange)))
-                ).setTag(placeId);
+                        .icon(getIcon(markerViewState.getMarkerDrawable()))
+                );
+                marker.setTag(placeId);
 
-                displayedMarkerIds.add(placeId);
+                displayedMarkers.put(placeId, marker);
+            } else {
+                currentMarker.setIcon(getIcon(markerViewState.getMarkerDrawable()));
             }
         }
 
@@ -140,14 +151,16 @@ public class MapFragment extends Fragment {
         ));
     }
 
-    private Bitmap getSmallMarker(@DrawableRes int drawableId) {
+    private BitmapDescriptor getIcon(@DrawableRes int drawableId) {
         final Drawable drawable = ResourcesCompat.getDrawable(getResources(), drawableId, null);
-        return Bitmap.createScaledBitmap(
+
+        // Get smaller marker
+        return BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(
             ((BitmapDrawable) drawable).getBitmap(),
             100,
             100,
             false
-        );
+        ));
     }
 
     @Override

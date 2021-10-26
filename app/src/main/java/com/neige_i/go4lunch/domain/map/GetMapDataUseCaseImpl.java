@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.domain.map;
 
 import android.location.Location;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,14 +10,18 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -26,6 +31,8 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
 
     @NonNull
     private final LocationPermissionRepository locationPermissionRepository;
+    @NonNull
+    private final FirestoreRepository firestoreRepository;
 
     // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
 
@@ -36,6 +43,11 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
 
     @NonNull
     private final MutableLiveData<Boolean> locationPermissionMutableLiveData = new MutableLiveData<>();
+    @NonNull
+    private final MediatorLiveData<Map<String, Integer>> interestedWorkmatesMediatorLiveData = new MediatorLiveData<>();
+
+    @NonNull
+    private final List<String> queriedRestaurants = new ArrayList<>();
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -44,9 +56,13 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
         @NonNull LocationPermissionRepository locationPermissionRepository,
         @NonNull LocationRepository locationRepository,
         @NonNull NearbyRepository nearbyRepository,
-        @NonNull GpsStateChangeReceiver gpsStateChangeReceiver
+        @NonNull GpsStateChangeReceiver gpsStateChangeReceiver,
+        @NonNull FirestoreRepository firestoreRepository
     ) {
         this.locationPermissionRepository = locationPermissionRepository;
+        this.firestoreRepository = firestoreRepository;
+
+        interestedWorkmatesMediatorLiveData.setValue(new HashMap<>());
 
         final LiveData<Location> currentLocationLiveData = locationRepository.getCurrentLocation();
         final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = Transformations.switchMap(
@@ -54,27 +70,55 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
         );
         final LiveData<Boolean> gpsStateLiveData = gpsStateChangeReceiver.getGpsState();
 
-        mapData.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurants, gpsStateLiveData.getValue()));
-        mapData.addSource(locationPermissionMutableLiveData, locationPermission -> combine(locationPermission, currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue()));
-        mapData.addSource(currentLocationLiveData, location -> combine(locationPermissionMutableLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue()));
-        mapData.addSource(gpsStateLiveData, gpsState -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsState));
+        mapData.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurants, gpsStateLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue()));
+        mapData.addSource(locationPermissionMutableLiveData, locationPermission -> combine(locationPermission, currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue()));
+        mapData.addSource(currentLocationLiveData, location -> combine(locationPermissionMutableLiveData.getValue(), location, nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue()));
+        mapData.addSource(gpsStateLiveData, gpsState -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsState, interestedWorkmatesMediatorLiveData.getValue()));
+        mapData.addSource(interestedWorkmatesMediatorLiveData, interestedWorkmates -> combine(locationPermissionMutableLiveData.getValue(), currentLocationLiveData.getValue(), nearbyRestaurantsLiveData.getValue(), gpsStateLiveData.getValue(), interestedWorkmates));
     }
 
     private void combine(
         @Nullable Boolean isLocationPermissionGranted,
         @Nullable Location currentLocation,
         @Nullable List<NearbyRestaurant> nearbyRestaurants,
-        @Nullable Boolean isGpsEnabled
+        @Nullable Boolean isGpsEnabled,
+        @Nullable Map<String, Integer> interestedWorkmates
     ) {
         if (isLocationPermissionGranted == null || isGpsEnabled == null) {
             return;
+        }
+
+        if (interestedWorkmates == null) {
+            throw new IllegalStateException("Impossible state: map is initialized in the constructor!");
+        }
+
+        if (nearbyRestaurants != null) {
+            for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
+                final String placeId = nearbyRestaurant.getPlaceId();
+
+                if (!queriedRestaurants.contains(placeId)) {
+                    queriedRestaurants.add(placeId);
+
+                    interestedWorkmatesMediatorLiveData.addSource(
+                        firestoreRepository.getWorkmatesEatingAt(placeId), users -> {
+
+                            if (placeId.equals("ChIJR3FMcoG050cRETCUtAn0IhY")) {
+                                Log.d("Neige", "combine: useCase=" + users.size());
+                            }
+                            interestedWorkmates.put(placeId, users.size());
+                            interestedWorkmatesMediatorLiveData.setValue(interestedWorkmates);
+                        }
+                    );
+                }
+            }
         }
 
         mapData.setValue(new MapData(
             isLocationPermissionGranted,
             currentLocation,
             nearbyRestaurants != null ? nearbyRestaurants : Collections.emptyList(),
-            isGpsEnabled
+            isGpsEnabled,
+            interestedWorkmates
         ));
     }
 
