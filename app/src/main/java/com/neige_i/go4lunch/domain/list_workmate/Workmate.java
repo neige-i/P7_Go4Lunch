@@ -11,11 +11,18 @@ public abstract class Workmate {
     private final String name;
     @Nullable
     private final String photoUrl;
+    private final boolean isCurrentUser;
 
-    protected Workmate(@NonNull String email, @NonNull String name, @Nullable String photoUrl) {
+    protected Workmate(
+        @NonNull String email,
+        @NonNull String name,
+        @Nullable String photoUrl,
+        boolean isCurrentUser
+    ) {
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
+        this.isCurrentUser = isCurrentUser;
     }
 
     @NonNull
@@ -33,14 +40,19 @@ public abstract class Workmate {
         return photoUrl;
     }
 
+    public boolean isCurrentUser() {
+        return isCurrentUser;
+    }
+
     public static class WithoutRestaurant extends Workmate {
 
         public WithoutRestaurant(
             @NonNull String email,
             @NonNull String name,
-            @Nullable String photoUrl
+            @Nullable String photoUrl,
+            boolean isCurrentUser
         ) {
-            super(email, name, photoUrl);
+            super(email, name, photoUrl, isCurrentUser);
         }
     }
 
@@ -55,10 +67,11 @@ public abstract class Workmate {
             @NonNull String email,
             @NonNull String name,
             @Nullable String photoUrl,
+            boolean isCurrentUser,
             @NonNull String restaurantId,
             @NonNull String restaurantName
         ) {
-            super(email, name, photoUrl);
+            super(email, name, photoUrl, isCurrentUser);
             this.restaurantId = restaurantId;
             this.restaurantName = restaurantName;
         }

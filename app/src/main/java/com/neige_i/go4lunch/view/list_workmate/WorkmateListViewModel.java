@@ -54,21 +54,29 @@ public class WorkmateListViewModel extends ViewModel {
                 final String selectedRestaurantId;
 
                 if (workmate instanceof Workmate.WithRestaurant) {
+                    if (workmate.isCurrentUser()) {
+                        nameAndSelectedRestaurant = application.getString(R.string.you_eating_at, ((Workmate.WithRestaurant) workmate).getRestaurantName());
+                    } else {
+                        nameAndSelectedRestaurant = application.getString(
+                            R.string.workmate_eating_at,
+                            workmate.getName(),
+                            ((Workmate.WithRestaurant) workmate).getRestaurantName()
+                        );
+                    }
                     textStyle = Typeface.NORMAL;
                     textColor = R.color.black;
-                    nameAndSelectedRestaurant = application.getString(
-                        R.string.eating_at,
-                        workmate.getName(),
-                        ((Workmate.WithRestaurant) workmate).getRestaurantName()
-                    );
                     selectedRestaurantId = ((Workmate.WithRestaurant) workmate).getRestaurantId();
                 } else {
+                    if (workmate.isCurrentUser()) {
+                        nameAndSelectedRestaurant = application.getString(R.string.you_not_decided);
+                    } else {
+                        nameAndSelectedRestaurant = application.getString(
+                            R.string.workmate_not_decided,
+                            workmate.getName()
+                        );
+                    }
                     textStyle = Typeface.ITALIC;
                     textColor = android.R.color.darker_gray;
-                    nameAndSelectedRestaurant = application.getString(
-                        R.string.not_decided,
-                        workmate.getName()
-                    );
                     selectedRestaurantId = null;
                 }
 

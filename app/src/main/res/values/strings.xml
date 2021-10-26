@@ -19,6 +19,7 @@
     <string name="description_location_button">Location button</string>
     <string name="description_app_logo">App logo</string>
     <string name="description_background_image">Background image</string>
+    <string name="description_check_button">Select restaurant button</string>
 
     <!-- Button text -->
     <string name="sign_in_google">Sign in with Google</string>
@@ -29,6 +30,7 @@
 
     <!-- Placeholder -->
     <string name="slogan">Find a nice restaurant and invite your co-workers for lunch!</string>
+
     <string name="workmate_count">(%d)</string>
     <string name="unknown_hours">Unknown hours</string>
     <string name="open_until">Open until %s%s</string>
@@ -37,8 +39,14 @@
     <string name="closed_until">Closed. Open %sat %s</string>
     <string name="tomorrow">tomorrow</string>
     <string name="no_rating_available">No rating available</string>
-    <string name="eating_at">%s is eating at %s</string>
-    <string name="not_decided">%s hasn\'t decided yet</string>
+
+    <string name="workmate_eating_at">%s is eating at %s</string>
+    <string name="you_eating_at">You are eating at %s</string>
+    <string name="workmate_not_decided">%s hasn\'t decided yet</string>
+    <string name="you_not_decided">You haven\'t decided yet</string>
+
+    <string name="you_are_joining">You are joining!</string>
+    <string name="workmate_is_joining">%s is joining!</string>
 
     <!-- Snackbar message -->
     <string name="default_login_error">Login failed: an error occurred</string>

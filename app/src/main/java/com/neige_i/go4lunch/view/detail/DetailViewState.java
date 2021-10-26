@@ -1,48 +1,69 @@
 package com.neige_i.go4lunch.view.detail;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 
 class DetailViewState {
 
-    private final String placeId;
-    private final String photoUrl;
+    @NonNull
     private final String name;
+    @Nullable
+    private final String photoUrl;
+    @NonNull
     private final String address;
     private final int rating;
-    private final boolean noRatingLblVisibility;
+    @Nullable
     private final String phoneNumber;
+    @Nullable
     private final String website;
-    private final boolean selected;
     private final boolean favorite;
-    private final List<String> workmateIds;
+    @DrawableRes
+    private final int checkButtonDrawable;
+    @ColorRes
+    private final int checkButtonColor;
+    @NonNull
+    private final List<WorkmateViewState> workmateViewStates;
 
-    public DetailViewState(String placeId, String name, String photoUrl, String address, int rating, boolean noRatingLblVisibility, String phoneNumber, String website, boolean selected, boolean favorite, List<String> workmateIds) {
-        this.placeId = placeId;
+    DetailViewState(
+        @NonNull String name,
+        @Nullable String photoUrl,
+        @NonNull String address,
+        int rating,
+        @Nullable String phoneNumber,
+        @Nullable String website,
+        boolean favorite,
+        @DrawableRes int checkButtonDrawable,
+        @ColorRes int checkButtonColor,
+        @NonNull List<WorkmateViewState> workmateViewStates
+    ) {
         this.name = name;
         this.photoUrl = photoUrl;
         this.address = address;
         this.rating = rating;
-        this.noRatingLblVisibility = noRatingLblVisibility;
         this.phoneNumber = phoneNumber;
         this.website = website;
-        this.selected = selected;
         this.favorite = favorite;
-        this.workmateIds = workmateIds;
+        this.checkButtonDrawable = checkButtonDrawable;
+        this.checkButtonColor = checkButtonColor;
+        this.workmateViewStates = workmateViewStates;
     }
 
-    public String getPlaceId() {
-        return placeId;
-    }
-
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-
+    @NonNull
     public String getName() {
         return name;
     }
 
+    @Nullable
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    @NonNull
     public String getAddress() {
         return address;
     }
@@ -51,49 +72,56 @@ class DetailViewState {
         return rating;
     }
 
-    public boolean isNoRatingLblVisible() {
-        return noRatingLblVisibility;
-    }
-
+    @Nullable
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    @Nullable
     public String getWebsite() {
         return website;
-    }
-
-    public boolean isSelected() {
-        return selected;
     }
 
     public boolean isFavorite() {
         return favorite;
     }
 
-    public List<String> getWorkmateIds() {
-        return workmateIds;
+    public int getCheckButtonDrawable() {
+        return checkButtonDrawable;
+    }
+
+    public int getCheckButtonColor() {
+        return checkButtonColor;
+    }
+
+    @NonNull
+    public List<WorkmateViewState> getWorkmateViewStates() {
+        return workmateViewStates;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DetailViewState that = (DetailViewState) o;
         return rating == that.rating &&
-            selected == that.selected &&
             favorite == that.favorite &&
-            placeId.equals(that.placeId) &&
-            photoUrl.equals(that.photoUrl) &&
+            checkButtonDrawable == that.checkButtonDrawable &&
+            checkButtonColor == that.checkButtonColor &&
             name.equals(that.name) &&
+            Objects.equals(photoUrl, that.photoUrl) &&
             address.equals(that.address) &&
-            phoneNumber.equals(that.phoneNumber) &&
-            website.equals(that.website) &&
-            workmateIds.equals(that.workmateIds);
+            Objects.equals(phoneNumber, that.phoneNumber) &&
+            Objects.equals(website, that.website) &&
+            workmateViewStates.equals(that.workmateViewStates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, photoUrl, name, address, rating, phoneNumber, website, selected, favorite, workmateIds);
+        return Objects.hash(name, photoUrl, address, rating, phoneNumber, website, favorite, checkButtonDrawable, checkButtonColor, workmateViewStates);
     }
 }

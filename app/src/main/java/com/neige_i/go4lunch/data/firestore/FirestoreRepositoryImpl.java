@@ -7,9 +7,11 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,6 +30,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @NonNull
     private final FirebaseFirestore firebaseFirestore;
+    @NonNull
+    private final Clock clock;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -41,8 +45,12 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
-    public FirestoreRepositoryImpl(@NonNull FirebaseFirestore firebaseFirestore) {
+    public FirestoreRepositoryImpl(
+        @NonNull FirebaseFirestore firebaseFirestore,
+        @NonNull Clock clock
+    ) {
         this.firebaseFirestore = firebaseFirestore;
+        this.clock = clock;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
@@ -57,7 +65,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .addSnapshotListener((documentSnapshot, error) -> {
                 if (documentSnapshot != null) {
                     final User user = documentSnapshot.toObject(User.class);
-                    Log.d("Neige", "REPO getUser with ID='" + userId + "': " + user);
+                    Log.d("Neige", "REPO get Firestore user with ID='" + userId + "': " + user);
                     userMutableLiveData.setValue(user);
                 }
             });
@@ -67,8 +75,10 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @Override
     public void addUser(@NonNull String userId, @NonNull User user) {
-        Log.d("Neige", "REPO addFirestoreUser with ID='" + userId + "': " + user);
-        firebaseFirestore.collection(USER_COLLECTION).document(userId).set(user);
+        Log.d("Neige", "REPO add Firestore user with ID='" + userId + "': " + user);
+        firebaseFirestore.collection(USER_COLLECTION)
+            .document(userId)
+            .set(user);
     }
 
     @NonNull
@@ -105,6 +115,50 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             });
 
         return usersMutableLiveData;
+    }
+
+    @Override
+    public void addToFavoriteRestaurant(@NonNull String userId, @NonNull String placeId) {
+        Log.d("Neige", "REPO add favorite restaurant with ID='" + placeId + "'");
+        firebaseFirestore.collection(USER_COLLECTION)
+            .document(userId)
+            .update("favoriteRestaurants", FieldValue.arrayUnion(placeId));
+    }
+
+    @Override
+    public void removeFromFavoriteRestaurant(@NonNull String userId, @NonNull String placeId) {
+        Log.d("Neige", "REPO remove favorite restaurant with ID='" + placeId + "'");
+        firebaseFirestore.collection(USER_COLLECTION)
+            .document(userId)
+            .update("favoriteRestaurants", FieldValue.arrayRemove(placeId));
+    }
+
+    @Override
+    public void setSelectedRestaurant(
+        @NonNull String userId,
+        @NonNull String placeId,
+        @NonNull String restaurantName
+    ) {
+        Log.d("Neige", "REPO select restaurant with name='" + restaurantName + "'");
+        firebaseFirestore.collection(USER_COLLECTION)
+            .document(userId)
+            .update(
+                "selectedRestaurantId", placeId,
+                "selectedRestaurantName", restaurantName,
+                "selectedRestaurantDate", LocalDate.now(clock).format(DATE_FORMATTER)
+            );
+    }
+
+    @Override
+    public void clearSelectedRestaurant(@NonNull String userId) {
+        Log.d("Neige", "REPO clear selected restaurant");
+        firebaseFirestore.collection(USER_COLLECTION)
+            .document(userId)
+            .update(
+                "selectedRestaurantId", null,
+                "selectedRestaurantName", null,
+                "selectedRestaurantDate", null
+            );
     }
 
     @Override

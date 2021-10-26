@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.data.google_places;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import android.location.Location;
 
@@ -27,6 +28,24 @@ public class PlacesRepositoryTest {
         Mockito.mock(PlacesApi.class),
         mapsApiKey
     );
+
+    // --------------------------------------- ADDRESS TESTS ---------------------------------------
+
+    @Test
+    public void returnShortAddress_when_addressContainsComma() {
+        // WHEN
+        final String address = placesRepository.getAddress("221B Baker Street, London, UK");
+
+        assertEquals("221B Baker Street", address);
+    }
+
+    @Test
+    public void returnCompleteAddress_when_addressDoesNotContainComma() {
+        // WHEN
+        final String address = placesRepository.getAddress("Main street");
+
+        assertEquals("Main street", address);
+    }
 
     // --------------------------------------- RATING TESTS ----------------------------------------
 

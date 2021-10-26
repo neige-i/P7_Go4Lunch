@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.data.firestore;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
@@ -109,5 +110,19 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(email, name, photoUrl, selectedRestaurantId, selectedRestaurantName, selectedRestaurantDate, favoriteRestaurants);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "User{" +
+            "email='" + email + '\'' +
+            ", name='" + name + '\'' +
+            ", photoUrl='" + (photoUrl != null ? "not null" : "null") + '\'' +
+            ", selectedRestaurantId='" + selectedRestaurantId + '\'' +
+            ", selectedRestaurantName='" + selectedRestaurantName + '\'' +
+            ", selectedRestaurantDate='" + selectedRestaurantDate + '\'' +
+            ", favoriteRestaurants=" + favoriteRestaurants +
+            '}';
     }
 }
