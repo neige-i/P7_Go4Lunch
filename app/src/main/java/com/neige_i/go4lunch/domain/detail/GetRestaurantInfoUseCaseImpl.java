@@ -11,10 +11,8 @@ import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.firestore.User;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
-import com.neige_i.go4lunch.domain.MoveListItemDelegate;
+import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 
-import java.time.Clock;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +29,7 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
     @NonNull
     private final FirebaseAuth firebaseAuth;
     @NonNull
-    private final Clock clock;
-    @NonNull
-    private final MoveListItemDelegate moveListItemDelegate;
+    private final WorkmatesDelegate workmatesDelegate;
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
@@ -47,14 +43,12 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
         @NonNull DetailsRepository detailsRepository,
         @NonNull FirestoreRepository firestoreRepository,
         @NonNull FirebaseAuth firebaseAuth,
-        @NonNull Clock clock,
-        @NonNull MoveListItemDelegate moveListItemDelegate
+        @NonNull WorkmatesDelegate workmatesDelegate
     ) {
         this.detailsRepository = detailsRepository;
         this.firestoreRepository = firestoreRepository;
         this.firebaseAuth = firebaseAuth;
-        this.clock = clock;
-        this.moveListItemDelegate = moveListItemDelegate;
+        this.workmatesDelegate = workmatesDelegate;
     }
 
     // ------------------------------------- USE CASE METHODS --------------------------------------
@@ -93,24 +87,14 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
             currentUser.getFavoriteRestaurants().contains(restaurantDetails.getPlaceId());
 
         // Setup selected property
-        final boolean isSelected;
-        if (restaurantDetails.getPlaceId().equals(currentUser.getSelectedRestaurantId()) &&
-            currentUser.getSelectedRestaurantDate() != null
-        ) {
-            final LocalDate selectedDate = LocalDate
-                .parse(currentUser.getSelectedRestaurantDate(), FirestoreRepository.DATE_FORMATTER);
-
-            // ASKME: when to consider unselected, only if != day, or just after midday (find usages -> delegate)
-            isSelected = LocalDate.now(clock).isEqual(selectedDate);
-        } else {
-            isSelected = false;
-        }
+        final boolean isSelected = restaurantDetails.getPlaceId().equals(currentUser.getSelectedRestaurantId()) &&
+            workmatesDelegate.isSelected(currentUser.getSelectedRestaurantDate());
 
         // Setup interested workmates
         final List<CleanWorkmate> cleanWorkmates = new ArrayList<>();
         if (interestedWorkmates != null) {
             for (User user : interestedWorkmates) {
-                if (user.getEmail() != null && user.getName() != null) {
+                if (user.getEmail() != null && user.getName() != null) { // ASKME: different condition for multiple selected
 
                     cleanWorkmates.add(new CleanWorkmate(
                         user.getEmail(),
@@ -122,7 +106,7 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
             }
         }
 
-        moveListItemDelegate.toFirstPosition(cleanWorkmates, cleanWorkmate -> cleanWorkmate.isCurrentUser());
+        workmatesDelegate.moveToFirstPosition(cleanWorkmates, cleanWorkmate -> cleanWorkmate.isCurrentUser());
 
         restaurantInfo.setValue(new RestaurantInfo(
             restaurantDetails.getName(),

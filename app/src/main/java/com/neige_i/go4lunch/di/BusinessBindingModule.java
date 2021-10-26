@@ -1,7 +1,7 @@
 package com.neige_i.go4lunch.di;
 
-import com.neige_i.go4lunch.domain.MoveListItemDelegate;
-import com.neige_i.go4lunch.domain.MoveListItemDelegateImpl;
+import com.neige_i.go4lunch.domain.WorkmatesDelegate;
+import com.neige_i.go4lunch.domain.WorkmatesDelegateImpl;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCase;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCaseImpl;
 import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCase;
@@ -113,7 +113,7 @@ public abstract class BusinessBindingModule {
     // ----------------------------------------- DELEGATE ------------------------------------------
 
     @Binds
-    public abstract MoveListItemDelegate bindMoveListItemDelegate(
-        MoveListItemDelegateImpl moveListItemDelegateImpl
+    public abstract WorkmatesDelegate bindMoveListItemDelegate(
+        WorkmatesDelegateImpl moveListItemDelegateImpl
     );
 }

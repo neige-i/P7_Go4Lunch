@@ -88,6 +88,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
         getInterestedWorkmatesListener = firebaseFirestore.collection(USER_COLLECTION)
             .whereEqualTo("selectedRestaurantId", restaurantId)
+            // ASKME: when to consider unselected, only if != day, or just after midday
             .whereEqualTo("selectedRestaurantDate", LocalDate.now().format(DATE_FORMATTER))
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {

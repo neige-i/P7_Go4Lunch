@@ -21,9 +21,9 @@ import com.neige_i.go4lunch.domain.map.MapData;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -67,7 +67,7 @@ public class MapViewModel extends ViewModel {
      * of a {@code List} prevents adding duplicate {@link MarkerViewState}.
      */
     @NonNull
-    private final Set<MarkerViewState> displayedMarkers = new HashSet<>();
+    private final Map<String, MarkerViewState> displayedMarkers = new HashMap<>();
 
     /**
      * Flag to make the map camera follows the current location only if the map has not been manually
@@ -128,12 +128,17 @@ public class MapViewModel extends ViewModel {
 
         // Setup markers
         for (NearbyRestaurant nearbyRestaurant : mapData.getNearbyRestaurants()) {
-            displayedMarkers.add(new MarkerViewState(
+            final Integer interestedWorkmateCount = mapData.getInterestedWorkmates().get(nearbyRestaurant.getPlaceId());
+
+            displayedMarkers.put(nearbyRestaurant.getPlaceId(), new MarkerViewState(
                 nearbyRestaurant.getPlaceId(),
                 nearbyRestaurant.getName(),
                 nearbyRestaurant.getLatitude(),
                 nearbyRestaurant.getLongitude(),
-                nearbyRestaurant.getAddress()
+                nearbyRestaurant.getAddress(),
+                interestedWorkmateCount != null && interestedWorkmateCount > 0 ?
+                    R.drawable.ic_marker_green :
+                    R.drawable.ic_marker_orange
             ));
         }
 
@@ -153,7 +158,7 @@ public class MapViewModel extends ViewModel {
             isLocationPermissionGranted,
             isGpsEnabled ? R.drawable.ic_gps_on : R.drawable.ic_gps_off,
             fabColor,
-            new ArrayList<>(displayedMarkers),
+            new ArrayList<>(displayedMarkers.values()),
             moveMapToLocation ? currentLocation.getLatitude() : currentPosition.target.latitude,
             moveMapToLocation ? currentLocation.getLongitude() : currentPosition.target.longitude,
             moveMapToLocation ? Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom) : currentPosition.zoom
