@@ -40,17 +40,13 @@ public class GetAllWorkmatesUseCaseImpl implements GetAllWorkmatesUseCase {
             final List<Workmate> workmates = new ArrayList<>();
 
             for (User user : userList) {
-                if (user.getEmail() == null || user.getName() == null) {
-                    continue;
-                }
 
                 final boolean isCurrentUser = firebaseAuth.getCurrentUser() != null &&
                     user.getEmail().equals(firebaseAuth.getCurrentUser().getEmail());
 
-                // Setup if restaurant is selected
-                final boolean isRestaurantSelected = user.getSelectedRestaurantId() != null &&
-                    user.getSelectedRestaurantName() != null && // ASKME: different condition for single selected
-                    workmatesDelegate.isSelected(user.getSelectedRestaurantDate());
+                // Setup if a restaurant is selected for today
+                final boolean isRestaurantSelected = user.getSelectedRestaurant() != null &&
+                    workmatesDelegate.isSelected(user.getSelectedRestaurant().getDate());
 
                 if (isRestaurantSelected) {
                     workmates.add(new Workmate.WithRestaurant(
@@ -58,8 +54,8 @@ public class GetAllWorkmatesUseCaseImpl implements GetAllWorkmatesUseCase {
                         user.getName(),
                         user.getPhotoUrl(),
                         isCurrentUser,
-                        user.getSelectedRestaurantId(),
-                        user.getSelectedRestaurantName()
+                        user.getSelectedRestaurant().getId(),
+                        user.getSelectedRestaurant().getName()
                     ));
                 } else {
                     workmates.add(new Workmate.WithoutRestaurant(

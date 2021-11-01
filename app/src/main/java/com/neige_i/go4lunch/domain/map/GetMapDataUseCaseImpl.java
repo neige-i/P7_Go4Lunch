@@ -1,7 +1,6 @@
 package com.neige_i.go4lunch.domain.map;
 
 import android.location.Location;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -102,9 +101,6 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
                     interestedWorkmatesMediatorLiveData.addSource(
                         firestoreRepository.getWorkmatesEatingAt(placeId), users -> {
 
-                            if (placeId.equals("ChIJR3FMcoG050cRETCUtAn0IhY")) {
-                                Log.d("Neige", "combine: useCase=" + users.size());
-                            }
                             interestedWorkmates.put(placeId, users.size());
                             interestedWorkmatesMediatorLiveData.setValue(interestedWorkmates);
                         }

@@ -59,13 +59,11 @@ public class SignInAndUpdateDatabaseUseCaseImpl implements SignInAndUpdateDataba
 
         mediatorLiveData.addSource(firestoreRepository.getUser(userId), user -> {
             // Add user to Firestore if it does not exist
-            if (user == null) {
+            if (user == null && firebaseUser.getEmail() != null && firebaseUser.getDisplayName() != null) {
                 final User userToAdd = new User(
                     firebaseUser.getEmail(),
                     firebaseUser.getDisplayName(),
                     firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
-                    null,
-                    null,
                     null,
                     null
                 );

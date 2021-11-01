@@ -6,61 +6,52 @@ import androidx.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class User {
 
-    // ASKME: possible to annotate fields as @NonNull and queries data with condition, how to deal with null fields
-    @Nullable
+    @NonNull
     private final String email;
-    @Nullable
+    @NonNull
     private final String name;
     @Nullable
     private final String photoUrl;
     @Nullable
-    private final String selectedRestaurantId;
-    @Nullable
-    private final String selectedRestaurantName;
-    @Nullable
-    private final String selectedRestaurantDate;
+    private final SelectedRestaurant selectedRestaurant;
     @Nullable
     private final List<String> favoriteRestaurants;
 
     /**
      * Mandatory empty constructor for Firestore.
      */
+    @SuppressWarnings("ConstantConditions")
     public User() {
         email = null;
         name = null;
         photoUrl = null;
-        selectedRestaurantId = null;
-        selectedRestaurantName = null;
-        selectedRestaurantDate = null;
+        selectedRestaurant = null;
         favoriteRestaurants = null;
     }
 
     public User(
-        @Nullable String email,
-        @Nullable String name,
+        @NonNull String email,
+        @NonNull String name,
         @Nullable String photoUrl,
-        @Nullable String selectedRestaurantId,
-        @Nullable String selectedRestaurantName,
-        @Nullable String selectedRestaurantDate,
+        @Nullable SelectedRestaurant selectedRestaurant,
         @Nullable List<String> favoriteRestaurants
     ) {
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
-        this.selectedRestaurantId = selectedRestaurantId;
-        this.selectedRestaurantName = selectedRestaurantName;
-        this.selectedRestaurantDate = selectedRestaurantDate;
+        this.selectedRestaurant = selectedRestaurant;
         this.favoriteRestaurants = favoriteRestaurants;
     }
 
-    @Nullable
+    @NonNull
     public String getEmail() {
         return email;
     }
 
-    @Nullable
+    @NonNull
     public String getName() {
         return name;
     }
@@ -71,18 +62,8 @@ public class User {
     }
 
     @Nullable
-    public String getSelectedRestaurantId() {
-        return selectedRestaurantId;
-    }
-
-    @Nullable
-    public String getSelectedRestaurantName() {
-        return selectedRestaurantName;
-    }
-
-    @Nullable
-    public String getSelectedRestaurantDate() {
-        return selectedRestaurantDate;
+    public SelectedRestaurant getSelectedRestaurant() {
+        return selectedRestaurant;
     }
 
     @Nullable
@@ -99,18 +80,16 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return Objects.equals(email, user.email) &&
-            Objects.equals(name, user.name) &&
+        return email.equals(user.email) &&
+            name.equals(user.name) &&
             Objects.equals(photoUrl, user.photoUrl) &&
-            Objects.equals(selectedRestaurantId, user.selectedRestaurantId) &&
-            Objects.equals(selectedRestaurantName, user.selectedRestaurantName) &&
-            Objects.equals(selectedRestaurantDate, user.selectedRestaurantDate) &&
+            Objects.equals(selectedRestaurant, user.selectedRestaurant) &&
             Objects.equals(favoriteRestaurants, user.favoriteRestaurants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, name, photoUrl, selectedRestaurantId, selectedRestaurantName, selectedRestaurantDate, favoriteRestaurants);
+        return Objects.hash(email, name, photoUrl, selectedRestaurant, favoriteRestaurants);
     }
 
     @NonNull
@@ -120,10 +99,75 @@ public class User {
             "email='" + email + '\'' +
             ", name='" + name + '\'' +
             ", photoUrl='" + (photoUrl != null ? "not null" : "null") + '\'' +
-            ", selectedRestaurantId='" + selectedRestaurantId + '\'' +
-            ", selectedRestaurantName='" + selectedRestaurantName + '\'' +
-            ", selectedRestaurantDate='" + selectedRestaurantDate + '\'' +
+            ", selectedRestaurant=" + selectedRestaurant +
             ", favoriteRestaurants=" + favoriteRestaurants +
             '}';
+    }
+
+    public static class SelectedRestaurant {
+
+        @NonNull
+        private final String id;
+        @NonNull
+        private final String date;
+        @NonNull
+        private final String name;
+
+        @SuppressWarnings("ConstantConditions")
+        public SelectedRestaurant() {
+            id = null;
+            date = null;
+            name = null;
+        }
+
+        SelectedRestaurant(@NonNull String id, @NonNull String date, @NonNull String name) {
+            this.id = id;
+            this.date = date;
+            this.name = name;
+        }
+
+        @NonNull
+        public String getId() {
+            return id;
+        }
+
+        @NonNull
+        public String getDate() {
+            return date;
+        }
+
+        @NonNull
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            SelectedRestaurant that = (SelectedRestaurant) o;
+            return id.equals(that.id) &&
+                date.equals(that.date) &&
+                name.equals(that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, date, name);
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "SelectedRestaurant{" +
+                "id='" + id + '\'' +
+                ", date='" + date + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+        }
     }
 }

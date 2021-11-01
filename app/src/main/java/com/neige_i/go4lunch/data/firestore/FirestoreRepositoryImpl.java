@@ -87,9 +87,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         final MutableLiveData<List<User>> usersMutableLiveData = new MutableLiveData<>();
 
         getInterestedWorkmatesListener = firebaseFirestore.collection(USER_COLLECTION)
-            .whereEqualTo("selectedRestaurantId", restaurantId)
-            // ASKME: when to consider unselected, only if != day, or just after midday
-            .whereEqualTo("selectedRestaurantDate", LocalDate.now().format(DATE_FORMATTER))
+            .whereEqualTo("selectedRestaurant.id", restaurantId)
+            .whereEqualTo("selectedRestaurant.date", LocalDate.now(clock).format(DATE_FORMATTER))
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
                     final List<User> userList = querySnapshot.toObjects(User.class);
@@ -144,9 +143,9 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update(
-                "selectedRestaurantId", placeId,
-                "selectedRestaurantName", restaurantName,
-                "selectedRestaurantDate", LocalDate.now(clock).format(DATE_FORMATTER)
+                "selectedRestaurant.id", placeId,
+                "selectedRestaurant.date", LocalDate.now(clock).format(DATE_FORMATTER),
+                "selectedRestaurant.name", restaurantName
             );
     }
 
@@ -155,11 +154,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         Log.d("Neige", "REPO clear selected restaurant");
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
-            .update(
-                "selectedRestaurantId", null,
-                "selectedRestaurantName", null,
-                "selectedRestaurantDate", null
-            );
+            .update("selectedRestaurant", null);
     }
 
     @Override

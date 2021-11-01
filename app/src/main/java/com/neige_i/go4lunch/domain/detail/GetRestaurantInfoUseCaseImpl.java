@@ -87,22 +87,20 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
             currentUser.getFavoriteRestaurants().contains(restaurantDetails.getPlaceId());
 
         // Setup selected property
-        final boolean isSelected = restaurantDetails.getPlaceId().equals(currentUser.getSelectedRestaurantId()) &&
-            workmatesDelegate.isSelected(currentUser.getSelectedRestaurantDate());
+        final boolean isSelected = currentUser.getSelectedRestaurant() != null &&
+            restaurantDetails.getPlaceId().equals(currentUser.getSelectedRestaurant().getId()) &&
+            workmatesDelegate.isSelected(currentUser.getSelectedRestaurant().getDate());
 
         // Setup interested workmates
         final List<CleanWorkmate> cleanWorkmates = new ArrayList<>();
         if (interestedWorkmates != null) {
             for (User user : interestedWorkmates) {
-                if (user.getEmail() != null && user.getName() != null) { // ASKME: different condition for multiple selected
-
-                    cleanWorkmates.add(new CleanWorkmate(
-                        user.getEmail(),
-                        user.getName(),
-                        user.getPhotoUrl(),
-                        user.getEmail().equals(currentUser.getEmail())
-                    ));
-                }
+                cleanWorkmates.add(new CleanWorkmate(
+                    user.getEmail(),
+                    user.getName(),
+                    user.getPhotoUrl(),
+                    user.getEmail().equals(currentUser.getEmail())
+                ));
             }
         }
 
