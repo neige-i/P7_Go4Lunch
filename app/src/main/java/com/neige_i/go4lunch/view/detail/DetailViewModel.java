@@ -30,11 +30,10 @@ public class DetailViewModel extends ViewModel {
     @NonNull
     private final UpdateRestaurantPrefUseCase updateRestaurantPrefUseCase;
     @NonNull
-    private final Application application; // ASKME: leak warning if Context
+    private final Application application;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
-    // ASKME: store info used for Firestore requests to avoid reading data again
     private boolean isSelected;
     private boolean isFavorite;
     @Nullable
@@ -73,7 +72,6 @@ public class DetailViewModel extends ViewModel {
                     cleanWorkmate.getPhotoUrl()
                 ));
             }
-            // TODO: remove current user if not null and returned value is OK, then add it again at position 0
 
             return new DetailViewState(
                 restaurantInfo.getName(),

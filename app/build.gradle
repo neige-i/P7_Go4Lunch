@@ -118,8 +118,9 @@ android.applicationVariants.all { variant ->
     def variantName = variant.name.capitalize()
     def filesToAnalyze = [
             '**/*ViewModel.class',
-            '**/*UseCase.class',
-            '**/*Repository.class'
+            '**/*UseCase*.class',
+            '**/*Repository*.class',
+            '**/*Delegate*.class',
     ]
 
     task("jacoco${variantName}Report", type: JacocoReport, dependsOn: "test${variantName}UnitTest") {
