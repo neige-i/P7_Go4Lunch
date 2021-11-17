@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class WorkmatesDelegate {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------

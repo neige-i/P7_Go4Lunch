@@ -9,19 +9,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
-import android.view.MenuItem;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
-import com.neige_i.go4lunch.databinding.ActivityMainBinding;
+import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 
@@ -52,10 +53,11 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         // Init view binding
-        final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        final ActivityHomeBinding binding = ActivityHomeBinding.inflate(getLayoutInflater());
 
         // Setup UI
         setContentView(binding.getRoot());
+        setSupportActionBar(binding.toolbar);
 
         binding.viewPager.setUserInputEnabled(false); // Disable page scrolling because the ViewPager contains a scrollable map
         binding.viewPager.setAdapter(new HomePagerAdapter(this));
@@ -135,15 +137,24 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_search) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        // Setup SearchView
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setQueryHint(getString(R.string.search_restaurants_by_name));
+        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE); // Close keyboard when clicking on "Return" key
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                viewModel.onQueryTextChange(newText);
+                return false;
+            }
+        });
+        return true;
     }
 
     // ------------------------------------- CALLBACK METHODS --------------------------------------

@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.view.home;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -135,5 +137,9 @@ class HomeViewModel extends ViewModel {
         }
 
         homeViewState.setValue(new HomeViewState(titleId, viewPagerPosition));
+    }
+
+    public void onQueryTextChange(@NonNull String queryText) {
+        Log.d("Neige", "onQueryTextChange: " + queryText);
     }
 }

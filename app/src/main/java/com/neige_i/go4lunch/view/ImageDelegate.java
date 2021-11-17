@@ -16,7 +16,9 @@ import com.neige_i.go4lunch.R;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class ImageDelegate {
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
