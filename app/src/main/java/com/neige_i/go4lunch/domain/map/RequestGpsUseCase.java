@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.gps;
+package com.neige_i.go4lunch.domain.map;
 
 public interface RequestGpsUseCase {
 

@@ -30,6 +30,7 @@ public class GetAuthUseCaseImplTest {
         // WHEN
         final boolean isAuthenticated = getAuthUseCase.isAuthenticated();
 
+        // THEN
         assertTrue(isAuthenticated);
     }
 
@@ -41,6 +42,7 @@ public class GetAuthUseCaseImplTest {
         // WHEN
         final boolean isAuthenticated = getAuthUseCase.isAuthenticated();
 
+        // THEN
         assertFalse(isAuthenticated);
     }
 }

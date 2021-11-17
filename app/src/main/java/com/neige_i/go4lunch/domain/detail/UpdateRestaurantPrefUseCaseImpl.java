@@ -12,8 +12,8 @@ public class UpdateRestaurantPrefUseCaseImpl implements UpdateRestaurantPrefUseC
 
     @NonNull
     private final FirestoreRepository firestoreRepository;
-    @Nullable
-    private final String currentUserId;
+    @NonNull
+    private final FirebaseAuth firebaseAuth;
 
     @Inject
     public UpdateRestaurantPrefUseCaseImpl(
@@ -21,39 +21,43 @@ public class UpdateRestaurantPrefUseCaseImpl implements UpdateRestaurantPrefUseC
         @NonNull FirebaseAuth firebaseAuth
     ) {
         this.firestoreRepository = firestoreRepository;
-
-        if (firebaseAuth.getCurrentUser() != null) {
-            currentUserId = firebaseAuth.getCurrentUser().getUid();
-        } else {
-            currentUserId = null;
-        }
+        this.firebaseAuth = firebaseAuth;
     }
 
     @Override
     public void like(@NonNull String placeId) {
-        if (currentUserId != null) {
-            firestoreRepository.addToFavoriteRestaurant(currentUserId, placeId);
+        if (getCurrentUserId() != null) {
+            firestoreRepository.addToFavoriteRestaurant(getCurrentUserId(), placeId);
         }
     }
 
     @Override
     public void unlike(@NonNull String placeId) {
-        if (currentUserId != null) {
-            firestoreRepository.removeFromFavoriteRestaurant(currentUserId, placeId);
+        if (getCurrentUserId() != null) {
+            firestoreRepository.removeFromFavoriteRestaurant(getCurrentUserId(), placeId);
         }
     }
 
     @Override
     public void select(@NonNull String placeId, @NonNull String restaurantName) {
-        if (currentUserId != null) {
-            firestoreRepository.setSelectedRestaurant(currentUserId, placeId, restaurantName);
+        if (getCurrentUserId() != null) {
+            firestoreRepository.setSelectedRestaurant(getCurrentUserId(), placeId, restaurantName);
         }
     }
 
     @Override
     public void unselect() {
-        if (currentUserId != null) {
-            firestoreRepository.clearSelectedRestaurant(currentUserId);
+        if (getCurrentUserId() != null) {
+            firestoreRepository.clearSelectedRestaurant(getCurrentUserId());
+        }
+    }
+
+    @Nullable
+    private String getCurrentUserId() {
+        if (firebaseAuth.getCurrentUser() != null) {
+            return firebaseAuth.getCurrentUser().getUid();
+        } else {
+            return null;
         }
     }
 }

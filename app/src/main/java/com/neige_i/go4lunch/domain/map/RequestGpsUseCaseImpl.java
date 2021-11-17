@@ -1,4 +1,4 @@
-package com.neige_i.go4lunch.domain.gps;
+package com.neige_i.go4lunch.domain.map;
 
 import androidx.annotation.NonNull;
 
@@ -16,7 +16,7 @@ public class RequestGpsUseCaseImpl implements RequestGpsUseCase {
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
-    public RequestGpsUseCaseImpl(@NonNull LocationRepository locationRepository) {
+    RequestGpsUseCaseImpl(@NonNull LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }
 

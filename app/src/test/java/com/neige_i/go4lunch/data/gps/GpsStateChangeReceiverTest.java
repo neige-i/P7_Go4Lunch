@@ -38,10 +38,11 @@ public class GpsStateChangeReceiverTest {
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Setup mocks
         doReturn(locationManagerMock).when(contextMock).getSystemService(Context.LOCATION_SERVICE);
         doReturn(LocationManager.PROVIDERS_CHANGED_ACTION).when(intentMock).getAction();
+        doReturn(LocationManager.GPS_PROVIDER).when(intentMock).getStringExtra(LocationManager.EXTRA_PROVIDER_NAME);
         doReturn(true).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         // Init Receiver
@@ -51,7 +52,10 @@ public class GpsStateChangeReceiverTest {
     // -------------------------------------- RECEIVER TESTS ---------------------------------------
 
     @Test
-    public void setFirstGpsState_when_receiverIsInitialized() throws InterruptedException {
+    public void returnTrue_when_receiverIsInitializedAndGpsIsEnabled() throws InterruptedException {
+        // GIVEN
+        // GPS is enabled in @Before
+
         // WHEN
         final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
 
@@ -60,7 +64,22 @@ public class GpsStateChangeReceiverTest {
     }
 
     @Test
-    public void setGpsStateToTrue_when_receiverIsTriggeredAndGpsIsEnabled() throws InterruptedException {
+    public void returnFalse_when_receiverIsInitializedAndGpsIsDisabled() throws InterruptedException {
+        // GIVEN
+        doReturn(false).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // WHEN
+        final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
+
+        // THEN
+        assertTrue(isGpsEnabled);
+    }
+
+    @Test
+    public void returnTrue_when_receiverIsTriggeredAndGpsIsEnabled() throws InterruptedException {
+        // GIVEN
+        // GPS is enabled in @Before
+
         // WHEN
         gpsStateChangeReceiver.onReceive(mock(Context.class), intentMock);
         final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
@@ -70,7 +89,7 @@ public class GpsStateChangeReceiverTest {
     }
 
     @Test
-    public void setGpsStateToFalse_when_receiverIsTriggeredAndGpsIsDisabled() throws InterruptedException {
+    public void returnFalse_when_receiverIsTriggeredAndGpsIsDisabled() throws InterruptedException {
         // GIVEN
         doReturn(false).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
 

@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
-public class DispatcherViewModel extends ViewModel {
+class DispatcherViewModel extends ViewModel {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -22,12 +22,12 @@ public class DispatcherViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public DispatcherViewModel(@NonNull GetAuthUseCase getAuthUseCase) {
+    DispatcherViewModel(@NonNull GetAuthUseCase getAuthUseCase) {
         this.getAuthUseCase = getAuthUseCase;
     }
 
     @NonNull
-    public LiveData<ActivityToStart> getStartActivityEvent() {
+    LiveData<ActivityToStart> getStartActivityEvent() {
         final SingleLiveEvent<ActivityToStart> startActivityEvent = new SingleLiveEvent<>();
 
         startActivityEvent.setValue(

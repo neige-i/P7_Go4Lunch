@@ -21,15 +21,15 @@ class MapViewState {
     private final double mapLongitude;
     private final float mapZoom;
 
-
-    MapViewState(boolean locationLayerEnabled,
-                 boolean fabVisible,
-                 int fabDrawable,
-                 int fabColor,
-                 @NonNull List<MarkerViewState> markers,
-                 double mapLatitude,
-                 double mapLongitude,
-                 float mapZoom
+    MapViewState(
+        boolean locationLayerEnabled,
+        boolean fabVisible,
+        @DrawableRes int fabDrawable,
+        @ColorRes int fabColor,
+        @NonNull List<MarkerViewState> markers,
+        double mapLatitude,
+        double mapLongitude,
+        float mapZoom
     ) {
         this.locationLayerEnabled = locationLayerEnabled;
         this.fabVisible = fabVisible;
@@ -49,10 +49,12 @@ class MapViewState {
         return fabVisible;
     }
 
+    @DrawableRes
     public int getFabDrawable() {
         return fabDrawable;
     }
 
+    @ColorRes
     public int getFabColor() {
         return fabColor;
     }
@@ -104,7 +106,7 @@ class MapViewState {
         return "MapViewState{" +
             "locationLayerEnabled=" + locationLayerEnabled +
             ", FAB{visible=" + fabVisible + ", drawable=" + fabDrawable + ", color=" + fabColor + '}' +
-            ", markersCount=" + markers.size() +
+            ", markersCount=" + markers +
             ", map{" + mapLatitude + ", " + mapLongitude + ", " + mapZoom + '}' +
             '}';
     }

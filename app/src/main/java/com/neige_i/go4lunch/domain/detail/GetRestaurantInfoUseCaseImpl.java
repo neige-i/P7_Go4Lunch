@@ -89,7 +89,7 @@ public class GetRestaurantInfoUseCaseImpl implements GetRestaurantInfoUseCase {
         // Setup selected property
         final boolean isSelected = currentUser.getSelectedRestaurant() != null &&
             restaurantDetails.getPlaceId().equals(currentUser.getSelectedRestaurant().getId()) &&
-            workmatesDelegate.isSelected(currentUser.getSelectedRestaurant().getDate());
+            workmatesDelegate.isToday(currentUser.getSelectedRestaurant().getDate());
 
         // Setup interested workmates
         final List<CleanWorkmate> cleanWorkmates = new ArrayList<>();

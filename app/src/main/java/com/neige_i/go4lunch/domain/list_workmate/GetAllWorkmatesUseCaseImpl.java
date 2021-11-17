@@ -44,11 +44,10 @@ public class GetAllWorkmatesUseCaseImpl implements GetAllWorkmatesUseCase {
                 final boolean isCurrentUser = firebaseAuth.getCurrentUser() != null &&
                     user.getEmail().equals(firebaseAuth.getCurrentUser().getEmail());
 
-                // Setup if a restaurant is selected for today
-                final boolean isRestaurantSelected = user.getSelectedRestaurant() != null &&
-                    workmatesDelegate.isSelected(user.getSelectedRestaurant().getDate());
+                final boolean isRestaurantSelectedToday = user.getSelectedRestaurant() != null &&
+                    workmatesDelegate.isToday(user.getSelectedRestaurant().getDate());
 
-                if (isRestaurantSelected) {
+                if (isRestaurantSelectedToday) {
                     workmates.add(new Workmate.WithRestaurant(
                         user.getEmail(),
                         user.getName(),

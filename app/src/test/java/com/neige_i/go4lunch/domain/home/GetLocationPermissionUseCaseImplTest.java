@@ -9,7 +9,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,17 +25,10 @@ public class GetLocationPermissionUseCaseImplTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private GetLocationPermissionUseCase getLocationPermissionUseCase;
+    private final GetLocationPermissionUseCase getLocationPermissionUseCase =
+        new GetLocationPermissionUseCaseImpl(locationPermissionRepositoryMock);
 
-    // ------------------------------------------- SETUP -------------------------------------------
-
-    @Before
-    public void setUp() {
-        // Init UseCase
-        getLocationPermissionUseCase = new GetLocationPermissionUseCaseImpl(locationPermissionRepositoryMock);
-    }
-
-    // ------------------------------------------- TESTS -------------------------------------------
+    // --------------------------------- LOCATION PERMISSION TESTS ---------------------------------
 
     @Test
     public void returnTrue_when_permissionIsGranted() {

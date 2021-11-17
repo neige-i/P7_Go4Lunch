@@ -14,9 +14,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.MapData;
+import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,7 +31,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
-public class MapViewModel extends ViewModel {
+class MapViewModel extends ViewModel {
 
     // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
@@ -47,6 +48,8 @@ public class MapViewModel extends ViewModel {
 
     @NonNull
     private final MediatorLiveData<MapViewState> mapViewState = new MediatorLiveData<>();
+    @NonNull
+    private final SingleLiveEvent<String> showDetailsEvent = new SingleLiveEvent<>();
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -84,7 +87,7 @@ public class MapViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public MapViewModel(
+    MapViewModel(
         @NonNull GetMapDataUseCase getMapDataUseCase,
         @NonNull RequestGpsUseCase requestGpsUseCase
     ) {
@@ -128,9 +131,11 @@ public class MapViewModel extends ViewModel {
 
         // Setup markers
         for (NearbyRestaurant nearbyRestaurant : mapData.getNearbyRestaurants()) {
-            final Integer interestedWorkmateCount = mapData.getInterestedWorkmates().get(nearbyRestaurant.getPlaceId());
+            final Integer interestedWorkmateCount = mapData
+                .getInterestedWorkmates()
+                .get(nearbyRestaurant.getPlaceId());
 
-            displayedMarkers.put(nearbyRestaurant.getPlaceId(), new MarkerViewState(
+            final MarkerViewState markerViewState = new MarkerViewState(
                 nearbyRestaurant.getPlaceId(),
                 nearbyRestaurant.getName(),
                 nearbyRestaurant.getLatitude(),
@@ -139,7 +144,8 @@ public class MapViewModel extends ViewModel {
                 interestedWorkmateCount != null && interestedWorkmateCount > 0 ?
                     R.drawable.ic_marker_green :
                     R.drawable.ic_marker_orange
-            ));
+            );
+            displayedMarkers.put(nearbyRestaurant.getPlaceId(), markerViewState);
         }
 
         // Setup FAB color
@@ -168,6 +174,11 @@ public class MapViewModel extends ViewModel {
     @NonNull
     public LiveData<MapViewState> getMapViewState() {
         return mapViewState;
+    }
+
+    @NonNull
+    public LiveData<String> getShowDetailsEvent() {
+        return showDetailsEvent;
     }
 
     // ---------------------------------------- MAP METHODS ----------------------------------------
@@ -212,6 +223,12 @@ public class MapViewModel extends ViewModel {
 
     public void onFragmentResumed() {
         getMapDataUseCase.refresh();
+    }
+
+    public void onInfoWindowClick(@Nullable String placeId) {
+        if (placeId != null) {
+            showDetailsEvent.setValue(placeId);
+        }
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------

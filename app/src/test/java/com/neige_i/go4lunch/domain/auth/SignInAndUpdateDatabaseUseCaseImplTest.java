@@ -1,106 +1,271 @@
-//package com.neige_i.go4lunch.domain.auth;
-//
-//import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
-//import static org.junit.Assert.assertEquals;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.doReturn;
-//import static org.mockito.Mockito.mock;
-//
-//import android.net.Uri;
-//
-//import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-//import androidx.lifecycle.MutableLiveData;
-//
-//import com.google.android.gms.tasks.Task;
-//import com.google.firebase.auth.AuthCredential;
-//import com.google.firebase.auth.FirebaseAuth;
-//import com.google.firebase.auth.FirebaseUser;
-//import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-//
-//import org.junit.Before;
-//import org.junit.Rule;
-//import org.junit.Test;
-//
-//public class SignInAndUpdateDatabaseUseCaseImplTest {
-//
-//    // ----------------------------------------- TEST RULE -----------------------------------------
-//
-//    @Rule
-//    public final InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
-//
-//    // --------------------------------------- DEPENDENCIES ----------------------------------------
-//
-//    private final FirebaseAuth firebaseAuthMock = mock(FirebaseAuth.class);
-//
-//    private final FirestoreRepository firestoreRepositoryMock = mock(FirestoreRepository.class);
-//
-//    // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
-//
-//    private final FirebaseUser firebaseUserMock = mock(FirebaseUser.class);
-//    private final Uri uriMock = mock(Uri.class);
-//
-//    // ---------------------------------------- MOCK VALUES ----------------------------------------
-//
-//    private final MutableLiveData<FirebaseUser> firebaseUserMutableLiveData = new MutableLiveData<>();
-//
-//    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
-//
-//    private SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase;
-//
-//    // ------------------------------------------- SETUP -------------------------------------------
-//
-//    @Before
-//    public void setUp() throws Exception {
-//        // Setup mocks
-//        doReturn(Task.class).when(firebaseAuthMock).signInWithCredential(any());
-//        doReturn(firebaseUserMock).when(firebaseAuthMock).getCurrentUser();
-//        doReturn("user email").when(firebaseUserMock).getEmail();
-//        doReturn("user name").when(firebaseUserMock).getDisplayName();
-//        doReturn(uriMock).when(firebaseUserMock).getPhotoUrl();
-//        doReturn("photo url").when(uriMock).toString();
-//
-//        doReturn(firebaseUserMutableLiveData).when(firestoreRepositoryMock).getUser("EXISTING_USER");
-//        doReturn(null).when(firestoreRepositoryMock).getUser("NEW_USER");
-//
-//        // Init UseCase
-//        signInAndUpdateDatabaseUseCase = new SignInAndUpdateDatabaseUseCaseImpl(firebaseAuthMock, firestoreRepositoryMock);
-//    }
-//
-//    // --------------------------------------- SIGN-IN TESTS ---------------------------------------
-//
-//    @Test
-//    public void returnSuccess_when_signInSucceeds() throws InterruptedException {
-//        // GIVEN
-//        final AuthCredential goodAuthCredential = mock(AuthCredential.class);
-//
-//        // WHEN
-//        final SignInResult signInResult = getOrAwaitValue(signInAndUpdateDatabaseUseCase.signInToFirebase(goodAuthCredential));
-//
-//        // THEN
-//        assertEquals(new SignInResult.Success(), signInResult);
-//    }
-//
-//    @Test
-//    public void returnFailure_when_signInFails() throws InterruptedException {
-//        // GIVEN
-//        final AuthCredential wrongAuthCredential = mock(AuthCredential.class);
-//
-//        // WHEN
-//        final SignInResult signInResult = getOrAwaitValue(signInAndUpdateDatabaseUseCase.signInToFirebase(wrongAuthCredential));
-//
-//        // THEN
-//        assertEquals(new SignInResult.Failure(new Exception()), signInResult);
-//    }
-//
-//    @Test
-//    public void addFirestoreUser_when_databaseDoesNotContainIt() throws InterruptedException {
-//        // GIVEN
-//        final AuthCredential wrongAuthCredential = mock(AuthCredential.class);
-//
-//        // WHEN
-//        final SignInResult signInResult = getOrAwaitValue(signInAndUpdateDatabaseUseCase.signInToFirebase(wrongAuthCredential));
-//
-//        // THEN
-//        assertEquals(new SignInResult.Failure(new Exception()), signInResult);
-//    }
-//}
+package com.neige_i.go4lunch.domain.auth;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import android.net.Uri;
+
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
+import androidx.lifecycle.MutableLiveData;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.FirebaseNetworkException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
+import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.data.firestore.User;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+@SuppressWarnings("unchecked")
+public class SignInAndUpdateDatabaseUseCaseImplTest {
+
+    // ----------------------------------------- TEST RULE -----------------------------------------
+
+    @Rule
+    public final InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    private final FirebaseAuth firebaseAuthMock = mock(FirebaseAuth.class);
+    private final FirestoreRepository firestoreRepositoryMock = mock(FirestoreRepository.class);
+
+    // ------------------------------------- OBJECT UNDER TEST -------------------------------------
+
+    private SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase;
+
+    // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
+
+    private final Task<AuthResult> authResultTaskMock = mock(Task.class);
+    private final FirebaseUser firebaseAuthUserMock = mock(FirebaseUser.class);
+    private final Uri uriMock = mock(Uri.class);
+
+    // ---------------------------------------- MOCK VALUES ----------------------------------------
+
+    private final MutableLiveData<User> firestoreUserMutableLiveData = new MutableLiveData<>();
+
+    // ------------------------------------- ARGUMENT CAPTORS --------------------------------------
+
+    private final ArgumentCaptor<OnSuccessListener<AuthResult>> onSuccessListenerCaptor = ArgumentCaptor.forClass(OnSuccessListener.class);
+    private final ArgumentCaptor<OnFailureListener> onFailureListenerCaptor = ArgumentCaptor.forClass(OnFailureListener.class);
+
+    // ------------------------------------------- CONST -------------------------------------------
+
+    private static final String USER_ID = "user ID";
+    private static final String USER_EMAIL = "user email";
+    private static final String USER_NAME = "user name";
+    private static final String USER_PHOTO = "user photo URL";
+
+    // ------------------------------------------- SETUP -------------------------------------------
+
+    @Before
+    public void setUp() {
+        // Setup mocks
+        doReturn(authResultTaskMock).when(firebaseAuthMock).signInWithCredential(any());
+        doReturn(authResultTaskMock).when(authResultTaskMock).addOnSuccessListener(any());
+
+        doReturn(firestoreUserMutableLiveData).when(firestoreRepositoryMock).getUser(any());
+
+        doReturn(firebaseAuthUserMock).when(firebaseAuthMock).getCurrentUser();
+        doReturn(USER_ID).when(firebaseAuthUserMock).getUid();
+        doReturn(USER_EMAIL).when(firebaseAuthUserMock).getEmail();
+        doReturn(USER_NAME).when(firebaseAuthUserMock).getDisplayName();
+        doReturn(uriMock).when(firebaseAuthUserMock).getPhotoUrl();
+        doReturn(USER_PHOTO).when(uriMock).toString();
+
+        // Init UseCase
+        signInAndUpdateDatabaseUseCase = new SignInAndUpdateDatabaseUseCaseImpl(
+            firebaseAuthMock,
+            firestoreRepositoryMock
+        );
+    }
+
+    // ----------------------------------- SIGN-IN RESULT TESTS ------------------------------------
+
+    @Test
+    public void returnSuccess_when_signInSucceeds() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        assertEquals(new SignInResult.Success(), actualSignInResult[0]);
+    }
+
+    @Test
+    public void returnFailure_when_networkFails() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnFailureListener
+        verify(authResultTaskMock).addOnFailureListener(onFailureListenerCaptor.capture());
+        onFailureListenerCaptor.getValue().onFailure(mock(FirebaseNetworkException.class));
+
+        // THEN
+        assertEquals(
+            new SignInResult.Failure(mock(FirebaseNetworkException.class)),
+            actualSignInResult[0]
+        );
+    }
+
+    @Test
+    public void returnFailure_when_firebaseUserIsInvalid() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnFailureListener
+        verify(authResultTaskMock).addOnFailureListener(onFailureListenerCaptor.capture());
+        onFailureListenerCaptor.getValue().onFailure(mock(FirebaseAuthInvalidUserException.class));
+
+        // THEN
+        assertEquals(
+            new SignInResult.Failure(mock(FirebaseAuthInvalidUserException.class)),
+            actualSignInResult[0]
+        );
+    }
+
+    @Test
+    public void returnFailure_when_credentialsAreIncorrect() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnFailureListener
+        verify(authResultTaskMock).addOnFailureListener(onFailureListenerCaptor.capture());
+        onFailureListenerCaptor.getValue().onFailure(mock(FirebaseAuthInvalidCredentialsException.class));
+
+        // THEN
+        assertEquals(
+            new SignInResult.Failure(mock(FirebaseAuthInvalidCredentialsException.class)),
+            actualSignInResult[0]
+        );
+    }
+
+    @Test
+    public void returnFailure_when_firebaseUserAlreadyExists() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnFailureListener
+        verify(authResultTaskMock).addOnFailureListener(onFailureListenerCaptor.capture());
+        onFailureListenerCaptor.getValue().onFailure(mock(FirebaseAuthUserCollisionException.class));
+
+        // THEN
+        assertEquals(
+            new SignInResult.Failure(mock(FirebaseAuthUserCollisionException.class)),
+            actualSignInResult[0]
+        );
+    }
+
+    @Test
+    public void returnFailure_when_signInFailsWithAnotherException() {
+        // GIVEN
+        final SignInResult[] actualSignInResult = new SignInResult[1];
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+            actualSignInResult[0] = signInResult;
+        });
+
+        // Capture OnFailureListener
+        verify(authResultTaskMock).addOnFailureListener(onFailureListenerCaptor.capture());
+        onFailureListenerCaptor.getValue().onFailure(mock(FirebaseException.class));
+
+        // THEN
+        assertEquals(
+            new SignInResult.Failure(mock(FirebaseException.class)),
+            actualSignInResult[0]
+        );
+    }
+
+    // ----------------------------------- UPDATE DATABASE TESTS -----------------------------------
+
+    @Test
+    public void addUserToFirestore_when_notPresentInDatabase() {
+        // GIVEN
+        firestoreUserMutableLiveData.setValue(null);
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+        });
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        verify(firestoreRepositoryMock).getUser(any());
+        verify(firestoreRepositoryMock).addUser(
+            USER_ID,
+            new User(
+                USER_EMAIL,
+                USER_NAME,
+                USER_PHOTO,
+                null,
+                null
+            )
+        );
+        verifyNoMoreInteractions(firestoreRepositoryMock);
+    }
+
+    @Test
+    public void doNotAddUserToFirestore_when_alreadyPresentInDatabase() {
+        // GIVEN
+        firestoreUserMutableLiveData.setValue(mock(User.class));
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+        });
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        verify(firestoreRepositoryMock).getUser(any());
+        verify(firestoreRepositoryMock, never()).addUser(any(), any());
+        verifyNoMoreInteractions(firestoreRepositoryMock);
+    }
+}

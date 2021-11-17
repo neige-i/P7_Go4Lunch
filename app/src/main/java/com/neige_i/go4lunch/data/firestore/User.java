@@ -120,7 +120,7 @@ public class User {
             name = null;
         }
 
-        SelectedRestaurant(@NonNull String id, @NonNull String date, @NonNull String name) {
+        public SelectedRestaurant(@NonNull String id, @NonNull String date, @NonNull String name) {
             this.id = id;
             this.date = date;
             this.name = name;

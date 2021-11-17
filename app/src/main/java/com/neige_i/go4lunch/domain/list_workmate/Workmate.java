@@ -3,6 +3,8 @@ package com.neige_i.go4lunch.domain.list_workmate;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Objects;
+
 public abstract class Workmate {
 
     @NonNull
@@ -13,7 +15,7 @@ public abstract class Workmate {
     private final String photoUrl;
     private final boolean isCurrentUser;
 
-    protected Workmate(
+    private Workmate(
         @NonNull String email,
         @NonNull String name,
         @Nullable String photoUrl,
@@ -42,6 +44,34 @@ public abstract class Workmate {
 
     public boolean isCurrentUser() {
         return isCurrentUser;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Workmate workmate = (Workmate) o;
+        return isCurrentUser == workmate.isCurrentUser && email.equals(workmate.email) && name.equals(workmate.name) && Objects.equals(photoUrl, workmate.photoUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, name, photoUrl, isCurrentUser);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Workmate{" +
+            "email='" + email + '\'' +
+            ", name='" + name + '\'' +
+            ", photoUrl='" + photoUrl + '\'' +
+            ", isCurrentUser=" + isCurrentUser +
+            '}';
     }
 
     public static class WithoutRestaurant extends Workmate {
@@ -84,6 +114,35 @@ public abstract class Workmate {
         @NonNull
         public String getRestaurantName() {
             return restaurantName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+            WithRestaurant that = (WithRestaurant) o;
+            return restaurantId.equals(that.restaurantId) && restaurantName.equals(that.restaurantName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), restaurantId, restaurantName);
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "WithRestaurant{" +
+                "restaurantId='" + restaurantId + '\'' +
+                ", restaurantName='" + restaurantName + '\'' +
+                '}';
         }
     }
 }

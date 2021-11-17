@@ -12,7 +12,7 @@ import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.RestaurantHour;
+import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.data.location.LocationRepository;
 
 import java.time.Clock;
@@ -40,6 +40,8 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     private final FirestoreRepository firestoreRepository;
     @NonNull
     private final Clock clock;
+    @NonNull
+    private final Location restaurantLocation;
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
@@ -49,7 +51,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
-    private final MediatorLiveData<Map<String, List<RestaurantHour>>> restaurantHoursMediatorLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Map<String, List<RestaurantDetails.RestaurantHour>>> restaurantHoursMediatorLiveData = new MediatorLiveData<>();
     @NonNull
     private final MediatorLiveData<Map<String, Integer>> interestedWorkmatesMediatorLiveData = new MediatorLiveData<>();
 
@@ -64,11 +66,13 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
         @NonNull NearbyRepository nearbyRepository,
         @NonNull DetailsRepository detailsRepository,
         @NonNull FirestoreRepository firestoreRepository,
-        @NonNull Clock clock
+        @NonNull Clock clock,
+        @NonNull Location restaurantLocation
     ) {
         this.detailsRepository = detailsRepository;
         this.firestoreRepository = firestoreRepository;
         this.clock = clock;
+        this.restaurantLocation = restaurantLocation;
 
         restaurantHoursMediatorLiveData.setValue(new HashMap<>());
         interestedWorkmatesMediatorLiveData.setValue(new HashMap<>());
@@ -87,7 +91,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     private void combine(
         @Nullable Location currentLocation,
         @Nullable List<NearbyRestaurant> nearbyRestaurants,
-        @Nullable Map<String, List<RestaurantHour>> restaurantHours,
+        @Nullable Map<String, List<RestaurantDetails.RestaurantHour>> restaurantHours,
         @Nullable Map<String, Integer> interestedWorkmates
     ) {
         if (currentLocation == null || nearbyRestaurants == null) {
@@ -126,15 +130,9 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
             }
 
             // Compute the distance to the current location
-            final float[] distances = new float[3];
-            Location.distanceBetween(
-                currentLocation.getLatitude(),
-                currentLocation.getLongitude(),
-                nearbyRestaurant.getLatitude(),
-                nearbyRestaurant.getLongitude(),
-                distances
-            );
-            final float distanceInMeters = distances[0];
+            restaurantLocation.setLatitude(nearbyRestaurant.getLatitude());
+            restaurantLocation.setLongitude(nearbyRestaurant.getLongitude());
+            final float distanceInMeters = currentLocation.distanceTo(restaurantLocation);
 
             final Integer interestedWorkmatesCount = interestedWorkmates.get(restaurantId);
 
@@ -143,10 +141,10 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
                 nearbyRestaurant.getName(),
                 nearbyRestaurant.getAddress(),
                 distanceInMeters,
-                nearbyRestaurant.getRating(),
-                nearbyRestaurant.getPhotoUrl(),
                 getHourResult(restaurantHours.get(restaurantId)),
-                interestedWorkmatesCount != null ? interestedWorkmatesCount : 0
+                interestedWorkmatesCount != null ? interestedWorkmatesCount : 0,
+                nearbyRestaurant.getRating(),
+                nearbyRestaurant.getPhotoUrl()
             ));
         }
 
@@ -154,14 +152,14 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     }
 
     @NonNull
-    private HourResult getHourResult(@Nullable List<RestaurantHour> restaurantHours) {
+    private HourResult getHourResult(@Nullable List<RestaurantDetails.RestaurantHour> restaurantHours) {
         if (restaurantHours == null) {
             return new HourResult.Loading();
         } else if (restaurantHours.isEmpty()) {
             return new HourResult.Unknown();
         }
 
-        final RestaurantHour alwaysOpenHour = new RestaurantHour(true, DayOfWeek.SUNDAY, LocalTime.of(0, 0));
+        final RestaurantDetails.RestaurantHour alwaysOpenHour = new RestaurantDetails.RestaurantHour(true, DayOfWeek.SUNDAY, LocalTime.of(0, 0));
         if (restaurantHours.size() == 1 && restaurantHours.get(0).equals(alwaysOpenHour)) {
             return new HourResult.AlwaysOpen();
         }
@@ -173,7 +171,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
             return getRestaurantDateTime(now, restaurantHour);
         }));
 
-        for (RestaurantHour restaurantHour : restaurantHours) {
+        for (RestaurantDetails.RestaurantHour restaurantHour : restaurantHours) {
             final LocalDateTime restaurantDateTime = getRestaurantDateTime(now, restaurantHour);
 
             if (now.isBefore(restaurantDateTime)) {
@@ -193,8 +191,9 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
             }
         }
 
+        // Should never happen
         throw new IllegalStateException(
-            "The " + RestaurantHour.class.getSimpleName() + "'s list is sorted according to the" +
+            "The " + RestaurantDetails.RestaurantHour.class.getSimpleName() + "'s list is sorted according to the" +
                 "same DateTime that is used in the condition 'isBefore()' inside the for loop." +
                 "This way, the condition must be true at least once while iterating through the list.\n" +
                 "BUT CURRENTLY: DateTime='" + now + "', list='" + restaurantHours + "'."
@@ -208,7 +207,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     @NonNull
     private LocalDateTime getRestaurantDateTime(
         @NonNull LocalDateTime localDateTime,
-        @NonNull RestaurantHour restaurantHour
+        @NonNull RestaurantDetails.RestaurantHour restaurantHour
     ) {
         return localDateTime
             .with(TemporalAdjusters.nextOrSame(restaurantHour.getDayOfWeek()))

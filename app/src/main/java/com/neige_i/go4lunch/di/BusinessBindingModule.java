@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.di;
 
-import com.neige_i.go4lunch.domain.WorkmatesDelegate;
-import com.neige_i.go4lunch.domain.WorkmatesDelegateImpl;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCase;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCaseImpl;
 import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCase;
@@ -10,8 +8,8 @@ import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCase;
 import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCaseImpl;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.gps.RequestGpsUseCaseImpl;
+import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.map.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
@@ -108,12 +106,5 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract UpdateRestaurantPrefUseCase bindUpdateRestaurantPrefUseCase(
         UpdateRestaurantPrefUseCaseImpl updateRestaurantPrefUseCaseImpl
-    );
-
-    // ----------------------------------------- DELEGATE ------------------------------------------
-
-    @Binds
-    public abstract WorkmatesDelegate bindMoveListItemDelegate(
-        WorkmatesDelegateImpl moveListItemDelegateImpl
     );
 }

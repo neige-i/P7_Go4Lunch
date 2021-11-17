@@ -52,10 +52,14 @@ public class DetailActivity extends AppCompatActivity {
         binding.interestedWorkmateList.setAdapter(adapter);
 
         binding.callBtn.setOnClickListener(v -> {
-            startActivityIfResolved(Intent.ACTION_DIAL, "tel:" + binding.callBtn.getTag());
+            final String action = Intent.ACTION_DIAL;
+            final String uriString = "tel:" + binding.callBtn.getTag();
+            viewModel.onExternalActivityAsked(isActivityResolved(action, uriString), action, uriString);
         });
         binding.websiteBtn.setOnClickListener(v -> {
-            startActivityIfResolved(Intent.ACTION_VIEW, (String) binding.websiteBtn.getTag());
+            final String action = Intent.ACTION_VIEW;
+            final String uriString = (String) binding.websiteBtn.getTag();
+            viewModel.onExternalActivityAsked(isActivityResolved(action, uriString), action, uriString);
         });
         binding.likeBtn.setOnClickListener(v -> viewModel.onLikeButtonClicked(placeId));
         binding.checkBtn.setOnClickListener(v -> viewModel.onSelectedRestaurantClicked(placeId));
@@ -98,12 +102,19 @@ public class DetailActivity extends AppCompatActivity {
 
             adapter.submitList(detailViewState.getWorkmateViewStates());
         });
+
+        // Update UI when events are triggered
+        viewModel.getStartExternalActivityEvent().observe(this, intentInfo -> {
+            startActivity(getExternalIntent(intentInfo[0], intentInfo[1]));
+        });
     }
 
-    private void startActivityIfResolved(@NonNull String action, @NonNull String uriString) {
-        final Intent externalIntent = new Intent(action, Uri.parse(uriString));
-        if (externalIntent.resolveActivity(getPackageManager()) != null) { // ASKME: null-check in view
-            startActivity(externalIntent);
-        }
+    private boolean isActivityResolved(@NonNull String action, @NonNull String uriString) {
+        return getExternalIntent(action, uriString).resolveActivity(getPackageManager()) != null;
+    }
+
+    @NonNull
+    private Intent getExternalIntent(@NonNull String action, @NonNull String uriString) {
+        return new Intent(action, Uri.parse(uriString));
     }
 }
