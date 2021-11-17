@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
-import com.neige_i.go4lunch.data.google_places.model.RestaurantHour;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -94,18 +93,18 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
     }
 
     @NonNull
-    private List<RestaurantHour> setupOpeningHours(@Nullable RawDetailsResponse.OpeningHours openingHours) {
+    private List<RestaurantDetails.RestaurantHour> setupOpeningHours(@Nullable RawDetailsResponse.OpeningHours openingHours) {
         if (openingHours == null || openingHours.getPeriods() == null) {
             return Collections.emptyList();
         }
-        final List<RestaurantHour> restaurantHourList = new ArrayList<>();
+        final List<RestaurantDetails.RestaurantHour> restaurantHourList = new ArrayList<>();
 
         for (RawDetailsResponse.Period period : openingHours.getPeriods()) {
             final RawDetailsResponse.Open open = period.getOpen();
             final RawDetailsResponse.Close close = period.getClose();
 
             if (open != null && open.getDay() != null && open.getTime() != null) {
-                restaurantHourList.add(new RestaurantHour(
+                restaurantHourList.add(new RestaurantDetails.RestaurantHour(
                     true,
                     getDayOfWeek(open.getDay()),
                     getTime(open.getTime())
@@ -113,7 +112,7 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
             }
 
             if (close != null && close.getDay() != null && close.getTime() != null) {
-                restaurantHourList.add(new RestaurantHour(
+                restaurantHourList.add(new RestaurantDetails.RestaurantHour(
                     false,
                     getDayOfWeek(close.getDay()),
                     getTime(close.getTime())

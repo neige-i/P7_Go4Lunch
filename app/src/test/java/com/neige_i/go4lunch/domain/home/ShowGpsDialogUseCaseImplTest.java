@@ -45,7 +45,7 @@ public class ShowGpsDialogUseCaseImplTest {
         showGpsDialogUseCase = new ShowGpsDialogUseCaseImpl(locationRepositoryMock);
     }
 
-    // ------------------------------------------- TESTS -------------------------------------------
+    // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
     public void returnGpsDialog_when_dialogIsQueried() throws InterruptedException {

@@ -33,16 +33,20 @@ public class RestaurantListViewModel extends ViewModel {
     private final GetNearbyDetailsUseCase getNearbyDetailsUseCase;
     @NonNull
     private final Application application;
+    @NonNull
+    private final Locale defaultLocale;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
     public RestaurantListViewModel(
         @NonNull GetNearbyDetailsUseCase getNearbyDetailsUseCase,
-        @NonNull Application application
+        @NonNull Application application,
+        @NonNull Locale defaultLocale
     ) {
         this.getNearbyDetailsUseCase = getNearbyDetailsUseCase;
         this.application = application;
+        this.defaultLocale = defaultLocale;
     }
 
     // ------------------------------------ VIEW STATE METHODS -------------------------------------
@@ -58,7 +62,7 @@ public class RestaurantListViewModel extends ViewModel {
                 // Setup formatted distance
                 final boolean isLessThan1Km = distance < 1000;
                 final String formattedDistance = String.format(
-                    Locale.getDefault(),
+                    defaultLocale,
                     isLessThan1Km ? "%.0fm" : "%.2fkm",
                     isLessThan1Km ? distance : distance / 1000
                 );
@@ -103,12 +107,12 @@ public class RestaurantListViewModel extends ViewModel {
                 restaurantViewStates.add(new RestaurantViewState(
                     nearbyDetail.getPlaceId(),
                     nearbyDetail.getRestaurantName(),
+                    nearbyDetail.getAddress(),
                     distance,
                     formattedDistance,
-                    nearbyDetail.getAddress(),
+                    hourText,
                     hourTextStyle,
                     hourTextColor,
-                    hourText,
                     nearbyDetail.getInterestedWorkmatesCount(),
                     nearbyDetail.getRating(),
                     nearbyDetail.getPhotoUrl()
@@ -133,7 +137,7 @@ public class RestaurantListViewModel extends ViewModel {
                 return application.getString(R.string.tomorrow) + " ";
             default:
                 return nextHour.getDayOfWeek()
-                    .getDisplayName(TextStyle.SHORT, Locale.getDefault()) + " ";
+                    .getDisplayName(TextStyle.SHORT, defaultLocale) + " ";
         }
     }
 }

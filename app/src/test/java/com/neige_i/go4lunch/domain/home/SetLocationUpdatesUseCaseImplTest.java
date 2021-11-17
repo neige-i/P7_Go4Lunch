@@ -30,10 +30,10 @@ public class SetLocationUpdatesUseCaseImplTest {
         locationRepositoryMock
     );
 
-    // ------------------------------------------ VERIFY -------------------------------------------
+    // ---------------------------------- LOCATION UPDATES TESTS -----------------------------------
 
     @Test
-    public void verify_requestGpsAndStartLocationUpdates_when_updatesAreEnabledTheFirstTime() {
+    public void startLocationUpdatesAndRequestGps_when_updatesAreEnabledTheFirstTime() {
         // GIVEN
         doReturn(true).when(locationRepositoryMock).areLocationUpdatesNeverStarted();
 
@@ -48,7 +48,7 @@ public class SetLocationUpdatesUseCaseImplTest {
     }
 
     @Test
-    public void verify_onlyStartLocationUpdates_when_updatesAreEnabledAgain() {
+    public void startLocationUpdatesOnly_when_updatesAreEnabledAgain() {
         // GIVEN
         doReturn(false).when(locationRepositoryMock).areLocationUpdatesNeverStarted();
 
@@ -63,7 +63,7 @@ public class SetLocationUpdatesUseCaseImplTest {
     }
 
     @Test
-    public void verify_removeLocationUpdates_when_updatesAreDisabled() {
+    public void removeLocationUpdates_when_updatesAreDisabled() {
         // WHEN
         setLocationUpdatesUseCase.set(false);
 

@@ -51,8 +51,8 @@ public class HomeViewModelTest {
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(true).when(getLocationPermissionUseCaseMock).isGranted();
         doReturn(resolvableMutableLiveData).when(showGpsDialogUseCaseMock).getDialog();
+        doReturn(true).when(getLocationPermissionUseCaseMock).isGranted();
 
         // Init ViewModel
         homeViewModel = new HomeViewModel(
@@ -63,10 +63,25 @@ public class HomeViewModelTest {
         );
     }
 
+    // ----------------------------------- FREE RESOURCES TESTS ------------------------------------
+
+    @Test
+    public void freeResources_when_activityIsPaused() {
+        // WHEN
+        homeViewModel.onCleared();
+
+        // THEN
+        verify(freeResourcesUseCaseMock).execute();
+        verifyNoMoreInteractions(freeResourcesUseCaseMock);
+    }
+
     // ---------------------------------- LOCATION UPDATES TESTS -----------------------------------
 
     @Test
     public void enableLocationUpdates_when_activityIsResumedWithGrantedLocationPermission() {
+        // GIVEN
+        // Location permission is granted by default in @Before
+
         // WHEN
         homeViewModel.onActivityResumed();
 
@@ -86,16 +101,6 @@ public class HomeViewModelTest {
         // THEN
         verify(setLocationUpdatesUseCaseMock).set(false);
         verifyNoMoreInteractions(setLocationUpdatesUseCaseMock);
-    }
-
-    @Test
-    public void freeResources_when_activityIsPaused() {
-        // WHEN
-        homeViewModel.onActivityPaused();
-
-        // THEN
-        verify(freeResourcesUseCaseMock).execute();
-        verifyNoMoreInteractions(freeResourcesUseCaseMock);
     }
 
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
@@ -157,10 +162,8 @@ public class HomeViewModelTest {
 
     @Test
     public void getViewState_when_mapItemIsSelected() throws InterruptedException {
-        // GIVEN
-        homeViewModel.onBottomNavigationItemClicked(R.id.action_map);
-
         // WHEN
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_map);
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
 
         // THEN
@@ -169,10 +172,8 @@ public class HomeViewModelTest {
 
     @Test
     public void getViewState_when_restaurantItemIsSelected() throws InterruptedException {
-        // GIVEN
-        homeViewModel.onBottomNavigationItemClicked(R.id.action_restaurant);
-
         // WHEN
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_restaurant);
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
 
         // THEN
@@ -181,10 +182,8 @@ public class HomeViewModelTest {
 
     @Test
     public void getViewState_when_workmateItemIsSelected() throws InterruptedException {
-        // GIVEN
-        homeViewModel.onBottomNavigationItemClicked(R.id.action_workmates);
-
         // WHEN
+        homeViewModel.onBottomNavigationItemClicked(R.id.action_workmates);
         final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
 
         // THEN

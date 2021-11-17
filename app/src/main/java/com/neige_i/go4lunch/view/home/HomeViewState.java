@@ -15,6 +15,7 @@ class HomeViewState {
         this.viewPagerPosition = viewPagerPosition;
     }
 
+    @StringRes
     public int getTitleId() {
         return titleId;
     }

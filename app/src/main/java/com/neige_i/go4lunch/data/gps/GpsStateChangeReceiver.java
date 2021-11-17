@@ -8,7 +8,6 @@ import android.location.LocationManager;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,7 +30,7 @@ public class GpsStateChangeReceiver extends BroadcastReceiver {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public GpsStateChangeReceiver(@ApplicationContext @NonNull Context applicationContext) {
+    GpsStateChangeReceiver(@ApplicationContext @NonNull Context applicationContext) {
         locationManager = (LocationManager) applicationContext.getSystemService(Context.LOCATION_SERVICE);
 
         // Init GPS state (the receiver is only triggered when the state is CHANGED)
@@ -40,15 +39,17 @@ public class GpsStateChangeReceiver extends BroadcastReceiver {
 
     @NonNull
     public LiveData<Boolean> getGpsState() {
-        // The receiver is called twice, one for each provider: GPS & network
-        return Transformations.distinctUntilChanged(gpsStateMutableLiveData);
+        return gpsStateMutableLiveData;
     }
 
     // ------------------------------------- RECEIVER METHODS --------------------------------------
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION)) {
+        // The receiver is called twice, one for each provider: GPS & network
+        if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION) &&
+            intent.getStringExtra(LocationManager.EXTRA_PROVIDER_NAME).equals(LocationManager.GPS_PROVIDER)
+        ) {
             // Update GPS state
             setGpsState();
         }

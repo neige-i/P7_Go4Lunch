@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public class RestaurantInfo {
 
@@ -85,5 +86,46 @@ public class RestaurantInfo {
     @NonNull
     public List<CleanWorkmate> getInterestedWorkmates() {
         return interestedWorkmates;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RestaurantInfo that = (RestaurantInfo) o;
+        return rating == that.rating &&
+            favorite == that.favorite &&
+            selected == that.selected &&
+            name.equals(that.name) &&
+            address.equals(that.address) &&
+            Objects.equals(photoUrl, that.photoUrl) &&
+            Objects.equals(phoneNumber, that.phoneNumber) &&
+            Objects.equals(website, that.website) &&
+            interestedWorkmates.equals(that.interestedWorkmates);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, address, photoUrl, rating, phoneNumber, website, favorite, selected, interestedWorkmates);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "RestaurantInfo{" +
+            "name='" + name + '\'' +
+            ", address='" + address + '\'' +
+            ", photoUrl='" + photoUrl + '\'' +
+            ", rating=" + rating +
+            ", phoneNumber='" + phoneNumber + '\'' +
+            ", website='" + website + '\'' +
+            ", favorite=" + favorite +
+            ", selected=" + selected +
+            ", interestedWorkmates=" + interestedWorkmates +
+            '}';
     }
 }

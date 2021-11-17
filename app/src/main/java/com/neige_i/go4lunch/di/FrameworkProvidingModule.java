@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.di;
 
 import android.app.Application;
+import android.location.Location;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -11,6 +12,7 @@ import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.data.google_places.PlacesApi;
 
 import java.time.Clock;
+import java.util.Locale;
 
 import dagger.Module;
 import dagger.Provides;
@@ -72,5 +74,19 @@ public class FrameworkProvidingModule {
     @Provides
     public static String provideMapsApiKey() {
         return BuildConfig.MAPS_API_KEY;
+    }
+
+    // ------------------------------------------ LOCALE -------------------------------------------
+
+    @Provides
+    public static Locale provideDefaultLocale() {
+        return Locale.getDefault();
+    }
+
+    // ------------------------------------- ANDROID LOCATION --------------------------------------
+
+    @Provides
+    public static Location provideLocation() {
+        return new Location("");
     }
 }

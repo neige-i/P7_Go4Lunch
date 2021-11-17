@@ -12,42 +12,42 @@ class RestaurantViewState {
     private final String placeId;
     @NonNull
     private final String name;
+    @NonNull
+    private final String address;
     private final float distance;
     @NonNull
     private final String formattedDistance;
     @NonNull
-    private final String address;
+    private final String openingHours;
     private final int textStyle;
     @ColorRes
     private final int textColor;
-    @NonNull
-    private final String openingHours;
     private final int interestedWorkmatesCount;
     private final int rating;
     @Nullable
     private final String photoUrl;
 
-    public RestaurantViewState(
+    RestaurantViewState(
         @NonNull String placeId,
         @NonNull String name,
+        @NonNull String address,
         float distance,
         @NonNull String formattedDistance,
-        @NonNull String address,
+        @NonNull String openingHours,
         int textStyle,
         @ColorRes int textColor,
-        @NonNull String openingHours,
         int interestedWorkmatesCount,
         int rating,
         @Nullable String photoUrl
     ) {
         this.placeId = placeId;
         this.name = name;
+        this.address = address;
         this.distance = distance;
         this.formattedDistance = formattedDistance;
-        this.address = address;
+        this.openingHours = openingHours;
         this.textStyle = textStyle;
         this.textColor = textColor;
-        this.openingHours = openingHours;
         this.interestedWorkmatesCount = interestedWorkmatesCount;
         this.rating = rating;
         this.photoUrl = photoUrl;
@@ -63,6 +63,11 @@ class RestaurantViewState {
         return name;
     }
 
+    @NonNull
+    public String getAddress() {
+        return address;
+    }
+
     public float getDistance() {
         return distance;
     }
@@ -73,8 +78,8 @@ class RestaurantViewState {
     }
 
     @NonNull
-    public String getAddress() {
-        return address;
+    public String getOpeningHours() {
+        return openingHours;
     }
 
     public int getTextStyle() {
@@ -83,11 +88,6 @@ class RestaurantViewState {
 
     public int getTextColor() {
         return textColor;
-    }
-
-    @NonNull
-    public String getOpeningHours() {
-        return openingHours;
     }
 
     public int getInterestedWorkmatesCount() {
@@ -119,14 +119,32 @@ class RestaurantViewState {
             rating == that.rating &&
             placeId.equals(that.placeId) &&
             name.equals(that.name) &&
-            formattedDistance.equals(that.formattedDistance) &&
             address.equals(that.address) &&
+            formattedDistance.equals(that.formattedDistance) &&
             openingHours.equals(that.openingHours) &&
             Objects.equals(photoUrl, that.photoUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, distance, formattedDistance, address, textStyle, textColor, openingHours, interestedWorkmatesCount, rating, photoUrl);
+        return Objects.hash(placeId, name, address, distance, formattedDistance, openingHours, textStyle, textColor, interestedWorkmatesCount, rating, photoUrl);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "RestaurantViewState{" +
+            "placeId='" + placeId + '\'' +
+            ", name='" + name + '\'' +
+            ", address='" + address + '\'' +
+            ", distance=" + distance +
+            ", formattedDistance='" + formattedDistance + '\'' +
+            ", openingHours='" + openingHours + '\'' +
+            ", textStyle=" + textStyle +
+            ", textColor=" + textColor +
+            ", interestedWorkmatesCount=" + interestedWorkmatesCount +
+            ", rating=" + rating +
+            ", photoUrl='" + photoUrl + '\'' +
+            '}';
     }
 }

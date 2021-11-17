@@ -50,6 +50,7 @@ class WorkmateViewState {
         return textStyle;
     }
 
+    @ColorRes
     public int getTextColor() {
         return textColor;
     }
@@ -84,5 +85,18 @@ class WorkmateViewState {
     @Override
     public int hashCode() {
         return Objects.hash(workmateId, profileImageUrl, textStyle, textColor, text, selectedRestaurantId);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "WorkmateViewState{" +
+            "workmateId='" + workmateId + '\'' +
+            ", profileImageUrl='" + profileImageUrl + '\'' +
+            ", textStyle=" + textStyle +
+            ", textColor=" + textColor +
+            ", text='" + text + '\'' +
+            ", selectedRestaurantId='" + selectedRestaurantId + '\'' +
+            '}';
     }
 }

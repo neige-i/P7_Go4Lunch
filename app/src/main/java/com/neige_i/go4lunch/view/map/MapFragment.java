@@ -3,8 +3,7 @@ package com.neige_i.go4lunch.view.map;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.view.ViewGroup;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -75,8 +73,10 @@ public class MapFragment extends Fragment {
         final FragmentMapBinding binding = FragmentMapBinding.bind(view);
 
         // Setup UI
-        ((SupportMapFragment) getChildFragmentManager().findFragmentById(binding.map.getId()))
-            .getMapAsync(googleMap -> {
+        final SupportMapFragment supportMapFragment =
+            (SupportMapFragment) getChildFragmentManager().findFragmentById(binding.map.getId());
+        if (supportMapFragment != null) {
+            supportMapFragment.getMapAsync(googleMap -> {
                 initMap(googleMap, viewModel);
 
                 // Update UI when state is changed
@@ -85,8 +85,14 @@ public class MapFragment extends Fragment {
                     updateMap(mapViewState, googleMap, binding.locationBtn)
                 );
             });
+        }
 
         binding.locationBtn.setOnClickListener(v -> viewModel.onLocationButtonClicked());
+
+        // Update UI when events are triggered
+        viewModel.getShowDetailsEvent().observe(getViewLifecycleOwner(), placeId -> {
+            startDetailActivityCallback.showDetailedInfo(placeId);
+        });
     }
 
     private void initMap(@NonNull GoogleMap googleMap, @NonNull MapViewModel viewModel) {
@@ -99,7 +105,7 @@ public class MapFragment extends Fragment {
             return false; // Let the default behaviour occur
         });
         googleMap.setOnInfoWindowClickListener(marker -> {
-            startDetailActivityCallback.showDetailedInfo((String) marker.getTag());
+            viewModel.onInfoWindowClick((String) marker.getTag());
         });
 
         // Setup camera move events
@@ -128,19 +134,21 @@ public class MapFragment extends Fragment {
             final String placeId = markerViewState.getPlaceId();
 
             final Marker currentMarker = displayedMarkers.get(placeId);
-            if (currentMarker == null) { // ASKME: handle marker list
+            if (currentMarker == null) {
                 final Marker marker = googleMap.addMarker(
                     new MarkerOptions()
                         .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
                         .title(markerViewState.getName())
                         .snippet(markerViewState.getAddress())
-                        .icon(getIcon(markerViewState.getMarkerDrawable()))
+                        .icon(getSmallerIcon(markerViewState.getMarkerDrawable()))
                 );
-                marker.setTag(placeId);
 
-                displayedMarkers.put(placeId, marker);
+                if (marker != null) {
+                    marker.setTag(placeId);
+                    displayedMarkers.put(placeId, marker);
+                }
             } else {
-                currentMarker.setIcon(getIcon(markerViewState.getMarkerDrawable()));
+                currentMarker.setIcon(getSmallerIcon(markerViewState.getMarkerDrawable()));
             }
         }
 
@@ -151,12 +159,9 @@ public class MapFragment extends Fragment {
         ));
     }
 
-    private BitmapDescriptor getIcon(@DrawableRes int drawableId) {
-        final Drawable drawable = ResourcesCompat.getDrawable(getResources(), drawableId, null);
-
-        // Get smaller marker
+    private BitmapDescriptor getSmallerIcon(@DrawableRes int drawableId) {
         return BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(
-            ((BitmapDrawable) drawable).getBitmap(),
+            BitmapFactory.decodeResource(getResources(), drawableId),
             100,
             100,
             false

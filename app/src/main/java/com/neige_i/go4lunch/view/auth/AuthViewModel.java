@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
-public class AuthViewModel extends ViewModel {
+class AuthViewModel extends ViewModel {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -42,7 +42,7 @@ public class AuthViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public AuthViewModel(@NonNull SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase) {
+    AuthViewModel(@NonNull SignInAndUpdateDatabaseUseCase signInAndUpdateDatabaseUseCase) {
         this.signInAndUpdateDatabaseUseCase = signInAndUpdateDatabaseUseCase;
     }
 
@@ -67,17 +67,19 @@ public class AuthViewModel extends ViewModel {
         // Logging process has begun
         loggingViewState.setValue(true);
 
-        loggingViewState.addSource(signInAndUpdateDatabaseUseCase.signInToFirebase(authCredential), signInResult -> {
-            if (signInResult instanceof SignInResult.Success) {
-                startHomeActivityEvent.call();
-            } else if (signInResult instanceof SignInResult.Failure) {
-                // The activity is not directly started when the sign-in succeeds (a little laggy)
-                // This is why the logging is reset only when the the sign-in fails
-                loggingViewState.setValue(false);
+        loggingViewState.addSource(
+            signInAndUpdateDatabaseUseCase.signInToFirebase(authCredential), signInResult -> {
+                if (signInResult instanceof SignInResult.Success) {
+                    startHomeActivityEvent.call();
+                } else if (signInResult instanceof SignInResult.Failure) {
+                    // The activity is not directly started when the sign-in succeeds (a little laggy)
+                    // This is why the logging is reset only when the the sign-in fails
+                    loggingViewState.setValue(false);
 
-                handleFirebaseSignInError(((SignInResult.Failure) signInResult).getException());
+                    handleFirebaseSignInError(((SignInResult.Failure) signInResult).getException());
+                }
             }
-        });
+        );
     }
 
     // ----------------------------------- SIGN-IN ERROR METHODS -----------------------------------

@@ -14,31 +14,31 @@ public class NearbyDetail {
     @NonNull
     private final String address;
     private final float distance;
-    private final int rating;
-    @Nullable
-    private final String photoUrl;
     @NonNull
     private final HourResult hourResult;
     private final int interestedWorkmatesCount;
+    private final int rating;
+    @Nullable
+    private final String photoUrl;
 
-    NearbyDetail(
+    public NearbyDetail(
         @NonNull String placeId,
         @NonNull String restaurantName,
         @NonNull String address,
         float distance,
-        int rating,
-        @Nullable String photoUrl,
         @NonNull HourResult hourResult,
-        int interestedWorkmatesCount
+        int interestedWorkmatesCount,
+        int rating,
+        @Nullable String photoUrl
     ) {
         this.placeId = placeId;
         this.restaurantName = restaurantName;
         this.address = address;
         this.distance = distance;
-        this.rating = rating;
-        this.photoUrl = photoUrl;
         this.hourResult = hourResult;
         this.interestedWorkmatesCount = interestedWorkmatesCount;
+        this.rating = rating;
+        this.photoUrl = photoUrl;
     }
 
     @NonNull
@@ -60,15 +60,6 @@ public class NearbyDetail {
         return distance;
     }
 
-    public int getRating() {
-        return rating;
-    }
-
-    @Nullable
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-
     @NonNull
     public HourResult getHourResult() {
         return hourResult;
@@ -76,6 +67,15 @@ public class NearbyDetail {
 
     public int getInterestedWorkmatesCount() {
         return interestedWorkmatesCount;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    @Nullable
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
     @Override
@@ -88,32 +88,31 @@ public class NearbyDetail {
         }
         NearbyDetail that = (NearbyDetail) o;
         return Float.compare(that.distance, distance) == 0 &&
-            rating == that.rating &&
             interestedWorkmatesCount == that.interestedWorkmatesCount &&
-            placeId.equals(that.placeId) &&
+            rating == that.rating && placeId.equals(that.placeId) &&
             restaurantName.equals(that.restaurantName) &&
             address.equals(that.address) &&
-            Objects.equals(photoUrl, that.photoUrl) &&
-            Objects.equals(hourResult, that.hourResult);
+            hourResult.equals(that.hourResult) &&
+            Objects.equals(photoUrl, that.photoUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, restaurantName, address, distance, rating, photoUrl, hourResult, interestedWorkmatesCount);
+        return Objects.hash(placeId, restaurantName, address, distance, hourResult, interestedWorkmatesCount, rating, photoUrl);
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "NearbyDetails{" +
+        return "NearbyDetail{" +
             "placeId='" + placeId + '\'' +
             ", restaurantName='" + restaurantName + '\'' +
             ", address='" + address + '\'' +
-            ", distanceToCurrentLocation=" + distance +
+            ", distance=" + distance +
+            ", hourResult=" + hourResult +
+            ", interestedWorkmatesCount=" + interestedWorkmatesCount +
             ", rating=" + rating +
             ", photoUrl='" + photoUrl + '\'' +
-            ", openingHours=" + hourResult +
-            ", interestedWorkmatesCount=" + interestedWorkmatesCount +
             '}';
     }
 }

@@ -32,7 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity implements StartDetailActivityCallback {
 
-    // -------------------------------------- CLASS VARIABLES --------------------------------------
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
     public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
@@ -121,13 +121,6 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
         // Check location permission here in case the user manually changes it outside the app
         viewModel.onActivityResumed();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        viewModel.onActivityPaused();
     }
 
     @Override

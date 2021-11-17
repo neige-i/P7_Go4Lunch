@@ -15,7 +15,7 @@ public class CleanWorkmate {
     private final String photoUrl;
     private final boolean isCurrentUser;
 
-    CleanWorkmate(
+    public CleanWorkmate(
         @NonNull String email,
         @NonNull String name,
         @Nullable String photoUrl,

@@ -12,6 +12,7 @@ import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.domain.detail.CleanWorkmate;
 import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCase;
 import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCase;
+import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,11 @@ public class DetailViewModel extends ViewModel {
     private final UpdateRestaurantPrefUseCase updateRestaurantPrefUseCase;
     @NonNull
     private final Application application;
+
+    // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
+
+    @NonNull
+    private final SingleLiveEvent<String[]> startExternalActivityEvent = new SingleLiveEvent<>();
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -88,7 +94,12 @@ public class DetailViewModel extends ViewModel {
         });
     }
 
-    // ---------------------------------------- UI METHODS -----------------------------------------
+    @NonNull
+    public LiveData<String[]> getStartExternalActivityEvent() {
+        return startExternalActivityEvent;
+    }
+
+    // ------------------------------ RESTAURANT PREFERENCES METHODS -------------------------------
 
     public void onLikeButtonClicked(@NonNull String placeId) {
         if (isFavorite) {
@@ -103,6 +114,18 @@ public class DetailViewModel extends ViewModel {
             updateRestaurantPrefUseCase.unselect();
         } else if (restaurantName != null) {
             updateRestaurantPrefUseCase.select(placeId, restaurantName);
+        }
+    }
+
+    // ------------------------------------ NAVIGATION METHODS -------------------------------------
+
+    public void onExternalActivityAsked(
+        boolean isActivityResolved,
+        @NonNull String action,
+        @NonNull String uriString
+    ) {
+        if (isActivityResolved) {
+            startExternalActivityEvent.setValue(new String[]{action, uriString});
         }
     }
 }

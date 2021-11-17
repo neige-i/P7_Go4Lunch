@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
-public class HomeViewModel extends ViewModel {
+class HomeViewModel extends ViewModel {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -51,7 +51,7 @@ public class HomeViewModel extends ViewModel {
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     @Inject
-    public HomeViewModel(
+    HomeViewModel(
         @NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
         @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
         @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
@@ -87,6 +87,15 @@ public class HomeViewModel extends ViewModel {
         return showBlockingDialogEvent;
     }
 
+    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+
+        freeResourcesUseCase.execute();
+    }
+
     // ------------------------------------- LOCATION METHODS --------------------------------------
 
     public void onActivityResumed() {
@@ -104,10 +113,6 @@ public class HomeViewModel extends ViewModel {
             requestLocationPermissionEvent.call();
             isLocationPermissionAlreadyDenied = true;
         }
-    }
-
-    public void onActivityPaused() {
-        freeResourcesUseCase.execute();
     }
 
     // --------------------------------- BOTTOM NAVIGATION METHODS ---------------------------------
