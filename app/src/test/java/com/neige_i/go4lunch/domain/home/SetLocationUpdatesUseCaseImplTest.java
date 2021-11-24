@@ -26,14 +26,13 @@ public class SetLocationUpdatesUseCaseImplTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private final SetLocationUpdatesUseCase setLocationUpdatesUseCase = new SetLocationUpdatesUseCaseImpl(
-        locationRepositoryMock
-    );
+    private final SetLocationUpdatesUseCase setLocationUpdatesUseCase =
+        new SetLocationUpdatesUseCaseImpl(locationRepositoryMock);
 
     // ---------------------------------- LOCATION UPDATES TESTS -----------------------------------
 
     @Test
-    public void startLocationUpdatesAndRequestGps_when_updatesAreEnabledTheFirstTime() {
+    public void startLocationUpdatesAndRequestGps_when_enableUpdates_with_neverStartedUpdates() {
         // GIVEN
         doReturn(true).when(locationRepositoryMock).areLocationUpdatesNeverStarted();
 
@@ -48,7 +47,7 @@ public class SetLocationUpdatesUseCaseImplTest {
     }
 
     @Test
-    public void startLocationUpdatesOnly_when_updatesAreEnabledAgain() {
+    public void startLocationUpdatesOnly_when_enableUpdates_with_alreadyStartedUpdates() {
         // GIVEN
         doReturn(false).when(locationRepositoryMock).areLocationUpdatesNeverStarted();
 
@@ -63,7 +62,7 @@ public class SetLocationUpdatesUseCaseImplTest {
     }
 
     @Test
-    public void removeLocationUpdates_when_updatesAreDisabled() {
+    public void removeLocationUpdates_when_disableUpdates() {
         // WHEN
         setLocationUpdatesUseCase.set(false);
 

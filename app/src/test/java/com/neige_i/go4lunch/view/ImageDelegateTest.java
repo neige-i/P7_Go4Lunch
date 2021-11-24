@@ -26,7 +26,7 @@ public class ImageDelegateTest {
     }
 
     @Test
-    public void showNoStars_when_ratingIs0() {
+    public void showNoStars_when_set0Star() {
         // WHEN
         imageDelegate.setStarVisibility(0, star1Mock, star2Mock, star3Mock);
 
@@ -37,7 +37,7 @@ public class ImageDelegateTest {
     }
 
     @Test
-    public void showStar1Only_when_ratingIs1() {
+    public void showStar1Only_when_set1Star() {
         // WHEN
         imageDelegate.setStarVisibility(1, star1Mock, star2Mock, star3Mock);
 
@@ -48,7 +48,7 @@ public class ImageDelegateTest {
     }
 
     @Test
-    public void showStar1And2_when_ratingIs2() {
+    public void showStar1And2_when_set2Stars() {
         // WHEN
         imageDelegate.setStarVisibility(2, star1Mock, star2Mock, star3Mock);
 
@@ -59,7 +59,7 @@ public class ImageDelegateTest {
     }
 
     @Test
-    public void showAllStars_when_ratingIs3() {
+    public void showAllStars_when_set3Stars() {
         // WHEN
         imageDelegate.setStarVisibility(3, star1Mock, star2Mock, star3Mock);
 
@@ -68,14 +68,4 @@ public class ImageDelegateTest {
         verify(star2Mock).setVisibility(View.VISIBLE);
         verify(star3Mock).setVisibility(View.VISIBLE);
     }
-
-//    @Test
-//    public void displayWIthGlide() {
-//        // WHEN
-//        final ImageView imageViewMock = new ImageView(mock(Context.class));
-////        doReturn(null).when(imageViewMock).getContext();
-//        imageDelegate.displayPhotoWithGlide(imageViewMock, "url", 1, Collections.emptyList());
-//
-//        // THEN
-//    }
 }

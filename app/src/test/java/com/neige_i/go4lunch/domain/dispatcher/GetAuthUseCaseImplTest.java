@@ -23,7 +23,7 @@ public class GetAuthUseCaseImplTest {
     // ----------------------------------- AUTHENTICATION TESTS ------------------------------------
 
     @Test
-    public void returnTrue_when_firebaseUserExists() {
+    public void returnTrue_when_getAuthenticatedState_with_existingFirebaseUser() {
         // GIVEN
         doReturn(mock(FirebaseUser.class)).when(firebaseAuthMock).getCurrentUser();
 
@@ -35,7 +35,7 @@ public class GetAuthUseCaseImplTest {
     }
 
     @Test
-    public void returnFalse_when_firebaseUserIsNull() {
+    public void returnFalse_when_getAuthenticatedState_with_nullFirebaseUser() {
         // GIVEN
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 

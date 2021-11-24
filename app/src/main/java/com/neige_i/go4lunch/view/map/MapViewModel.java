@@ -206,12 +206,12 @@ class MapViewModel extends ViewModel {
         // BUT: the position retrieved from setOnCameraIdleListener() is slightly different
         // from the position previously given to move the camera
         // So both new and current CameraPosition's coordinates are compared using a custom method
-        final CameraPosition currentPosition = currentPositionMutableLiveData.getValue();
-        final boolean isSamePosition = currentPosition != null &&
-            currentPosition.zoom == newPosition.zoom &&
-            equalsCurrentPosition(newPosition.target.latitude, newPosition.target.longitude);
 
-        if (!isSamePosition) {
+        // currentPositionMutableLiveData.getValue() can't be null if equalsCurrentPosition() returns true
+        //noinspection ConstantConditions
+        if (!equalsCurrentPosition(newPosition.target.latitude, newPosition.target.longitude) ||
+            currentPositionMutableLiveData.getValue().zoom != newPosition.zoom
+        ) {
             currentPositionMutableLiveData.setValue(newPosition);
         }
     }

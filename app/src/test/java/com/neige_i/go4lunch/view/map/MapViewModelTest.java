@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.view.map;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -51,7 +52,7 @@ public class MapViewModelTest {
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 
-    private final Location deviceLocation = mock(Location.class);
+    private final Location deviceLocationMock = mock(Location.class);
 
     // ---------------------------------------- MOCK VALUES ----------------------------------------
 
@@ -72,6 +73,10 @@ public class MapViewModelTest {
     private static final double DEFAULT_LAT = 0;
     private static final double DEFAULT_LNG = 0;
     private static final float DEFAULT_ZOOM = 2;
+    private static final CameraPosition DEFAULT_CAMERA_POSITION = CameraPosition.fromLatLngZoom(
+        new LatLng(DEFAULT_LAT, DEFAULT_LNG),
+        DEFAULT_ZOOM
+    );
 
     // ------------------------------------------- SETUP -------------------------------------------
 
@@ -79,34 +84,31 @@ public class MapViewModelTest {
     public void setUp() {
         // Setup mocks
         doReturn(mapDataMutableLiveData).when(getMapDataUseCaseMock).get();
-        doReturn(DEVICE_LAT).when(deviceLocation).getLatitude();
-        doReturn(DEVICE_LNG).when(deviceLocation).getLongitude();
+        doReturn(DEVICE_LAT).when(deviceLocationMock).getLatitude();
+        doReturn(DEVICE_LNG).when(deviceLocationMock).getLongitude();
+
+        // Init ViewModel
+        mapViewModel = new MapViewModel(getMapDataUseCaseMock, requestGpsUseCaseMock);
 
         // Default behaviour
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             getDefaultRestaurantList(),
             true,
             getDefaultInterestedWorkmates()
         ));
 
-        // Init ViewModel
-        mapViewModel = new MapViewModel(getMapDataUseCaseMock, requestGpsUseCaseMock);
-
         // Retrieve initial map's CameraPosition when displayed for the first time
-        mapViewModel.onCameraStopped(CameraPosition.fromLatLngZoom(
-            new LatLng(DEFAULT_LAT, DEFAULT_LNG),
-            DEFAULT_ZOOM
-        ));
+        mapViewModel.onCameraStopped(DEFAULT_CAMERA_POSITION);
     }
 
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
 
     @Test
-    public void getDefaultMap() throws InterruptedException {
+    public void returnViewState_when_getValue_with_defaultBehaviour() {
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -125,18 +127,18 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void getEmptyMap_when_locationPermissionIsDenied() throws InterruptedException {
+    public void returnViewState_when_getValue_with_deniedLocationPermission() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             false, // Denied location permission
-            deviceLocation,
+            deviceLocationMock,
             getDefaultRestaurantList(),
             true,
             getDefaultInterestedWorkmates()
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -155,18 +157,18 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void getMap_when_gpsIsDisabled() throws InterruptedException {
+    public void returnViewState_when_getValue_with_disabledGps() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             getDefaultRestaurantList(),
             false, // Disabled GPS
             getDefaultInterestedWorkmates()
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -185,7 +187,7 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void getMap_when_locationIsNotAvailable() throws InterruptedException {
+    public void returnViewState_when_getValue_with_unavailableLocation() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
@@ -196,7 +198,7 @@ public class MapViewModelTest {
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -215,18 +217,49 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void getMap_when_restaurantsAreNotAvailable() throws InterruptedException {
+    public void returnViewState_when_getValue_with_sameLatitudeButDifferentLongitude() {
+        // GIVEN
+        doReturn(DEFAULT_LAT).when(deviceLocationMock).getLatitude();
+        mapDataMutableLiveData.setValue(new MapData(
+            true,
+            deviceLocationMock,
+            getDefaultRestaurantList(),
+            true,
+            getDefaultInterestedWorkmates()
+        ));
+
+        // WHEN
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
+
+        // THEN
+        assertEquals(
+            new MapViewState(
+                true,
+                true,
+                R.drawable.ic_gps_on,
+                R.color.black,
+                getDefaultMarkerList(),
+                DEFAULT_LAT, // Same latitude
+                DEVICE_LNG,
+                MapViewModel.DEFAULT_ZOOM_LEVEL
+            ),
+            mapViewState
+        );
+    }
+
+    @Test
+    public void returnViewState_when_getValue_with_unavailableRestaurants() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             Collections.emptyList(), // Unavailable restaurants
             true,
             getDefaultInterestedWorkmates()
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -245,18 +278,18 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void getMap_when_workmatesAreNotInterested() throws InterruptedException {
+    public void returnViewState_when_getValue_with_noInterestedWorkmates() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             getDefaultRestaurantList(),
             true,
             Collections.emptyMap() // No interested workmates
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -278,16 +311,40 @@ public class MapViewModelTest {
         );
     }
 
+    @Test
+    public void doNothing_when_getValue_with_nullMapData() {
+        // GIVEN
+        mapDataMutableLiveData.setValue(null);
+
+        // WHEN
+        final int viewStateTrigger = getLiveDataTriggerCount(mapViewModel.getMapViewState());
+
+        // THEN
+        assertEquals(0, viewStateTrigger);
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_nullCameraPosition() {
+        // GIVEN (Init ViewModel without calling onCameraStopped() afterwards == null CameraPosition)
+        mapViewModel = new MapViewModel(getMapDataUseCaseMock, requestGpsUseCaseMock);
+
+        // WHEN
+        final int viewStateTrigger = getLiveDataTriggerCount(mapViewModel.getMapViewState());
+
+        // THEN
+        assertEquals(0, viewStateTrigger);
+    }
+
     // ------------------------------ MAP CENTERED ON LOCATION TESTS -------------------------------
 
     @Test
-    public void setButtonColorToBlue_when_mapCameraIsCenteredOnLocation() throws InterruptedException {
+    public void setButtonColorToBlue_when_stopCameraOnDeviceLocation() {
         // WHEN
         mapViewModel.onCameraStopped(CameraPosition.fromLatLngZoom(
             new LatLng(DEVICE_LAT, DEVICE_LNG), // Same position as the current location
             MapViewModel.DEFAULT_ZOOM_LEVEL
         ));
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -308,12 +365,12 @@ public class MapViewModelTest {
     // -------------------------------- LOCATION BUTTON CLICK TESTS --------------------------------
 
     @Test
-    public void moveMapToLocation_when_locationButtonIsClicked_with_enabledGps_availableLocation() throws InterruptedException {
+    public void moveMapToLocation_when_clickOnLocationButton_with_enabledGpsAndAvailableLocation() {
         // GIVEN (GPS is enabled in @Before)
 
         // WHEN
         mapViewModel.onLocationButtonClicked();
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -332,7 +389,7 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void doNotMoveMap_when_locationButtonIsClicked_with_enabledGps_unavailableLocation() throws InterruptedException {
+    public void doNotMoveMap_when_clickOnLocationButton_with_enabledGpsAndUnavailableLocation() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
@@ -344,7 +401,7 @@ public class MapViewModelTest {
 
         // WHEN
         mapViewModel.onLocationButtonClicked();
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -363,11 +420,11 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void requestGps_when_locationButtonIsClicked_with_DisabledGps() throws InterruptedException {
+    public void requestGps_when_clickOnLocationButton_with_disabledGps() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             getDefaultRestaurantList(),
             false, // Disabled GPS
             getDefaultInterestedWorkmates()
@@ -375,7 +432,7 @@ public class MapViewModelTest {
 
         // WHEN
         mapViewModel.onLocationButtonClicked();
-        getOrAwaitValue(mapViewModel.getMapViewState());
+        getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         verify(requestGpsUseCaseMock).request();
@@ -385,13 +442,13 @@ public class MapViewModelTest {
     // ------------------------------------ MAXIMUM ZOOM TESTS -------------------------------------
 
     @Test
-    public void keepCurrentZoomLevel_when_mapZoomIsAboveDefaultLevel() throws InterruptedException {
+    public void keepCurrentZoomLevel_when_stopCameraWithHighZoomLevel() {
         // WHEN
         mapViewModel.onCameraStopped(CameraPosition.fromLatLngZoom(
             new LatLng(DEFAULT_LAT, DEFAULT_LNG),
-            20 // Greater than DEFAULT_ZOOM_LEVEL
+            20 // > DEFAULT_ZOOM_LEVEL
         ));
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -412,10 +469,12 @@ public class MapViewModelTest {
     // ----------------------------- MAP NOT FOLLOWING LOCATION TESTS ------------------------------
 
     @Test
-    public void doNotMoveMap_when_mapIsManuallyScrolled() throws InterruptedException {
-        // WHEN
+    public void doNotMoveMap_when_getValue_with_mapCameraManuallyMoved() {
+        // GIVEN
         mapViewModel.onCameraMoved(GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE); // Or REASON_API_ANIMATION
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+
+        // WHEN
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -436,19 +495,19 @@ public class MapViewModelTest {
     // -------------------------------- NO DUPLICATE MARKERS TESTS ---------------------------------
 
     @Test
-    public void doNotDuplicateMarker_when_sameNearbyRestaurantIsAdded() throws InterruptedException {
+    public void doNotDuplicateMarker_when_getValue_with_sameNearbyRestaurantIsAdded() {
         // GIVEN
-        getOrAwaitValue(mapViewModel.getMapViewState()); // Get the first state with default markers
+        getValueForTesting(mapViewModel.getMapViewState()); // Get the first state with default markers
         mapDataMutableLiveData.setValue(new MapData(
             true,
-            deviceLocation,
+            deviceLocationMock,
             Collections.singletonList(getDefaultRestaurant(3)), // Add the restaurant #3 again
             true,
             getDefaultInterestedWorkmates()
         ));
 
         // WHEN
-        final MapViewState mapViewState = getOrAwaitValue(mapViewModel.getMapViewState());
+        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
 
         // THEN
         assertEquals(
@@ -469,7 +528,7 @@ public class MapViewModelTest {
     // --------------------------------------- REFRESH TESTS ---------------------------------------
 
     @Test
-    public void refresh_when_fragmentIsResumed() {
+    public void refresh_when_resumeFragment() {
         // WHEN
         mapViewModel.onFragmentResumed();
 
@@ -482,16 +541,23 @@ public class MapViewModelTest {
     // ------------------------------------ SHOW DETAILS TESTS -------------------------------------
 
     @Test
-    public void showDetails_when_infoWindowIsClicked_with_nonNullPlaceId() throws InterruptedException {
-        // GIVEN
-        final String expectedPlaceId = "Non-null place ID";
-
+    public void showDetails_when_clickOnInfoWindow_with_nonNullPlaceId() {
         // WHEN
-        mapViewModel.onInfoWindowClick(expectedPlaceId);
-        final String actualPlaceID = getOrAwaitValue(mapViewModel.getShowDetailsEvent());
+        mapViewModel.onInfoWindowClick("Non-null place ID");
+        final String placeId = getValueForTesting(mapViewModel.getShowDetailsEvent());
 
         // THEN
-        assertEquals(expectedPlaceId, actualPlaceID);
+        assertEquals("Non-null place ID", placeId);
+    }
+
+    @Test
+    public void doNothing_when_clickOnInfoWindow_with_nullPlaceId() {
+        // WHEN
+        mapViewModel.onInfoWindowClick(null);
+        final int showDetailTrigger = getLiveDataTriggerCount(mapViewModel.getShowDetailsEvent());
+
+        // THEN
+        assertEquals(0, showDetailTrigger);
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------

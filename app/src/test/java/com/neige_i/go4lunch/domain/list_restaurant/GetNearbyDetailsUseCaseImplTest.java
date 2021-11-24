@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.domain.list_restaurant;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -24,8 +25,12 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,8 +48,8 @@ public class GetNearbyDetailsUseCaseImplTest {
     private final NearbyRepository nearbyRepositoryMock = mock(NearbyRepository.class);
     private final DetailsRepository detailsRepositoryMock = mock(DetailsRepository.class);
     private final FirestoreRepository firestoreRepositoryMock = mock(FirestoreRepository.class);
-    private final Clock clock_15_11_2021 = Clock.fixed(
-        LocalDate.of(2021, 11, 15).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+    private final Clock clock_17_11_2021_09_15 = Clock.fixed(
+        LocalDateTime.of(2021, 11, 17, 9, 15).atZone(ZoneId.systemDefault()).toInstant(),
         ZoneId.systemDefault()
     );
     private final Location restaurantLocationMock = mock(Location.class);
@@ -61,43 +66,24 @@ public class GetNearbyDetailsUseCaseImplTest {
 
     private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<RestaurantDetails> restaurantDetails1MutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<RestaurantDetails> restaurantDetails2MutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<RestaurantDetails> restaurantDetails3MutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<List<User>> interestedWorkmates1MutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<List<User>> interestedWorkmates2MutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<List<User>> interestedWorkmates3MutableLiveData = new MutableLiveData<>();
+    private final List<MutableLiveData<RestaurantDetails>> restaurantDetailsMutableLiveDataList = new ArrayList<>();
+    private final List<MutableLiveData<List<User>>> interestedWorkmatesMutableLiveDataList = new ArrayList<>();
 
-    // ---------------------------------- RESTAURANT FIELD VALUES ----------------------------------
+    // ----------------------------------------- CONSTANT ------------------------------------------
 
-    private static final String EXPECTED_PLACE_ID = "EXPECTED_PLACE_ID";
-    private static final String EXPECTED_NAME = "EXPECTED_NAME";
-    private static final String EXPECTED_ADDRESS = "EXPECTED_ADDRESS";
-    private static final float EXPECTED_DISTANCE = 100;
-    private static final int EXPECTED_RATING = 0;
-    private static final String EXPECTED_PHOTO = "EXPECTED_PHOTO";
-
-    private static final double DEVICE_LAT = 48.8566;
-    private static final double DEVICE_LNG = 2.3522;
-    private static final double RESTAURANT_LAT = 48.85753175771023;
-    private static final double RESTAURANT_LNG = 2.3542384769692366;
+    private static final String PLACE_ID = "PLACE_ID";
+    private static final float RESTAURANT_DISTANCE = 100;
+    private static final int RESTAURANT_COUNT = 7;
 
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
     public void setUp() throws Exception {
         // Setup mocks
-        doReturn(DEVICE_LAT).when(deviceLocationMock).getLatitude();
-        doReturn(DEVICE_LNG).when(deviceLocationMock).getLongitude();
-        doReturn(EXPECTED_DISTANCE + 1, EXPECTED_DISTANCE + 2, EXPECTED_DISTANCE + 3).when(deviceLocationMock).distanceTo(restaurantLocationMock);
+        doReturn(RESTAURANT_DISTANCE).when(deviceLocationMock).distanceTo(restaurantLocationMock);
         doReturn(locationMutableLiveData).when(locationRepositoryMock).getCurrentLocation();
         doReturn(nearbyRestaurantsMutableLiveData).when(nearbyRepositoryMock).getData(deviceLocationMock);
-        doReturn(restaurantDetails1MutableLiveData).when(detailsRepositoryMock).getData(EXPECTED_PLACE_ID + 1);
-        doReturn(restaurantDetails2MutableLiveData).when(detailsRepositoryMock).getData(EXPECTED_PLACE_ID + 2);
-        doReturn(restaurantDetails3MutableLiveData).when(detailsRepositoryMock).getData(EXPECTED_PLACE_ID + 3);
-        doReturn(interestedWorkmates1MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 1);
-        doReturn(interestedWorkmates2MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 2);
-        doReturn(interestedWorkmates3MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 3);
+        initRestaurantDetailsAndInterestedWorkmatesMock();
 
         // Init UseCase
         getNearbyDetailsUseCase = new GetNearbyDetailsUseCaseImpl(
@@ -105,57 +91,114 @@ public class GetNearbyDetailsUseCaseImplTest {
             nearbyRepositoryMock,
             detailsRepositoryMock,
             firestoreRepositoryMock,
-            clock_15_11_2021,
+            clock_17_11_2021_09_15,
             restaurantLocationMock
         );
 
         // Default behaviour
         locationMutableLiveData.setValue(deviceLocationMock);
         nearbyRestaurantsMutableLiveData.setValue(getDefaultNearbyRestaurantList());
-        restaurantDetails1MutableLiveData.setValue(getDefaultRestaurantDetails());
-        restaurantDetails2MutableLiveData.setValue(getDefaultRestaurantDetails());
-        restaurantDetails3MutableLiveData.setValue(getDefaultRestaurantDetails());
-        interestedWorkmates1MutableLiveData.setValue(Collections.emptyList());
-        interestedWorkmates2MutableLiveData.setValue(Collections.nCopies(1, new User()));
-        interestedWorkmates3MutableLiveData.setValue(Collections.nCopies(5, new User()));
+        interestedWorkmatesMutableLiveDataList.get(0).setValue(Collections.emptyList());
+        interestedWorkmatesMutableLiveDataList.get(1).setValue(Collections.nCopies(1, new User()));
+        interestedWorkmatesMutableLiveDataList.get(2).setValue(Collections.nCopies(5, new User()));
+    }
+
+    private void initRestaurantDetailsAndInterestedWorkmatesMock() {
+        for (int i = 0; i < RESTAURANT_COUNT; i++) {
+            final MutableLiveData<RestaurantDetails> restaurantDetails = new MutableLiveData<>();
+            final MutableLiveData<List<User>> interestedWorkmates = new MutableLiveData<>();
+
+            restaurantDetailsMutableLiveDataList.add(restaurantDetails);
+            interestedWorkmatesMutableLiveDataList.add(interestedWorkmates);
+
+            doReturn(restaurantDetails).when(detailsRepositoryMock).getData(PLACE_ID + i);
+            doReturn(interestedWorkmates).when(firestoreRepositoryMock).getWorkmatesEatingAt(PLACE_ID + i);
+        }
     }
 
     @Test
-    public void get() throws InterruptedException {
-        // WHEN
-        final List<NearbyDetail> nearbyDetailList = getOrAwaitValue(getNearbyDetailsUseCase.get());
+    public void returnNearbyDetailList_when_getValue() {
+        // GIVEN
+        // Do not set restaurantDetailsMutableLiveDataList[0]
+        restaurantDetailsMutableLiveDataList.get(1).setValue(getDefaultRestaurantDetails(
+            Collections.emptyList()
+        ));
+        restaurantDetailsMutableLiveDataList.get(2).setValue(getDefaultRestaurantDetails(
+            Collections.singletonList(
+                new RestaurantDetails.RestaurantHour(true, DayOfWeek.SUNDAY, LocalTime.of(0, 0))
+            )
+        ));
+        restaurantDetailsMutableLiveDataList.get(3).setValue(getDefaultRestaurantDetails(
+            Arrays.asList(
+                new RestaurantDetails.RestaurantHour(true, DayOfWeek.MONDAY, LocalTime.of(10, 30)),
+                new RestaurantDetails.RestaurantHour(false, DayOfWeek.MONDAY, LocalTime.of(12, 15))
+            )
+        ));
+        restaurantDetailsMutableLiveDataList.get(4).setValue(getDefaultRestaurantDetails(
+            Arrays.asList(
+                new RestaurantDetails.RestaurantHour(true, DayOfWeek.TUESDAY, LocalTime.of(10, 30)),
+                new RestaurantDetails.RestaurantHour(false, DayOfWeek.WEDNESDAY, LocalTime.of(9, 30))
+            )
+        ));
+        restaurantDetailsMutableLiveDataList.get(5).setValue(getDefaultRestaurantDetails(
+            Arrays.asList(
+                new RestaurantDetails.RestaurantHour(true, DayOfWeek.WEDNESDAY, LocalTime.of(9, 15)),
+                new RestaurantDetails.RestaurantHour(false, DayOfWeek.WEDNESDAY, LocalTime.of(19, 30))
+            )
+        ));
+        restaurantDetailsMutableLiveDataList.get(6).setValue(getDefaultRestaurantDetails(
+            Collections.singletonList(
+                new RestaurantDetails.RestaurantHour(false, DayOfWeek.SATURDAY, LocalTime.of(20, 0)) // Strange hour
+            )
+        ));
 
-        // ASKME: why not working
+        // WHEN
+        final List<NearbyDetail> nearbyDetailList = getValueForTesting(getNearbyDetailsUseCase.get());
+
         // THEN
-//        assertEquals(
-//            getDefaultNearbyDetailList(),
-//            nearbyDetailList
-//        );
-        assertEquals(3, getDefaultNearbyDetailList().size());
+        final LocalDate localDate = LocalDate.now(clock_17_11_2021_09_15); // Wednesday
+        assertEquals(
+            Arrays.asList(
+                getDefaultNearbyDetail(0, new HourResult.Loading(), 0),
+                getDefaultNearbyDetail(1, new HourResult.Unknown(), 1),
+                getDefaultNearbyDetail(2, new HourResult.AlwaysOpen(), 5),
+                getDefaultNearbyDetail(3, new HourResult.Closed(5, localDate.plusDays(5).atTime(10, 30)), 0),
+                getDefaultNearbyDetail(4, new HourResult.ClosingSoon(), 0),
+                getDefaultNearbyDetail(5, new HourResult.Open(0, localDate.atTime(19, 30)), 0),
+                getDefaultNearbyDetail(6, new HourResult.Open(3, localDate.plusDays(3).atTime(20, 0)), 0)
+            ),
+            nearbyDetailList
+        );
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_unavailableLocation() {
+        // GIVEN
+        locationMutableLiveData.setValue(null);
+
+        // WHEN
+        final int nearbyDetailsTrigger = getLiveDataTriggerCount(getNearbyDetailsUseCase.get());
+
+        // THEN
+        assertEquals(0, nearbyDetailsTrigger);
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_unavailableNearbyRestaurants() {
+        // GIVEN
+        nearbyRestaurantsMutableLiveData.setValue(null);
+
+        // WHEN
+        final int nearbyDetailsTrigger = getLiveDataTriggerCount(getNearbyDetailsUseCase.get());
+
+        // THEN
+        assertEquals(0, nearbyDetailsTrigger);
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------
 
     @NonNull
-    private List<NearbyRestaurant> getDefaultNearbyRestaurantList() {
-        return Arrays.asList(getDefaultNearbyRestaurant(1), getDefaultNearbyRestaurant(2), getDefaultNearbyRestaurant(3));
-    }
-
-    @NonNull
-    private NearbyRestaurant getDefaultNearbyRestaurant(int index) {
-        return new NearbyRestaurant(
-            EXPECTED_PLACE_ID + index,
-            EXPECTED_NAME + index,
-            EXPECTED_ADDRESS + index,
-            0,
-            0,
-            EXPECTED_RATING + index,
-            EXPECTED_PHOTO + index
-        );
-    }
-
-    @NonNull
-    private RestaurantDetails getDefaultRestaurantDetails() {
+    private RestaurantDetails getDefaultRestaurantDetails(@NonNull List<RestaurantDetails.RestaurantHour> restaurantHours) {
         return new RestaurantDetails(
             "place ID",
             "name",
@@ -164,26 +207,46 @@ public class GetNearbyDetailsUseCaseImplTest {
             null,
             null,
             null,
-            Collections.emptyList()
+            restaurantHours
+        );
+    }
+
+    private List<NearbyRestaurant> getDefaultNearbyRestaurantList() {
+        final List<NearbyRestaurant> nearbyRestaurantList = new ArrayList<>();
+        for (int i = 0; i < RESTAURANT_COUNT; i++) {
+            nearbyRestaurantList.add(getDefaultNearbyRestaurant(i));
+        }
+        return nearbyRestaurantList;
+    }
+
+    @NonNull
+    private NearbyRestaurant getDefaultNearbyRestaurant(int index) {
+        return new NearbyRestaurant(
+            PLACE_ID + index,
+            "RESTAURANT_NAME" + index,
+            "RESTAURANT_ADDRESS" + index,
+            0,
+            0,
+            index,
+            "RESTAURANT_PHOTO" + index
         );
     }
 
     @NonNull
-    private List<NearbyDetail> getDefaultNearbyDetailList() {
-        return Arrays.asList(getDefaultNearbyDetail(1, 0), getDefaultNearbyDetail(2, 1), getDefaultNearbyDetail(3, 5));
-    }
-
-    @NonNull
-    private NearbyDetail getDefaultNearbyDetail(int index, int interestedWorkmateCount) {
+    private NearbyDetail getDefaultNearbyDetail(
+        int index,
+        @NonNull HourResult hourResult,
+        int interestedWorkmateCount
+    ) {
         return new NearbyDetail(
-            EXPECTED_PLACE_ID + index,
-            EXPECTED_NAME + index,
-            EXPECTED_ADDRESS + index,
-            EXPECTED_DISTANCE + index,
-            new HourResult.Loading(),
+            PLACE_ID + index,
+            "RESTAURANT_NAME" + index,
+            "RESTAURANT_ADDRESS" + index,
+            RESTAURANT_DISTANCE,
+            hourResult,
             interestedWorkmateCount,
-            EXPECTED_RATING + index,
-            EXPECTED_PHOTO + index
+            index,
+            "RESTAURANT_PHOTO" + index
         );
     }
 }

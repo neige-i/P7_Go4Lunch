@@ -3,7 +3,6 @@ package com.neige_i.go4lunch.view.detail;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
@@ -42,7 +41,6 @@ public class DetailViewModel extends ViewModel {
 
     private boolean isSelected;
     private boolean isFavorite;
-    @Nullable
     private String restaurantName;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
@@ -112,7 +110,7 @@ public class DetailViewModel extends ViewModel {
     public void onSelectedRestaurantClicked(@NonNull String placeId) {
         if (isSelected) {
             updateRestaurantPrefUseCase.unselect();
-        } else if (restaurantName != null) {
+        } else {
             updateRestaurantPrefUseCase.select(placeId, restaurantName);
         }
     }

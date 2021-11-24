@@ -31,7 +31,7 @@ public class GetLocationPermissionUseCaseImplTest {
     // --------------------------------- LOCATION PERMISSION TESTS ---------------------------------
 
     @Test
-    public void returnTrue_when_permissionIsGranted() {
+    public void returnTrue_when_getLocationPermission_with_granted() {
         // GIVEN
         doReturn(true).when(locationPermissionRepositoryMock).isPermissionGranted();
 
@@ -43,7 +43,7 @@ public class GetLocationPermissionUseCaseImplTest {
     }
 
     @Test
-    public void returnFalse_when_permissionIsDenied() {
+    public void returnFalse_when_getLocationPermission_with_denied() {
         // GIVEN
         doReturn(false).when(locationPermissionRepositoryMock).isPermissionGranted();
 

@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.domain.detail;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -70,7 +71,6 @@ public class GetRestaurantInfoUseCaseImplTest {
         doReturn(firebaseUser).when(firebaseAuthMock).getCurrentUser();
         doReturn(currentUserId).when(firebaseUser).getUid();
         doReturn(currentUserMutableLiveData).when(firestoreRepositoryMock).getUser(currentUserId);
-        // ASKME: doCallRealMethod
         doCallRealMethod().when(workmatesDelegateMock).moveToFirstPosition(anyList(), any());
         doReturn(true).when(workmatesDelegateMock).isToday(TODAY_DATE);
 
@@ -119,9 +119,9 @@ public class GetRestaurantInfoUseCaseImplTest {
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
 
     @Test
-    public void getDefaultRestaurantInfo() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_defaultBehaviour() {
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -144,7 +144,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_noFavoriteRestaurant() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_noFavoriteRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
             "MY_EMAIL",
@@ -155,7 +155,7 @@ public class GetRestaurantInfoUseCaseImplTest {
         ));
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -178,7 +178,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_differentFavoriteRestaurant() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_differentFavoriteRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
             "MY_EMAIL",
@@ -189,7 +189,7 @@ public class GetRestaurantInfoUseCaseImplTest {
         ));
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -212,7 +212,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_noRestaurantSelected() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_noSelectedRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
             "MY_EMAIL",
@@ -223,7 +223,7 @@ public class GetRestaurantInfoUseCaseImplTest {
         ));
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -246,7 +246,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_differentRestaurantSelected() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_differentRestaurantSelected() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
             "MY_EMAIL",
@@ -257,7 +257,7 @@ public class GetRestaurantInfoUseCaseImplTest {
         ));
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -280,12 +280,12 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_differentSelectedDate() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_differentSelectedDate() {
         // GIVEN
         doReturn(false).when(workmatesDelegateMock).isToday(TODAY_DATE);
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -308,12 +308,12 @@ public class GetRestaurantInfoUseCaseImplTest {
     }
 
     @Test
-    public void getRestaurantInfo_with_noInterestedWorkmate() throws InterruptedException {
+    public void returnRestaurantInfo_when_getValue_with_noInterestedWorkmate() {
         // GIVEN
         interestedWorkmatesMutableLiveData.setValue(null);
 
         // WHEN
-        final RestaurantInfo restaurantInfo = getOrAwaitValue(getRestaurantInfoUseCase.get(PLACE_ID));
+        final RestaurantInfo restaurantInfo = getValueForTesting(getRestaurantInfoUseCase.get(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -330,5 +330,29 @@ public class GetRestaurantInfoUseCaseImplTest {
             ),
             restaurantInfo
         );
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_unavailableCurrentUser() {
+        // GIVEN
+        doReturn(null).when(firebaseAuthMock).getCurrentUser();
+
+        // WHEN
+        final int getLiveDataTrigger = getLiveDataTriggerCount(getRestaurantInfoUseCase.get(PLACE_ID));
+
+        // THEN
+        assertEquals(0, getLiveDataTrigger);
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_unavailableRestaurantData() {
+        // GIVEN
+        restaurantDetailsMutableLiveData.setValue(null);
+
+        // WHEN
+        final int getLiveDataTrigger = getLiveDataTriggerCount(getRestaurantInfoUseCase.get(PLACE_ID));
+
+        // THEN
+        assertEquals(0, getLiveDataTrigger);
     }
 }

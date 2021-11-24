@@ -34,7 +34,7 @@ public class FreeResourcesUseCaseImplTest {
     // ----------------------------------- FREE RESOURCES TESTS ------------------------------------
 
     @Test
-    public void removeListeners_when_resourcesAreFreed() {
+    public void removeListeners_when_execute() {
         // WHEN
         freeResourcesUseCase.execute();
 

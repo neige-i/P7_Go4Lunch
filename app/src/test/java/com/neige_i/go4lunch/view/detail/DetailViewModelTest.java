@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.view.detail;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -73,7 +74,7 @@ public class DetailViewModelTest {
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
 
     @Test
-    public void returnViewState_when_favorite_selected_noInterestedWorkmate() throws InterruptedException {
+    public void returnViewState_when_getValue_with_favoriteAndSelectedAndNoInterestedWorkmate() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -88,7 +89,7 @@ public class DetailViewModelTest {
         ));
 
         // WHEN
-        final DetailViewState detailViewState = getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        final DetailViewState detailViewState = getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -109,7 +110,7 @@ public class DetailViewModelTest {
     }
 
     @Test
-    public void returnViewState_when_notFavorite_notSelected_with2InterestedWorkmate() throws InterruptedException {
+    public void returnViewState_when_getValue_with_notFavoriteAndNotSelectedAnd2InterestedWorkmate() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -127,7 +128,7 @@ public class DetailViewModelTest {
         ));
 
         // WHEN
-        final DetailViewState detailViewState = getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        final DetailViewState detailViewState = getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // THEN
         assertEquals(
@@ -153,7 +154,7 @@ public class DetailViewModelTest {
     // ------------------------------- RESTAURANT PREFERENCES TESTS --------------------------------
 
     @Test
-    public void likeRestaurant_when_currentlyNotInFavorite() throws InterruptedException {
+    public void likeRestaurant_when_clickOnLikeButton_with_currentlyNotFavorite() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -166,7 +167,7 @@ public class DetailViewModelTest {
             false,
             Collections.emptyList()
         ));
-        getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // WHEN
         detailViewModel.onLikeButtonClicked(PLACE_ID);
@@ -177,7 +178,7 @@ public class DetailViewModelTest {
     }
 
     @Test
-    public void unlikeRestaurant_when_currentlyInFavorite() throws InterruptedException {
+    public void unlikeRestaurant_when_clickOnLikeButton_with_currentlyFavorite() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -190,7 +191,7 @@ public class DetailViewModelTest {
             false,
             Collections.emptyList()
         ));
-        getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // WHEN
         detailViewModel.onLikeButtonClicked(PLACE_ID);
@@ -201,7 +202,7 @@ public class DetailViewModelTest {
     }
 
     @Test
-    public void selectRestaurant_when_currentlyNotSelected() throws InterruptedException {
+    public void selectRestaurant_when_clickOnSelectButton_with_currentlyNotSelected() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -214,7 +215,7 @@ public class DetailViewModelTest {
             false, // Not selected
             Collections.emptyList()
         ));
-        getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // WHEN
         detailViewModel.onSelectedRestaurantClicked(PLACE_ID);
@@ -225,7 +226,7 @@ public class DetailViewModelTest {
     }
 
     @Test
-    public void unselectRestaurant_when_currentlySelected() throws InterruptedException {
+    public void unselectRestaurant_when_clickOnSelectButton_with_currentlySelected() {
         // GIVEN
         restaurantInfoMutableLiveData.setValue(new RestaurantInfo(
             "NAME",
@@ -238,7 +239,7 @@ public class DetailViewModelTest {
             true, // Is selected
             Collections.emptyList()
         ));
-        getOrAwaitValue(detailViewModel.getViewState(PLACE_ID));
+        getValueForTesting(detailViewModel.getViewState(PLACE_ID));
 
         // WHEN
         detailViewModel.onSelectedRestaurantClicked(PLACE_ID);
@@ -251,12 +252,22 @@ public class DetailViewModelTest {
     // ------------------------------- START EXTERNAL ACTIVITY TESTS -------------------------------
 
     @Test
-    public void startExternalActivity_when_activityIsResolved() throws InterruptedException {
+    public void startExternalActivity_when_activityIsResolved() {
         // WHEN
         detailViewModel.onExternalActivityAsked(true, "action", "uri");
-        final String[] externalActivityEvent = getOrAwaitValue(detailViewModel.getStartExternalActivityEvent());
+        final String[] externalActivityEvent = getValueForTesting(detailViewModel.getStartExternalActivityEvent());
 
         // THEN
         assertArrayEquals(new String[]{"action", "uri"}, externalActivityEvent);
+    }
+
+    @Test
+    public void doNothing_when_activityIsNotResolved() {
+        // WHEN
+        detailViewModel.onExternalActivityAsked(false, "action", "uri");
+        final int externalActivityEventTrigger = getLiveDataTriggerCount(detailViewModel.getStartExternalActivityEvent());
+
+        // THEN
+        assertEquals(0, externalActivityEventTrigger); // Never called
     }
 }

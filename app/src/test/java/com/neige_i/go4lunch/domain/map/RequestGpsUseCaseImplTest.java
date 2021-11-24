@@ -29,7 +29,7 @@ public class RequestGpsUseCaseImplTest {
     // ------------------------------------- REQUEST GPS TESTS -------------------------------------
 
     @Test
-    public void requestGps_when_gpsNeedToBeEnabled() {
+    public void requestGps_when_request() {
         // WHEN
         requestGpsUseCase.request();
 

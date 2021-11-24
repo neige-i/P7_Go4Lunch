@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.domain.map;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -100,9 +101,9 @@ public class GetMapDataUseCaseImplTest {
     // ------------------------------------- DEPENDENCY TESTS --------------------------------------
 
     @Test
-    public void getDefaultMapData() throws InterruptedException {
+    public void returnMapData_when_getValue_with_defaultBehaviour() {
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
 
         // THEN
         assertEquals(
@@ -118,18 +119,18 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @Test
-    public void getMapData_when_locationPermissionIsDenied() throws InterruptedException {
+    public void returnMapData_when_getValue_with_deniedLocationPermission() {
         // GIVEN
         doReturn(false).when(locationPermissionRepositoryMock).isPermissionGranted();
         getMapDataUseCase.refresh();
 
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
 
         // THEN
         assertEquals(
             new MapData(
-                false, // denied permission
+                false, // Denied permission
                 locationMock,
                 getDefaultRestaurantList(),
                 true,
@@ -140,12 +141,12 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @Test
-    public void getMapData_when_locationIsNotAvailable() throws InterruptedException {
+    public void returnMapData_when_getValue_with_unavailableLocation() {
         // GIVEN
         locationMutableLiveData.setValue(null);
 
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
 
         // THEN
         assertEquals(
@@ -161,12 +162,12 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @Test
-    public void getMapData_when_nearbyRestaurantsAreNotAvailable() throws InterruptedException {
+    public void returnMapData_when_getValue_with_unavailableNearbyRestaurants() {
         // GIVEN
         nearbyRestaurantsMutableLiveData.setValue(null);
 
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
 
         // THEN
         assertEquals(
@@ -182,12 +183,12 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @Test
-    public void getMapData_when_gpsIsDisabled() throws InterruptedException {
+    public void returnMapData_when_getValue_with_disabledGps() {
         // GIVEN
         gpsStateMutableLiveData.setValue(false);
 
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
 
         // THEN
         assertEquals(
@@ -195,7 +196,7 @@ public class GetMapDataUseCaseImplTest {
                 true,
                 locationMock,
                 getDefaultRestaurantList(),
-                false,
+                false, // Disabled GPS
                 getDefaultInterestedWorkmates()
             ),
             mapData
@@ -203,30 +204,33 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @Test
-    public void getMapData_when_differentWorkmatesAreInterested() throws InterruptedException {
+    public void doNothing_when_getValue_with_unavailableGps() {
         // GIVEN
-        interestedWorkmates1MutableLiveData.setValue(Collections.nCopies(4, new User()));
-        interestedWorkmates2MutableLiveData.setValue(Collections.nCopies(8, new User()));
-        interestedWorkmates3MutableLiveData.setValue(Collections.nCopies(6, new User()));
+        gpsStateMutableLiveData.setValue(null);
 
         // WHEN
-        final MapData mapData = getOrAwaitValue(getMapDataUseCase.get());
+        final int viewStateTrigger = getLiveDataTriggerCount(getMapDataUseCase.get());
 
         // THEN
-        assertEquals(
-            new MapData(
-                true,
-                locationMock,
-                getDefaultRestaurantList(),
-                true,
-                new HashMap<String, Integer>(){{
-                    put(EXPECTED_PLACE_ID + 1, 4);
-                    put(EXPECTED_PLACE_ID + 2, 8);
-                    put(EXPECTED_PLACE_ID + 3, 6);
-                }}
-            ),
-            mapData
+        assertEquals(0, viewStateTrigger);
+    }
+
+    @Test
+    public void doNothing_when_getValue_with_unavailableLocationPermission() {
+        // GIVEN (Init UseCase without calling refresh() afterwards = null location permission)
+        getMapDataUseCase = new GetMapDataUseCaseImpl(
+            locationPermissionRepositoryMock,
+            locationRepositoryMock,
+            nearbyRepositoryMock,
+            gpsStateChangeReceiverMock,
+            firestoreRepositoryMock
         );
+
+        // WHEN
+        final int viewStateTrigger = getLiveDataTriggerCount(getMapDataUseCase.get());
+
+        // THEN
+        assertEquals(0, viewStateTrigger);
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------

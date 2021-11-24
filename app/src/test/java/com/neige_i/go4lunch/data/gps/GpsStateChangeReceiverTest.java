@@ -1,6 +1,6 @@
 package com.neige_i.go4lunch.data.gps;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -52,50 +52,50 @@ public class GpsStateChangeReceiverTest {
     // -------------------------------------- RECEIVER TESTS ---------------------------------------
 
     @Test
-    public void returnTrue_when_receiverIsInitializedAndGpsIsEnabled() throws InterruptedException {
-        // GIVEN
-        // GPS is enabled in @Before
+    public void returnTrue_when_initReceiver_with_enabledGps() {
+        // GIVEN (GPS is enabled in @Before)
 
         // WHEN
-        final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
+        final boolean isGpsEnabled = getValueForTesting(gpsStateChangeReceiver.getGpsState());
 
         // THEN
         assertTrue(isGpsEnabled);
     }
 
     @Test
-    public void returnFalse_when_receiverIsInitializedAndGpsIsDisabled() throws InterruptedException {
+    public void returnFalse_when_initReceiver_with_disabledGps() {
         // GIVEN
         doReturn(false).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
+        gpsStateChangeReceiver = new GpsStateChangeReceiver(contextMock);
 
         // WHEN
-        final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
+        final boolean isGpsEnabled = getValueForTesting(gpsStateChangeReceiver.getGpsState());
 
         // THEN
-        assertTrue(isGpsEnabled);
+        assertFalse(isGpsEnabled);
     }
 
     @Test
-    public void returnTrue_when_receiverIsTriggeredAndGpsIsEnabled() throws InterruptedException {
+    public void returnTrue_when_triggerReceiver_with_enabledGps() {
         // GIVEN
         // GPS is enabled in @Before
 
         // WHEN
         gpsStateChangeReceiver.onReceive(mock(Context.class), intentMock);
-        final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
+        final boolean isGpsEnabled = getValueForTesting(gpsStateChangeReceiver.getGpsState());
 
         // THEN
         assertTrue(isGpsEnabled);
     }
 
     @Test
-    public void returnFalse_when_receiverIsTriggeredAndGpsIsDisabled() throws InterruptedException {
+    public void returnFalse_when_triggerReceiver_with_disabledGps() {
         // GIVEN
         doReturn(false).when(locationManagerMock).isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         // WHEN
         gpsStateChangeReceiver.onReceive(mock(Context.class), intentMock);
-        final boolean isGpsEnabled = getOrAwaitValue(gpsStateChangeReceiver.getGpsState());
+        final boolean isGpsEnabled = getValueForTesting(gpsStateChangeReceiver.getGpsState());
 
         // THEN
         assertFalse(isGpsEnabled);
