@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.domain.auth;
 
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -98,7 +99,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     // ----------------------------------- SIGN-IN RESULT TESTS ------------------------------------
 
     @Test
-    public void returnSuccess_when_signInSucceeds() {
+    public void returnSuccess_when_signIn_withSuccess() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -116,7 +117,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void returnFailure_when_networkFails() {
+    public void returnFailure_when_signIn_with_networkException() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -137,7 +138,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void returnFailure_when_firebaseUserIsInvalid() {
+    public void returnFailure_when_signIn_with_invalidUserException() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -158,7 +159,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void returnFailure_when_credentialsAreIncorrect() {
+    public void returnFailure_when_signIn_with_invalidCredentialsException() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -179,7 +180,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void returnFailure_when_firebaseUserAlreadyExists() {
+    public void returnFailure_when_signIn_with_userCollisionException() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -200,7 +201,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void returnFailure_when_signInFailsWithAnotherException() {
+    public void returnFailure_when_signIn_with_otherFirebaseException() {
         // GIVEN
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
@@ -223,7 +224,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     // ----------------------------------- UPDATE DATABASE TESTS -----------------------------------
 
     @Test
-    public void addUserToFirestore_when_notPresentInDatabase() {
+    public void addUserToFirestore_when_signInSuccessful_with_newUserWithPhoto() {
         // GIVEN
         firestoreUserMutableLiveData.setValue(null);
 
@@ -251,7 +252,74 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     }
 
     @Test
-    public void doNotAddUserToFirestore_when_alreadyPresentInDatabase() {
+    public void addUserToFirestore_when_signInSuccessful_with_newUserWithoutPhoto() {
+        // GIVEN
+        firestoreUserMutableLiveData.setValue(null);
+        doReturn(null).when(firebaseAuthUserMock).getPhotoUrl();
+
+        // WHEN
+        signInAndUpdateDatabaseUseCase.signInToFirebase(any()).observeForever(signInResult -> {
+        });
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        verify(firestoreRepositoryMock).getUser(any());
+        verify(firestoreRepositoryMock).addUser(
+            USER_ID,
+            new User(
+                USER_EMAIL,
+                USER_NAME,
+                null, // No photo
+                null,
+                null
+            )
+        );
+        verifyNoMoreInteractions(firestoreRepositoryMock);
+    }
+
+    @Test
+    public void doNothing_when_signInSuccessful_with_newUserWithoutEmail() {
+        // GIVEN
+        firestoreUserMutableLiveData.setValue(null);
+        doReturn(null).when(firebaseAuthUserMock).getEmail();
+
+        // WHEN
+        getValueForTesting(signInAndUpdateDatabaseUseCase.signInToFirebase(any()));
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        verify(firestoreRepositoryMock).getUser(any());
+        verify(firestoreRepositoryMock, never()).addUser(any(), any());
+        verifyNoMoreInteractions(firestoreRepositoryMock);
+    }
+
+    @Test
+    public void doNothing_when_signInSuccessful_with_newUserWithoutName() {
+        // GIVEN
+        firestoreUserMutableLiveData.setValue(null);
+        doReturn(null).when(firebaseAuthUserMock).getDisplayName();
+
+        // WHEN
+        getValueForTesting(signInAndUpdateDatabaseUseCase.signInToFirebase(any()));
+
+        // Capture OnSuccessListener
+        verify(authResultTaskMock).addOnSuccessListener(onSuccessListenerCaptor.capture());
+        onSuccessListenerCaptor.getValue().onSuccess(mock(AuthResult.class));
+
+        // THEN
+        verify(firestoreRepositoryMock).getUser(any());
+        verify(firestoreRepositoryMock, never()).addUser(any(), any());
+        verifyNoMoreInteractions(firestoreRepositoryMock);
+    }
+
+    @Test
+    public void doNothing_when_signInSuccessful_with_existingUser() {
         // GIVEN
         firestoreUserMutableLiveData.setValue(mock(User.class));
 

@@ -103,14 +103,14 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
 
     @Nullable
     String getPhotoUrl(@Nullable String photoReference) {
-        if (photoReference != null) {
-            return "https://maps.googleapis.com/" +
-                "maps/api/place/photo?" +
-                "maxheight=720" +
-                "&key=" + mapsApiKey +
-                "&photoreference=" + photoReference;
-        } else {
+        if (photoReference == null) {
             return null;
         }
+
+        return "https://maps.googleapis.com/" +
+            "maps/api/place/photo?" +
+            "maxheight=720" +
+            "&key=" + mapsApiKey +
+            "&photoreference=" + photoReference;
     }
 }

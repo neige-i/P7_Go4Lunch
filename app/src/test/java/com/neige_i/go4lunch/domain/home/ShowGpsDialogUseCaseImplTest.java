@@ -1,6 +1,6 @@
 package com.neige_i.go4lunch.domain.home;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -48,13 +48,13 @@ public class ShowGpsDialogUseCaseImplTest {
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
-    public void returnGpsDialog_when_dialogIsQueried() throws InterruptedException {
+    public void returnGpsDialog_when_getValue_with_expectedDialog() {
         // GIVEN
         final ResolvableApiException expectedGpsDialog = mock(ResolvableApiException.class);
         resolvableMutableLiveData.setValue(expectedGpsDialog);
 
         // WHEN
-        final ResolvableApiException actualGpsDialog = getOrAwaitValue(showGpsDialogUseCase.getDialog());
+        final ResolvableApiException actualGpsDialog = getValueForTesting(showGpsDialogUseCase.getDialog());
 
         // THEN
         assertEquals(expectedGpsDialog, actualGpsDialog);

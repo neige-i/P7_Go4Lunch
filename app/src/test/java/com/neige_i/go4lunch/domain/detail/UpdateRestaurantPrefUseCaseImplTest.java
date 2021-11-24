@@ -55,7 +55,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     // ---------------------------------- VERIFY REPOSITORY CALLs ----------------------------------
 
     @Test
-    public void addFavorite_when_restaurantIsLiked_with_nonNullCurrentUser() {
+    public void addFavorite_when_likeRestaurant() {
         // WHEN
         updateRestaurantPrefUseCase.like("PLACE_ID");
 
@@ -65,7 +65,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void removeFavorite_when_restaurantIsUnliked_with_nonNullCurrentUser() {
+    public void removeFavorite_when_unlikeRestaurant() {
         // WHEN
         updateRestaurantPrefUseCase.unlike("PLACE_ID");
 
@@ -75,7 +75,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void setSelected_when_restaurantIsSelected_with_nonNullCurrentUser() {
+    public void setSelected_when_selectRestaurant() {
         // WHEN
         updateRestaurantPrefUseCase.select("PLACE_ID", "NAME");
 
@@ -85,7 +85,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void clearSelected_when_restaurantIsUnselected_with_nonNullCurrentUser() {
+    public void clearSelected_when_unselectRestaurant() {
         // WHEN
         updateRestaurantPrefUseCase.unselect();
 
@@ -95,7 +95,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void doNothing_when_restaurantIsLiked_with_nullCurrentUser() {
+    public void doNothing_when_likeRestaurant_with_nullCurrentUser() {
         // GIVEN
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 
@@ -108,7 +108,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void doNothing_when_restaurantIsUnliked_with_nullCurrentUser() {
+    public void doNothing_when_unlikeRestaurant_with_nullCurrentUser() {
         // GIVEN
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 
@@ -121,7 +121,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void doNothing_when_restaurantIsSelected_with_nullCurrentUser() {
+    public void doNothing_when_selectRestaurant_with_nullCurrentUser() {
         // GIVEN
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 
@@ -134,7 +134,7 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     }
 
     @Test
-    public void doNothing_when_restaurantIsUnselected_with_nullCurrentUser() {
+    public void doNothing_when_unselectRestaurant_with_nullCurrentUser() {
         // GIVEN
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 

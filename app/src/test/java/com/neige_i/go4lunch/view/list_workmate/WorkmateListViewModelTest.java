@@ -1,6 +1,6 @@
 package com.neige_i.go4lunch.view.list_workmate;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -64,7 +64,7 @@ public class WorkmateListViewModelTest {
     // ------------------------------------- VIEW STATE TESTS --------------------------------------
 
     @Test
-    public void returnViewStates_when_workmateHasChosenButNotCurrentUser() throws InterruptedException {
+    public void returnViewStates_when_getValue_with_workmateHasChosenButNotCurrentUser() {
         // GIVEN
         workmateListMutableLiveData.setValue(Arrays.asList(
             new Workmate.WithRestaurant("@workmate", "WORKMATE_NAME", "WORKMATE_PHOTO", false, "PLACE_ID", "RESTAURANT_NAME"),
@@ -72,7 +72,7 @@ public class WorkmateListViewModelTest {
         ));
 
         // WHEN
-        final List<WorkmateViewState> workmateViewStates = getOrAwaitValue(workmateListViewModel.getViewState());
+        final List<WorkmateViewState> workmateViewStates = getValueForTesting(workmateListViewModel.getViewState());
 
         // THEN
         assertEquals(
@@ -85,7 +85,7 @@ public class WorkmateListViewModelTest {
     }
 
     @Test
-    public void returnViewStates_when_workmateHasNotChosenButCurrentUserHas() throws InterruptedException {
+    public void returnViewStates_when_getValue_with_workmateHasNotChosenButCurrentUserHas() {
         // GIVEN
         workmateListMutableLiveData.setValue(Arrays.asList(
             new Workmate.WithRestaurant("@me", "MY_NAME", "MY_PHOTO", true, "PLACE_ID", "RESTAURANT_NAME"),
@@ -93,7 +93,7 @@ public class WorkmateListViewModelTest {
         ));
 
         // WHEN
-        final List<WorkmateViewState> workmateViewStates = getOrAwaitValue(workmateListViewModel.getViewState());
+        final List<WorkmateViewState> workmateViewStates = getValueForTesting(workmateListViewModel.getViewState());
 
         // THEN
         assertEquals(

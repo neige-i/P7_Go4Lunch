@@ -1,6 +1,6 @@
 package com.neige_i.go4lunch.view.dispatcher;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -31,24 +31,24 @@ public class DispatcherViewModelTest {
     // ------------------------------------- REDIRECTION TESTS -------------------------------------
 
     @Test
-    public void redirectToHomeActivity_when_userIsAuthenticated() throws InterruptedException {
+    public void redirectToHomeActivity_when_getValue_with_authenticatedUser() {
         // GIVEN
         doReturn(true).when(getAuthUseCaseMock).isAuthenticated();
 
         // WHEN
-        final ActivityToStart activityToStart = getOrAwaitValue(dispatcherViewModel.getStartActivityEvent());
+        final ActivityToStart activityToStart = getValueForTesting(dispatcherViewModel.getStartActivityEvent());
 
         // THEN
         assertEquals(ActivityToStart.HOME_ACTIVITY, activityToStart);
     }
 
     @Test
-    public void redirectToAuthActivity_when_userIsNotAuthenticated() throws InterruptedException {
+    public void redirectToAuthActivity_when_getValue_with_unauthenticatedUser() {
         // GIVEN
         doReturn(false).when(getAuthUseCaseMock).isAuthenticated();
 
         // WHEN
-        final ActivityToStart activityToStart = getOrAwaitValue(dispatcherViewModel.getStartActivityEvent());
+        final ActivityToStart activityToStart = getValueForTesting(dispatcherViewModel.getStartActivityEvent());
 
         // THEN
         assertEquals(ActivityToStart.AUTH_ACTIVITY, activityToStart);

@@ -1,10 +1,8 @@
 package com.neige_i.go4lunch.view.home;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -66,7 +64,7 @@ public class HomeViewModelTest {
     // ----------------------------------- FREE RESOURCES TESTS ------------------------------------
 
     @Test
-    public void freeResources_when_activityIsPaused() {
+    public void freeResources_when_clearViewModel() {
         // WHEN
         homeViewModel.onCleared();
 
@@ -78,9 +76,8 @@ public class HomeViewModelTest {
     // ---------------------------------- LOCATION UPDATES TESTS -----------------------------------
 
     @Test
-    public void enableLocationUpdates_when_activityIsResumedWithGrantedLocationPermission() {
-        // GIVEN
-        // Location permission is granted by default in @Before
+    public void enableLocationUpdates_when_resumeActivity_with_grantedLocationPermission() {
+        // GIVEN (Location permission is granted by default in @Before)
 
         // WHEN
         homeViewModel.onActivityResumed();
@@ -91,7 +88,7 @@ public class HomeViewModelTest {
     }
 
     @Test
-    public void disableLocationUpdates_when_activityIsResumedWithDeniedLocationPermission() {
+    public void disableLocationUpdates_when_resumeActivity_with_deniedLocationPermission() {
         // GIVEN
         doReturn(false).when(getLocationPermissionUseCaseMock).isGranted();
 
@@ -106,37 +103,29 @@ public class HomeViewModelTest {
     // ----------------------------- REQUEST LOCATION PERMISSION TESTS -----------------------------
 
     @Test
-    public void requestLocationPermissionOnce_when_activityIsResumedMultipleTimes() {
+    public void requestLocationPermissionOnce_when_resumeActivityMultipleTimes() {
         // GIVEN
         doReturn(false).when(getLocationPermissionUseCaseMock).isGranted();
-        homeViewModel.onActivityResumed(); // Resumed once
-        final int[] called = new int[]{0};
 
         // WHEN
-        homeViewModel.getRequestLocationPermissionEvent().observeForever(unused -> {
-            called[0] = called[0] += 1;
-
-            if (called[0] > 1) {
-                fail();
-            }
-
-            homeViewModel.onActivityResumed(); // Resumed twice
-        });
+        homeViewModel.onActivityResumed(); // Resumed once
+        homeViewModel.onActivityResumed(); // Resumed twice
+        final int requestLocationPermissionTrigger = getLiveDataTriggerCount(homeViewModel.getRequestLocationPermissionEvent());
 
         // THEN
-        assertEquals(1, called[0]); // The permission is only requested once
+        assertEquals(1, requestLocationPermissionTrigger);
     }
 
     // ----------------------------------- SHOW GPS DIALOG TESTS -----------------------------------
 
     @Test
-    public void returnGpsDialog_when_dialogIsRequested() throws InterruptedException {
+    public void returnGpsDialog_when_getDialogEvent_with_expectedValue() {
         // GIVEN
         final ResolvableApiException expectedGpsDialog = mock(ResolvableApiException.class);
         resolvableMutableLiveData.setValue(expectedGpsDialog);
 
         // WHEN
-        final ResolvableApiException actualGpsDialog = getOrAwaitValue(homeViewModel.getShowGpsDialogEvent());
+        final ResolvableApiException actualGpsDialog = getValueForTesting(homeViewModel.getShowGpsDialogEvent());
 
         // THEN
         assertEquals(expectedGpsDialog, actualGpsDialog);
@@ -145,63 +134,58 @@ public class HomeViewModelTest {
     // ----------------------------------- BLOCKING DIALOG TESTS -----------------------------------
 
     @Test
-    public void showBlockingDialog_when_activityIsResumedWithDeniedLocationPermissionMoreThanOnce() throws InterruptedException {
+    public void showBlockingDialog_when_resumeActivityMultipleTimes_with_deniedLocationPermission() {
         // GIVEN
         doReturn(false).when(getLocationPermissionUseCaseMock).isGranted();
-        homeViewModel.onActivityResumed(); // Resumed once
 
         // WHEN
+        homeViewModel.onActivityResumed(); // Resumed once
         homeViewModel.onActivityResumed(); // Resumed twice
-        final Void blockingDialog = getOrAwaitValue(homeViewModel.getShowBlockingDialogEvent());
+        final int blockingDialogTrigger = getLiveDataTriggerCount(homeViewModel.getShowBlockingDialogEvent());
 
         // THEN
-        assertNull(blockingDialog); // Blocking dialog is showed
+        assertEquals(1, blockingDialogTrigger);
     }
 
     // ---------------------------- BOTTOM NAVIGATION ITEM CLICK TESTS -----------------------------
 
     @Test
-    public void getViewState_when_mapItemIsSelected() throws InterruptedException {
+    public void returnViewState_when_selectMapItem() {
         // WHEN
         homeViewModel.onBottomNavigationItemClicked(R.id.action_map);
-        final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
+        final HomeViewState viewState = getValueForTesting(homeViewModel.getHomeViewState());
 
         // THEN
         assertEquals(new HomeViewState(R.string.title_restaurant, 0), viewState);
     }
 
     @Test
-    public void getViewState_when_restaurantItemIsSelected() throws InterruptedException {
+    public void returnViewState_when_selectRestaurantItem() {
         // WHEN
         homeViewModel.onBottomNavigationItemClicked(R.id.action_restaurant);
-        final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
+        final HomeViewState viewState = getValueForTesting(homeViewModel.getHomeViewState());
 
         // THEN
         assertEquals(new HomeViewState(R.string.title_restaurant, 1), viewState);
     }
 
     @Test
-    public void getViewState_when_workmateItemIsSelected() throws InterruptedException {
+    public void returnViewState_when_selectWorkmateItem() {
         // WHEN
         homeViewModel.onBottomNavigationItemClicked(R.id.action_workmates);
-        final HomeViewState viewState = getOrAwaitValue(homeViewModel.getHomeViewState());
+        final HomeViewState viewState = getValueForTesting(homeViewModel.getHomeViewState());
 
         // THEN
         assertEquals(new HomeViewState(R.string.title_workmates, 2), viewState);
     }
 
-    @Test
-    public void throwError_when_viewStateIsSetWithWrongArgument() {
+    @Test(expected = RuntimeException.class)
+    public void throwError_when_selectUnknownItem() {
         // WHEN
-        final Throwable thrownException = assertThrows(
-            RuntimeException.class,
-            () -> homeViewModel.onBottomNavigationItemClicked(-1)
-        );
+        homeViewModel.onBottomNavigationItemClicked(-1);
+        final int viewStateTrigger = getLiveDataTriggerCount(homeViewModel.getHomeViewState());
 
         // THEN
-        assertEquals(
-            "onBottomNavigationItemClicked() was called with a wrong MenuItem ID: -1",
-            thrownException.getMessage()
-        );
+        assertEquals(0, viewStateTrigger);
     }
 }

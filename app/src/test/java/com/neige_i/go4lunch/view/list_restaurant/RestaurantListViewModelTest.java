@@ -1,6 +1,8 @@
 package com.neige_i.go4lunch.view.list_restaurant;
 
-import static com.neige_i.go4lunch.LiveDataTestUtils.getOrAwaitValue;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getLiveDataTriggerCount;
+import static com.neige_i.go4lunch.LiveDataTestUtils.getValueForTesting;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -17,7 +19,6 @@ import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCase;
 import com.neige_i.go4lunch.domain.list_restaurant.HourResult;
 import com.neige_i.go4lunch.domain.list_restaurant.NearbyDetail;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -89,7 +91,7 @@ public class RestaurantListViewModelTest {
     // ------------------------------------- VIEW STATE TESTS --------------------------------------
 
     @Test
-    public void returnViewState() throws InterruptedException {
+    public void returnViewState_when_getValue_with_multipleValidRestaurants() {
         // GIVEN
         nearbyDetailListMutableLiveData.setValue(Arrays.asList(
             restaurant_15987m_closedUntilAfterTomorrow,
@@ -104,10 +106,10 @@ public class RestaurantListViewModelTest {
         ));
 
         // WHEN
-        final List<RestaurantViewState> restaurantViewStates = getOrAwaitValue(restaurantListViewModel.getViewState());
+        final List<RestaurantViewState> restaurantViewStates = getValueForTesting(restaurantListViewModel.getViewState());
 
         // THEN
-        Assert.assertEquals(
+        assertEquals(
             Arrays.asList(
                 viewState_50m_loadingHours,
                 viewState_500m_unknownHours,
@@ -121,6 +123,19 @@ public class RestaurantListViewModelTest {
             ),
             restaurantViewStates
         );
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void throwError_when_getValue_with_restaurantWithoutHourResult() {
+        // GIVEN
+        nearbyDetailListMutableLiveData.setValue(Collections.singletonList(
+            restaurantWithoutHourResult
+        ));
+
+        // WHEN
+        final int viewStateTrigger = getLiveDataTriggerCount(restaurantListViewModel.getViewState());
+
+        assertEquals(0, viewStateTrigger);
     }
 
     // --------------------------------------- UTIL METHODS ----------------------------------------
@@ -179,6 +194,11 @@ public class RestaurantListViewModelTest {
     @NonNull
     private final RestaurantViewState viewState_999m_alwaysOpen =
         getDefaultRestaurantViewState(9, 999, "999m", HOURS_ALWAYS_OPEN, Typeface.ITALIC, R.color.lime_dark);
+    @NonNull
+    private final NearbyDetail restaurantWithoutHourResult =
+        getDefaultNearbyDetail(10, 20, new HourResult() {
+        });
+
     // --------------------------------------- UTIL METHODS ----------------------------------------
 
     @NonNull
