@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 import retrofit2.Call;
 
 @Singleton
-public class DetailsRepository extends PlacesRepository<String, RawDetailsResponse, RestaurantDetails> {
+public class DetailsRepository extends PlacesRepository<RawDetailsResponse, RestaurantDetails> {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -30,7 +30,7 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
 
     @Inject
     DetailsRepository(@NonNull PlacesApi placesApi, @NonNull String mapsApiKey) {
-        super(mapsApiKey);
+        super(placesApi, mapsApiKey);
         this.placesApi = placesApi;
     }
 
@@ -38,14 +38,16 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
 
     @NonNull
     @Override
-    String toQueryString(@NonNull String query) {
-        return query;
+    List<String> toQueryStrings(@NonNull Object... queryParameter) {
+        return Collections.singletonList(
+            (String) queryParameter[0]
+        );
     }
 
     @NonNull
     @Override
-    Call<RawDetailsResponse> getRequest(@NonNull String queryParameter) {
-        return placesApi.getRestaurantDetails(queryParameter);
+    Call<RawDetailsResponse> getRequest(@NonNull List<String> queryParameters) {
+        return placesApi.getRestaurantDetails(queryParameters.get(0));
     }
 
     @NonNull
@@ -89,7 +91,6 @@ public class DetailsRepository extends PlacesRepository<String, RawDetailsRespon
             result.getWebsite(),
             setupOpeningHours(result.getOpeningHours())
         );
-
     }
 
     @NonNull

@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -18,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
@@ -40,6 +43,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
     // ---------------------------------------- LOCAL FIELDS ---------------------------------------
 
     private HomeViewModel viewModel;
+    private MenuItem searchMenuItem;
     @Inject
     GpsStateChangeReceiver gpsStateChangeReceiver;
 
@@ -67,6 +71,12 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             return true;
         });
 
+        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(placeId -> {
+            showDetailedInfo(placeId);
+        });
+        binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        binding.searchList.setAdapter(autocompleteAdapter);
+
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), ignored -> {
@@ -82,6 +92,10 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         viewModel.getHomeViewState().observe(this, homeViewState -> {
             binding.toolbar.setTitle(homeViewState.getTitleId());
             binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
+
+            searchMenuItem.setVisible(homeViewState.isSearchEnabled());
+            binding.searchList.setVisibility(homeViewState.isSearchResultListVisible() ? View.VISIBLE : View.GONE);
+            autocompleteAdapter.submitList(homeViewState.getAutocompleteViewStates());
         });
 
         // Setup actions when events are triggered
@@ -138,8 +152,11 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
 
+        searchMenuItem = menu.findItem(R.id.action_search);
+        viewModel.onOptionsMenuCreated();
+
         // Setup SearchView
-        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setQueryHint(getString(R.string.search_restaurants_by_name));
         searchView.setImeOptions(EditorInfo.IME_ACTION_DONE); // Close keyboard when clicking on "Return" key
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

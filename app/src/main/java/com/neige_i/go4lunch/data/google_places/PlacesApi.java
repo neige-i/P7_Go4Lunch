@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.data.google_places;
 
 import com.neige_i.go4lunch.BuildConfig;
+import com.neige_i.go4lunch.data.google_places.model.RawAutocompleteResponse;
 import com.neige_i.go4lunch.data.google_places.model.RawDetailsResponse;
 import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
@@ -22,4 +23,14 @@ public interface PlacesApi {
         "&key=" + BuildConfig.MAPS_API_KEY
     )
     Call<RawDetailsResponse> getRestaurantDetails(@Query("place_id") String placeId);
+
+    @GET("maps/api/place/autocomplete/json?" +
+        "radius=2000" +
+        "&strictbounds=true" +
+        "&types=establishment" +
+        "&key=" + BuildConfig.MAPS_API_KEY)
+    Call<RawAutocompleteResponse> getRestaurantsByName(
+        @Query("input") String searchQuery,
+        @Query("location") String location
+    );
 }

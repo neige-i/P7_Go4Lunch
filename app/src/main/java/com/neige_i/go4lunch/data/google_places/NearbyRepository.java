@@ -9,6 +9,7 @@ import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -17,7 +18,7 @@ import javax.inject.Singleton;
 import retrofit2.Call;
 
 @Singleton
-public class NearbyRepository extends PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> {
+public class NearbyRepository extends PlacesRepository<RawNearbyResponse, List<NearbyRestaurant>> {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -28,7 +29,7 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
 
     @Inject
     NearbyRepository(@NonNull PlacesApi placesApi, @NonNull String mapsApiKey) {
-        super(mapsApiKey);
+        super(placesApi, mapsApiKey);
         this.placesApi = placesApi;
     }
 
@@ -36,14 +37,16 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
 
     @NonNull
     @Override
-    String toQueryString(@NonNull Location location) {
-        return location.getLatitude() + "," + location.getLongitude();
+    List<String> toQueryStrings(@NonNull Object... queryParameter) {
+        return Collections.singletonList(
+            getLocationString((Location) queryParameter[0])
+        );
     }
 
     @NonNull
     @Override
-    Call<RawNearbyResponse> getRequest(@NonNull String queryParameter) {
-        return placesApi.getNearbyRestaurants(queryParameter);
+    Call<RawNearbyResponse> getRequest(@NonNull List<String> queryParameters) {
+        return placesApi.getNearbyRestaurants(queryParameters.get(0));
     }
 
     @NonNull
@@ -88,6 +91,6 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
             }
         }
 
-        return !nearbyRestaurants.isEmpty() ? nearbyRestaurants : null;
+        return nearbyRestaurants;
     }
 }

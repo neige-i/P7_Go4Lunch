@@ -2,6 +2,7 @@ package com.neige_i.go4lunch.data.google_places;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import android.location.Location;
@@ -24,15 +25,34 @@ public class PlacesRepositoryTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private final PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> placesRepository = new NearbyRepository(
+    private final PlacesRepository<RawNearbyResponse, List<NearbyRestaurant>> placesRepository = new NearbyRepository(
         mock(PlacesApi.class),
         mapsApiKey
     );
 
+    // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
+
+    private final Location locationMock = mock(Location.class);
+
+    // ----------------------------------- LOCATION STRING TESTS -----------------------------------
+
+    @Test
+    public void returnString_when_getLocationString() {
+        // GIVEN
+        doReturn(49.3761).when(locationMock).getLatitude();
+        doReturn(2.4142).when(locationMock).getLongitude();
+
+        // WHEN
+        final String locationString = placesRepository.getLocationString(locationMock);
+
+        // THEN
+        assertEquals("49.3761,2.4142", locationString);
+    }
+
     // --------------------------------------- ADDRESS TESTS ---------------------------------------
 
     @Test
-    public void returnShortAddress_when_getAddressWithCommaInside() {
+    public void returnShortAddress_when_getAddress_with_commaInside() {
         // WHEN
         final String address = placesRepository.getAddress("221B Baker Street, London, UK");
 
@@ -41,7 +61,7 @@ public class PlacesRepositoryTest {
     }
 
     @Test
-    public void returnCompleteAddress_when_getAddressWithoutCommaInside() {
+    public void returnCompleteAddress_when_getAddress_with_noCommaInside() {
         // WHEN
         final String address = placesRepository.getAddress("Main street");
 
@@ -52,7 +72,7 @@ public class PlacesRepositoryTest {
     // --------------------------------------- RATING TESTS ----------------------------------------
 
     @Test
-    public void returnNegativeInt_when_getNullRating() {
+    public void returnNegativeInt_when_getRating_withNullValue() {
         // WHEN
         final int rating = placesRepository.getRating(null);
 
@@ -61,7 +81,7 @@ public class PlacesRepositoryTest {
     }
 
     @Test
-    public void return0_when_getRating1() {
+    public void return0_when_getRating_with_value1() {
         // WHEN
         final int rating = placesRepository.getRating(1.);
 
@@ -70,7 +90,7 @@ public class PlacesRepositoryTest {
     }
 
     @Test
-    public void return3_when_getRating5() {
+    public void return3_when_getRating_with_value5() {
         // WHEN
         final int rating = placesRepository.getRating(5.);
 
@@ -79,7 +99,7 @@ public class PlacesRepositoryTest {
     }
 
     @Test
-    public void return2_when_getRating3() {
+    public void return2_when_getRating_with_value3() {
         // WHEN
         final int rating = placesRepository.getRating(3.);
 
@@ -90,7 +110,7 @@ public class PlacesRepositoryTest {
     // -------------------------------------- PHOTO URL TESTS --------------------------------------
 
     @Test
-    public void returnNull_when_getPhotoWithNullReference() {
+    public void returnNull_when_getPhoto_with_nullReference() {
         // WHEN
         final String photoUrl = placesRepository.getPhotoUrl(null);
 
@@ -99,7 +119,7 @@ public class PlacesRepositoryTest {
     }
 
     @Test
-    public void returnCompleteUrl_when_getPhotoWithNonNullReference() {
+    public void returnCompleteUrl_when_getPhoto_with_nonNullReference() {
         // WHEN
         final String photoUrl = placesRepository.getPhotoUrl("PHOTO_REFERENCE");
 
@@ -113,5 +133,4 @@ public class PlacesRepositoryTest {
             photoUrl
         );
     }
-
 }
