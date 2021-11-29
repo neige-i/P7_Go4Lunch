@@ -8,10 +8,10 @@ import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCase;
 import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCaseImpl;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
-import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
-import com.neige_i.go4lunch.domain.map.RequestGpsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
+import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
@@ -24,6 +24,8 @@ import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCase;
 import com.neige_i.go4lunch.domain.list_workmate.GetAllWorkmatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
+import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
+import com.neige_i.go4lunch.domain.map.RequestGpsUseCaseImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -68,6 +70,11 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract ShowGpsDialogUseCase bindShowGpsDialogUseCase(
         ShowGpsDialogUseCaseImpl showGpsDialogUseCaseImpl
+    );
+
+    @Binds
+    public abstract GetAutocompleteResultsUseCase bindGetAutocompleteResultsUseCase(
+        GetAutocompleteResultsUseCaseImpl getAutocompleteResultsUseCaseImpl
     );
 
     // -------------------------------------------- MAP --------------------------------------------

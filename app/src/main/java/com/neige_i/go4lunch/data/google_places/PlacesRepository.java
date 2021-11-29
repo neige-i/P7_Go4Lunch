@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.data.google_places;
 
+import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,30 +9,40 @@ import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
+abstract class PlacesRepository<RawData, CleanResponse> {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
+    @NonNull
+    final PlacesApi placesApi;
     @NonNull
     private final String mapsApiKey;
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
-    private final LruCache<String, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4 MB cache size
+    private final LruCache<List<String>, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4 MB cache size
 
-    PlacesRepository(@NonNull String mapsApiKey) {
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+
+    PlacesRepository(
+        @NonNull PlacesApi placesApi,
+        @NonNull String mapsApiKey
+    ) {
+        this.placesApi = placesApi;
         this.mapsApiKey = mapsApiKey;
     }
 
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
 
     @NonNull
-    public LiveData<CleanResponse> getData(@Nullable QueryParameter queryParameter) {
+    public LiveData<CleanResponse> getData(@Nullable Object... queryParameter) {
         if (queryParameter == null) {
             return new MutableLiveData<>();
         }
@@ -39,16 +50,16 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
         final MutableLiveData<CleanResponse> responseMutableLiveData = new MutableLiveData<>();
 
         // Converts the query parameter into a String usable in a HTML request
-        final String queryString = toQueryString(queryParameter);
+        final List<String> queryStrings = toQueryStrings(queryParameter);
 
-        final CleanResponse cachedCleanResponse = dataCache.get(queryString);
+        final CleanResponse cachedCleanResponse = dataCache.get(queryStrings);
 
         // Check if the request has already been executed
         if (cachedCleanResponse != null) {
             Log.d("Neige", "REPO get " + getNameForLog() + " : from cache");
             responseMutableLiveData.setValue(cachedCleanResponse);
         } else {
-            getRequest(queryString).enqueue(new Callback<RawData>() {
+            getRequest(queryStrings).enqueue(new Callback<RawData>() {
                 @Override
                 public void onResponse(
                     @NonNull Call<RawData> call,
@@ -59,7 +70,7 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
                     if (cleanResponse != null) {
                         Log.d("Neige", "REPO get " + getNameForLog() + " : from API");
                         responseMutableLiveData.setValue(cleanResponse);
-                        dataCache.put(queryString, cleanResponse);
+                        dataCache.put(queryStrings, cleanResponse);
                     }
                 }
 
@@ -73,10 +84,10 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
     }
 
     @NonNull
-    abstract String toQueryString(@NonNull QueryParameter queryParameter);
+    abstract List<String> toQueryStrings(@NonNull Object... queryParameter);
 
     @NonNull
-    abstract Call<RawData> getRequest(@NonNull String queryParameter);
+    abstract Call<RawData> getRequest(@NonNull List<String> queryParameters);
 
     @NonNull
     abstract String getNameForLog();
@@ -87,9 +98,14 @@ abstract class PlacesRepository<QueryParameter, RawData, CleanResponse> {
     abstract CleanResponse cleanDataFromRetrofit(@Nullable RawData rawData);
 
     @NonNull
+    String getLocationString(@NonNull Location location) {
+        return location.getLatitude() + "," + location.getLongitude();
+    }
+
+    @NonNull
     String getAddress(@NonNull String completeAddress) {
         int commaIndex = completeAddress.indexOf(",");
-        return commaIndex == -1 ? completeAddress : completeAddress.substring(0, commaIndex);
+        return commaIndex != -1 ? completeAddress.substring(0, commaIndex) : completeAddress;
     }
 
     /**

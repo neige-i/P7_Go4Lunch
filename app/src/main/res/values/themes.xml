@@ -12,7 +12,6 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
-        <item name="searchViewStyle">@style/Theme.Go4Lunch.SearchView</item>
     </style>
 
     <!-- Transparent theme for dispatcher activity to avoid loading unnecessary components -->
@@ -36,14 +35,5 @@
         <item name="cornerRadius">10dp</item>
         <item name="iconSize">20dp</item>
         <item name="layout_constraintWidth_percent">.8</item>
-    </style>
-
-    <!-- ASKME: left icon, background, mic visibility -->
-    <style name="Theme.Go4Lunch.SearchView" parent="Widget.AppCompat.SearchView">
-        <item name="queryBackground">@color/gray_dark</item>
-        <item name="submitBackground">@color/blue_google</item>
-        <item name="goIcon">@drawable/ic_favorite_off</item>
-        <item name="searchIcon">@drawable/ic_favorite_on</item>
-        <item name="commitIcon">@drawable/ic_person</item>
     </style>
 </resources>
