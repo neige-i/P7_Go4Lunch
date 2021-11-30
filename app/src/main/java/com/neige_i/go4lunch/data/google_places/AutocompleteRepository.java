@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.data.google_places;
 
-import android.location.Location;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -11,7 +9,6 @@ import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawAutocompleteResponse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,7 +17,7 @@ import javax.inject.Singleton;
 import retrofit2.Call;
 
 @Singleton
-public class AutocompleteRepository extends PlacesRepository<RawAutocompleteResponse, List<AutocompleteRestaurant>> {
+public class AutocompleteRepository extends PlacesRepository<RawAutocompleteQuery, RawAutocompleteResponse, List<AutocompleteRestaurant>> {
 
     @NonNull
     private final MutableLiveData<String> currentSearchQueryMutableLiveData = new MutableLiveData<>();
@@ -36,17 +33,11 @@ public class AutocompleteRepository extends PlacesRepository<RawAutocompleteResp
 
     @NonNull
     @Override
-    List<String> toQueryStrings(@NonNull Object... queryParameters) {
-        return Arrays.asList(
-            (String) queryParameters[0],
-            getLocationString((Location) queryParameters[1])
+    Call<RawAutocompleteResponse> getRequest(@NonNull RawAutocompleteQuery rawAutocompleteQuery) {
+        return placesApi.getRestaurantsByName(
+            rawAutocompleteQuery.getSearchQuery(),
+            getLocationString(rawAutocompleteQuery.getLocation())
         );
-    }
-
-    @NonNull
-    @Override
-    Call<RawAutocompleteResponse> getRequest(@NonNull List<String> queryParameters) {
-        return placesApi.getRestaurantsByName(queryParameters.get(0), queryParameters.get(1));
     }
 
     @NonNull
