@@ -84,7 +84,7 @@ abstract class PlacesRepository<RawData, CleanResponse> {
     }
 
     @NonNull
-    abstract List<String> toQueryStrings(@NonNull Object... queryParameter);
+    abstract List<String> toQueryStrings(@NonNull Object... queryParameters);
 
     @NonNull
     abstract Call<RawData> getRequest(@NonNull List<String> queryParameters);

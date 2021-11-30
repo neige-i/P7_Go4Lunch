@@ -56,8 +56,7 @@ public class HomeViewModelTest {
         homeViewModel = new HomeViewModel(
             getLocationPermissionUseCaseMock,
             setLocationUpdatesUseCaseMock,
-            showGpsDialogUseCaseMock,
-            freeResourcesUseCaseMock
+            showGpsDialogUseCaseMock
         );
     }
 

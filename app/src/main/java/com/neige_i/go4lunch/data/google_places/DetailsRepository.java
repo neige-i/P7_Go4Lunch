@@ -38,9 +38,9 @@ public class DetailsRepository extends PlacesRepository<RawDetailsResponse, Rest
 
     @NonNull
     @Override
-    List<String> toQueryStrings(@NonNull Object... queryParameter) {
+    List<String> toQueryStrings(@NonNull Object... queryParameters) {
         return Collections.singletonList(
-            (String) queryParameter[0]
+            (String) queryParameters[0]
         );
     }
 
@@ -85,6 +85,8 @@ public class DetailsRepository extends PlacesRepository<RawDetailsResponse, Rest
             result.getPlaceId(),
             result.getName(),
             getAddress(result.getFormattedAddress()),
+            result.getGeometry().getLocation().getLat(),
+            result.getGeometry().getLocation().getLng(),
             getRating(result.getRating()),
             photoUrl,
             result.getInternationalPhoneNumber(),

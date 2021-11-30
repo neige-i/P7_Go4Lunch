@@ -37,9 +37,9 @@ public class NearbyRepository extends PlacesRepository<RawNearbyResponse, List<N
 
     @NonNull
     @Override
-    List<String> toQueryStrings(@NonNull Object... queryParameter) {
+    List<String> toQueryStrings(@NonNull Object... queryParameters) {
         return Collections.singletonList(
-            getLocationString((Location) queryParameter[0])
+            getLocationString((Location) queryParameters[0])
         );
     }
 

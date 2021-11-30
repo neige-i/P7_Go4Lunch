@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
@@ -44,6 +42,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
     private HomeViewModel viewModel;
     private MenuItem searchMenuItem;
+    private SearchView searchView;
     @Inject
     GpsStateChangeReceiver gpsStateChangeReceiver;
 
@@ -71,12 +70,6 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             return true;
         });
 
-        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(placeId -> {
-            showDetailedInfo(placeId);
-        });
-        binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        binding.searchList.setAdapter(autocompleteAdapter);
-
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), ignored -> {
@@ -94,8 +87,6 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
 
             searchMenuItem.setVisible(homeViewState.isSearchEnabled());
-            binding.searchList.setVisibility(homeViewState.isSearchResultListVisible() ? View.VISIBLE : View.GONE);
-            autocompleteAdapter.submitList(homeViewState.getAutocompleteViewStates());
         });
 
         // Setup actions when events are triggered
@@ -122,6 +113,13 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
                 })
                 .setCancelable(false)
                 .show();
+        });
+        viewModel.getCollapseSearchViewEvent().observe(this, unused -> {
+            searchMenuItem.collapseActionView();
+        });
+        viewModel.getExpandSearchViewEvent().observe(this, searchQuery -> {
+            searchMenuItem.expandActionView();
+            searchView.setQuery(searchQuery, false); // false to only update text field
         });
 
         // Register GPS receiver in this activity's lifecycle
@@ -153,10 +151,10 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         getMenuInflater().inflate(R.menu.toolbar, menu);
 
         searchMenuItem = menu.findItem(R.id.action_search);
-        viewModel.onOptionsMenuCreated();
+        viewModel.onSearchMenuItemInitialized();
 
         // Setup SearchView
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
+        searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setQueryHint(getString(R.string.search_restaurants_by_name));
         searchView.setImeOptions(EditorInfo.IME_ACTION_DONE); // Close keyboard when clicking on "Return" key
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -169,6 +167,19 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             public boolean onQueryTextChange(String newText) {
                 viewModel.onQueryTextChange(newText);
                 return false;
+            }
+        });
+        // searchView.setOnCloseListener() does not work
+        searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                viewModel.onSearchMenuCollapsed(searchView.getQuery().toString());
+                return true;
             }
         });
         return true;

@@ -17,6 +17,7 @@ class MapViewState {
     private final int fabColor;
     @NonNull
     private final List<MarkerViewState> markers;
+    private final boolean clearMarkers;
     private final double mapLatitude;
     private final double mapLongitude;
     private final float mapZoom;
@@ -27,7 +28,7 @@ class MapViewState {
         @DrawableRes int fabDrawable,
         @ColorRes int fabColor,
         @NonNull List<MarkerViewState> markers,
-        double mapLatitude,
+        boolean clearMarkers, double mapLatitude,
         double mapLongitude,
         float mapZoom
     ) {
@@ -36,6 +37,7 @@ class MapViewState {
         this.fabDrawable = fabDrawable;
         this.fabColor = fabColor;
         this.markers = markers;
+        this.clearMarkers = clearMarkers;
         this.mapLatitude = mapLatitude;
         this.mapLongitude = mapLongitude;
         this.mapZoom = mapZoom;
@@ -64,6 +66,10 @@ class MapViewState {
         return markers;
     }
 
+    public boolean isClearMarkers() {
+        return clearMarkers;
+    }
+
     public double getMapLatitude() {
         return mapLatitude;
     }
@@ -89,6 +95,7 @@ class MapViewState {
             fabVisible == that.fabVisible &&
             fabDrawable == that.fabDrawable &&
             fabColor == that.fabColor &&
+            clearMarkers == that.clearMarkers &&
             Double.compare(that.mapLatitude, mapLatitude) == 0 &&
             Double.compare(that.mapLongitude, mapLongitude) == 0 &&
             Float.compare(that.mapZoom, mapZoom) == 0 &&
@@ -97,7 +104,7 @@ class MapViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationLayerEnabled, fabVisible, fabDrawable, fabColor, markers, mapLatitude, mapLongitude, mapZoom);
+        return Objects.hash(locationLayerEnabled, fabVisible, fabDrawable, fabColor, markers, clearMarkers, mapLatitude, mapLongitude, mapZoom);
     }
 
     @NonNull
@@ -106,7 +113,8 @@ class MapViewState {
         return "MapViewState{" +
             "locationLayerEnabled=" + locationLayerEnabled +
             ", FAB{visible=" + fabVisible + ", drawable=" + fabDrawable + ", color=" + fabColor + '}' +
-            ", markersCount=" + markers +
+            ", markers=" + markers +
+            ", refreshMarkers=" + clearMarkers +
             ", map{" + mapLatitude + ", " + mapLongitude + ", " + mapZoom + '}' +
             '}';
     }
