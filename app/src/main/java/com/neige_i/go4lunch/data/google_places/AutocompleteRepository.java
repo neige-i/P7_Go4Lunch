@@ -4,6 +4,8 @@ import android.location.Location;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawAutocompleteResponse;
@@ -20,6 +22,9 @@ import retrofit2.Call;
 @Singleton
 public class AutocompleteRepository extends PlacesRepository<RawAutocompleteResponse, List<AutocompleteRestaurant>> {
 
+    @NonNull
+    private final MutableLiveData<String> currentSearchQueryMutableLiveData = new MutableLiveData<>();
+
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @Inject
@@ -31,10 +36,10 @@ public class AutocompleteRepository extends PlacesRepository<RawAutocompleteResp
 
     @NonNull
     @Override
-    List<String> toQueryStrings(@NonNull Object... queryParameter) {
+    List<String> toQueryStrings(@NonNull Object... queryParameters) {
         return Arrays.asList(
-            (String) queryParameter[0],
-            getLocationString((Location) queryParameter[1])
+            (String) queryParameters[0],
+            getLocationString((Location) queryParameters[1])
         );
     }
 
@@ -73,5 +78,14 @@ public class AutocompleteRepository extends PlacesRepository<RawAutocompleteResp
         }
 
         return autocompleteRestaurants;
+    }
+
+    @NonNull
+    public LiveData<String> getCurrentSearchQuery() {
+        return currentSearchQueryMutableLiveData;
+    }
+
+    public void setCurrentSearch(@Nullable String autocompleteRestaurants) {
+        currentSearchQueryMutableLiveData.setValue(autocompleteRestaurants);
     }
 }

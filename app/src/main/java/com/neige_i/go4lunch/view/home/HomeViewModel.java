@@ -9,19 +9,15 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
-import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
+import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -30,8 +26,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 class HomeViewModel extends ViewModel {
 
-    private static final int SEARCH_QUERY_THRESHOLD = 3;
-
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
     @NonNull
@@ -39,7 +33,7 @@ class HomeViewModel extends ViewModel {
     @NonNull
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCase;
     @NonNull
-    private final GetAutocompleteResultsUseCase getAutocompleteResultsUseCase;
+    private final SetSearchQueryUseCase setSearchQueryUseCase;
     @NonNull
     private final FreeResourcesUseCase freeResourcesUseCase;
 
@@ -53,22 +47,25 @@ class HomeViewModel extends ViewModel {
     private final MediatorSingleLiveEvent<ResolvableApiException> showGpsDialogEvent = new MediatorSingleLiveEvent<>();
     @NonNull
     private final SingleLiveEvent<Void> showBlockingDialogEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> collapseSearchViewEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<String> expandSearchViewEvent = new SingleLiveEvent<>();
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
     private final MutableLiveData<Integer> menuItemMutableLiveData = new MutableLiveData<>();
     @NonNull
-    private final MutableLiveData<String> searchQueryMutableLiveData = new MutableLiveData<>();
-    @NonNull
-    private final MediatorLiveData<List<AutocompleteRestaurant>> autocompleteResultMediatorLiveData = new MediatorLiveData<>();
-    @NonNull
-    private final MutableLiveData<Boolean> isViewReadyMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isSearchMenuItemReadyMutableLiveData = new MutableLiveData<>();
+
     /**
      * Flag to avoid requesting the location permission repeatedly if the user denies it.
      */
     private boolean isLocationPermissionAlreadyDenied;
-    private boolean newSearchQuery;
+    @Nullable
+    private String currentQuerySearch;
+    private boolean keepQuerySearchInMemory;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -77,12 +74,12 @@ class HomeViewModel extends ViewModel {
         @NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
         @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
         @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
-        @NonNull GetAutocompleteResultsUseCase getAutocompleteResultsUseCase,
+        @NonNull SetSearchQueryUseCase setSearchQueryUseCase,
         @NonNull FreeResourcesUseCase freeResourcesUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
-        this.getAutocompleteResultsUseCase = getAutocompleteResultsUseCase;
+        this.setSearchQueryUseCase = setSearchQueryUseCase;
         this.freeResourcesUseCase = freeResourcesUseCase;
 
         // Retrieve the GPS dialog from the UseCase and prompt it to the user with a SingleLiveEvent
@@ -90,21 +87,14 @@ class HomeViewModel extends ViewModel {
             showGpsDialogEvent.setValue(resolvableApiException);
         });
 
-        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, searchQueryMutableLiveData.getValue(), autocompleteResultMediatorLiveData.getValue(), isViewReadyMutableLiveData.getValue()));
-        homeViewState.addSource(searchQueryMutableLiveData, searchQuery -> combine(menuItemMutableLiveData.getValue(), searchQuery, autocompleteResultMediatorLiveData.getValue(), isViewReadyMutableLiveData.getValue()));
-        homeViewState.addSource(autocompleteResultMediatorLiveData, autocompleteRestaurants -> combine(menuItemMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurants, isViewReadyMutableLiveData.getValue()));
-        homeViewState.addSource(isViewReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteResultMediatorLiveData.getValue(), isViewReady));
+        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, isSearchMenuItemReadyMutableLiveData.getValue()));
+        homeViewState.addSource(isSearchMenuItemReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), isViewReady));
 
         // Set default page to display
         onBottomNavigationItemClicked(R.id.action_map);
     }
 
-    private void combine(
-        @Nullable Integer menuItemId,
-        @Nullable String searchQuery,
-        @Nullable List<AutocompleteRestaurant> autocompleteRestaurants,
-        @Nullable Boolean isViewReady
-    ) {
+    private void combine(@Nullable Integer menuItemId, @Nullable Boolean isViewReady) {
         if (menuItemId == null || !Objects.equals(isViewReady, true)) {
             return;
         }
@@ -125,47 +115,10 @@ class HomeViewModel extends ViewModel {
             throw new IllegalArgumentException("onBottomNavigationItemClicked() was called with a wrong MenuItem ID: " + menuItemId);
         }
 
-        final boolean isSearchResultListVisible;
-        if (searchQuery != null) {
-            if (searchQuery.length() >= SEARCH_QUERY_THRESHOLD) {
-                isSearchResultListVisible = true;
-
-                if (newSearchQuery) {
-                    newSearchQuery = false;
-                    autocompleteResultMediatorLiveData.addSource(
-                        getAutocompleteResultsUseCase.get(searchQuery), autocompleteResult -> {
-                            autocompleteResultMediatorLiveData.setValue(autocompleteResult);
-                        }
-                    );
-                }
-            } else {
-                isSearchResultListVisible = false;
-            }
-        } else {
-            isSearchResultListVisible = false;
-        }
-
-        final List<AutocompleteViewState> autocompleteViewStates;
-        if (autocompleteRestaurants != null) {
-            newSearchQuery = false;
-            autocompleteViewStates = autocompleteRestaurants.stream()
-                .map(autocompleteRestaurant -> new AutocompleteViewState(
-                    autocompleteRestaurant.getPlaceId(),
-                    autocompleteRestaurant.getRestaurantName()
-                ))
-                .collect(Collectors.toList());
-        } else {
-            autocompleteViewStates = new ArrayList<>();
-        }
-
-        final boolean isSearchEnabled = viewPagerPosition != 2;
-
         homeViewState.setValue(new HomeViewState(
             titleId,
             viewPagerPosition,
-            isSearchEnabled,
-            isSearchEnabled && isSearchResultListVisible,
-            autocompleteViewStates
+            viewPagerPosition != 2
         ));
     }
 
@@ -187,6 +140,16 @@ class HomeViewModel extends ViewModel {
     @NonNull
     public LiveData<Void> getShowBlockingDialogEvent() {
         return showBlockingDialogEvent;
+    }
+
+    @NonNull
+    public LiveData<Void> getCollapseSearchViewEvent() {
+        return collapseSearchViewEvent;
+    }
+
+    @NonNull
+    public LiveData<String> getExpandSearchViewEvent() {
+        return expandSearchViewEvent;
     }
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
@@ -221,20 +184,40 @@ class HomeViewModel extends ViewModel {
 
     public void onBottomNavigationItemClicked(int menuItemId) {
         menuItemMutableLiveData.setValue(menuItemId);
+
+        // Handle the search's visibility and content when navigating with the bottom navigation bar
+        if (menuItemId == R.id.action_workmates) {
+            // Collapse the search MenuItem but keep the query String in memory
+            collapseSearchViewEvent.call();
+            keepQuerySearchInMemory = true;
+
+        } else if (
+            (menuItemId == R.id.action_map || menuItemId == R.id.action_restaurant) &&
+            keepQuerySearchInMemory
+        ) {
+            // Expand the search MenuItem with the previously saved query String
+            keepQuerySearchInMemory = false; // Reset flag
+            expandSearchViewEvent.setValue(currentQuerySearch);
+        }
+    }
+
+    // -------------------------------------- SEARCH METHODS ---------------------------------------
+
+    /**
+     * Is useful to avoid NullPointerException. Without it, the search MenuItem can be updated while
+     * observing the view state in onCreate() before being initialized inside onCreateOptionsMenu().
+     */
+    public void onSearchMenuItemInitialized() {
+        isSearchMenuItemReadyMutableLiveData.setValue(true);
     }
 
     public void onQueryTextChange(@NonNull String queryText) {
-        newSearchQuery = true;
-        searchQueryMutableLiveData.setValue(queryText);
-//        if (queryText.length() >= 3) {
-//        }
+        setSearchQueryUseCase.launch(queryText);
     }
 
-    /**
-     * Is useful to avoid NullPointerException because the view state is observed in onCreate to update
-     * a MenuItem that is not initialized until onCreateOptionsMenu().
-     */
-    public void onOptionsMenuCreated() {
-        isViewReadyMutableLiveData.setValue(true);
+    public void onSearchMenuCollapsed(@NonNull String querySearch) {
+        setSearchQueryUseCase.close();
+
+        currentQuerySearch = keepQuerySearchInMemory ? querySearch : null;
     }
 }

@@ -18,6 +18,8 @@ public class RestaurantDetails {
     private final String name;
     @NonNull
     private final String address;
+    private final double latitude;
+    private final double longitude;
     private final int rating;
     @Nullable
     private final String photoUrl;
@@ -32,7 +34,7 @@ public class RestaurantDetails {
         @NonNull String placeId,
         @NonNull String name,
         @NonNull String address,
-        int rating,
+        double latitude, double longitude, int rating,
         @Nullable String photoUrl,
         @Nullable String phoneNumber,
         @Nullable String website,
@@ -41,6 +43,8 @@ public class RestaurantDetails {
         this.placeId = placeId;
         this.name = name;
         this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.rating = rating;
         this.photoUrl = photoUrl;
         this.phoneNumber = phoneNumber;
@@ -61,6 +65,14 @@ public class RestaurantDetails {
     @NonNull
     public String getAddress() {
         return address;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 
     public int getRating() {
@@ -96,7 +108,9 @@ public class RestaurantDetails {
             return false;
         }
         RestaurantDetails that = (RestaurantDetails) o;
-        return rating == that.rating &&
+        return Double.compare(that.latitude, latitude) == 0 &&
+            Double.compare(that.longitude, longitude) == 0 &&
+            rating == that.rating &&
             placeId.equals(that.placeId) &&
             name.equals(that.name) &&
             address.equals(that.address) &&
@@ -108,7 +122,7 @@ public class RestaurantDetails {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, address, rating, photoUrl, phoneNumber, website, openingPeriods);
+        return Objects.hash(placeId, name, address, latitude, longitude, rating, photoUrl, phoneNumber, website, openingPeriods);
     }
 
     @NonNull
@@ -118,6 +132,8 @@ public class RestaurantDetails {
             "placeId='" + placeId + '\'' +
             ", name='" + name + '\'' +
             ", address='" + address + '\'' +
+            ", latitude='" + latitude + '\'' +
+            ", longitude='" + longitude + '\'' +
             ", rating=" + rating +
             ", photoUrl='" + (photoUrl != null ? "not null" : "null") + '\'' +
             ", phoneNumber='" + phoneNumber + '\'' +

@@ -48,7 +48,7 @@ public class GpsStateChangeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // The receiver is called twice, one for each provider: GPS & network
         if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION) &&
-            intent.getStringExtra(LocationManager.EXTRA_PROVIDER_NAME).equals(LocationManager.GPS_PROVIDER)
+            LocationManager.GPS_PROVIDER.equals(intent.getStringExtra(LocationManager.EXTRA_PROVIDER_NAME))
         ) {
             // Update GPS state
             setGpsState();

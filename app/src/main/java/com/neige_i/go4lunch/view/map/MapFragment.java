@@ -130,6 +130,10 @@ public class MapFragment extends Fragment {
         locationBtn.setColorFilter(getResources().getColor(mapViewState.getFabColor()));
 
         // Add markers for all nearby restaurants
+        if (mapViewState.isClearMarkers()) {
+            displayedMarkers.clear();
+            googleMap.clear();
+        }
         for (MarkerViewState markerViewState : mapViewState.getMarkers()) {
             final String placeId = markerViewState.getPlaceId();
 

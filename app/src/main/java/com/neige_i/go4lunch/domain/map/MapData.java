@@ -5,8 +5,6 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,23 +15,26 @@ public class MapData {
     @Nullable
     private final Location currentLocation;
     @NonNull
-    private final List<NearbyRestaurant> nearbyRestaurants;
+    private final List<MapRestaurant> mapRestaurants;
     private final boolean gpsEnabled;
     @NonNull
     private final Map<String, Integer> interestedWorkmates;
+    private final boolean clearMarkers;
 
-    public MapData(
+    MapData(
         boolean locationPermissionGranted,
         @Nullable Location currentLocation,
-        @NonNull List<NearbyRestaurant> nearbyRestaurants,
+        @NonNull List<MapRestaurant> mapRestaurants,
         boolean gpsEnabled,
-        @NonNull Map<String, Integer> interestedWorkmates
+        @NonNull Map<String, Integer> interestedWorkmates,
+        boolean clearMarkers
     ) {
         this.locationPermissionGranted = locationPermissionGranted;
         this.currentLocation = currentLocation;
-        this.nearbyRestaurants = nearbyRestaurants;
+        this.mapRestaurants = mapRestaurants;
         this.gpsEnabled = gpsEnabled;
         this.interestedWorkmates = interestedWorkmates;
+        this.clearMarkers = clearMarkers;
     }
 
     public boolean isLocationPermissionGranted() {
@@ -46,8 +47,8 @@ public class MapData {
     }
 
     @NonNull
-    public List<NearbyRestaurant> getNearbyRestaurants() {
-        return nearbyRestaurants;
+    public List<MapRestaurant> getMapRestaurants() {
+        return mapRestaurants;
     }
 
     public boolean isGpsEnabled() {
@@ -57,6 +58,10 @@ public class MapData {
     @NonNull
     public Map<String, Integer> getInterestedWorkmates() {
         return interestedWorkmates;
+    }
+
+    public boolean isClearMarkers() {
+        return clearMarkers;
     }
 
     @Override
@@ -70,14 +75,15 @@ public class MapData {
         MapData mapData = (MapData) o;
         return locationPermissionGranted == mapData.locationPermissionGranted &&
             gpsEnabled == mapData.gpsEnabled &&
+            clearMarkers == mapData.clearMarkers &&
             Objects.equals(currentLocation, mapData.currentLocation) &&
-            nearbyRestaurants.equals(mapData.nearbyRestaurants) &&
+            mapRestaurants.equals(mapData.mapRestaurants) &&
             interestedWorkmates.equals(mapData.interestedWorkmates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationPermissionGranted, currentLocation, nearbyRestaurants, gpsEnabled, interestedWorkmates);
+        return Objects.hash(locationPermissionGranted, currentLocation, mapRestaurants, gpsEnabled, interestedWorkmates, clearMarkers);
     }
 
     @NonNull
@@ -86,9 +92,10 @@ public class MapData {
         return "MapData{" +
             "locationPermissionGranted=" + locationPermissionGranted +
             ", currentLocation=" + currentLocation +
-            ", nearbyRestaurants=" + nearbyRestaurants +
+            ", mapRestaurants=" + mapRestaurants +
             ", gpsEnabled=" + gpsEnabled +
             ", interestedWorkmates=" + interestedWorkmates +
+            ", refreshMarkers=" + clearMarkers +
             '}';
     }
 }

@@ -10,12 +10,12 @@ import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCaseImpl;
-import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
-import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
+import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCaseImpl;
 import com.neige_i.go4lunch.domain.list_restaurant.GetNearbyDetailsUseCase;
@@ -73,8 +73,8 @@ public abstract class BusinessBindingModule {
     );
 
     @Binds
-    public abstract GetAutocompleteResultsUseCase bindGetAutocompleteResultsUseCase(
-        GetAutocompleteResultsUseCaseImpl getAutocompleteResultsUseCaseImpl
+    public abstract SetSearchQueryUseCase bindSetSearchQueryUseCase(
+        SetSearchQueryUseCaseImpl setSearchQueryUseCaseImpl
     );
 
     // -------------------------------------------- MAP --------------------------------------------

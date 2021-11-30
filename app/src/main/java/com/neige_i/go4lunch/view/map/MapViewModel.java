@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModel;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.MapData;
+import com.neige_i.go4lunch.domain.map.MapRestaurant;
 import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
@@ -130,22 +130,25 @@ class MapViewModel extends ViewModel {
         }
 
         // Setup markers
-        for (NearbyRestaurant nearbyRestaurant : mapData.getNearbyRestaurants()) {
+        if (mapData.isClearMarkers()) {
+            displayedMarkers.clear();
+        }
+        for (MapRestaurant mapRestaurant : mapData.getMapRestaurants()) {
             final Integer interestedWorkmateCount = mapData
                 .getInterestedWorkmates()
-                .get(nearbyRestaurant.getPlaceId());
+                .get(mapRestaurant.getPlaceId());
 
             final MarkerViewState markerViewState = new MarkerViewState(
-                nearbyRestaurant.getPlaceId(),
-                nearbyRestaurant.getName(),
-                nearbyRestaurant.getLatitude(),
-                nearbyRestaurant.getLongitude(),
-                nearbyRestaurant.getAddress(),
+                mapRestaurant.getPlaceId(),
+                mapRestaurant.getName(),
+                mapRestaurant.getLatitude(),
+                mapRestaurant.getLongitude(),
+                mapRestaurant.getAddress(),
                 interestedWorkmateCount != null && interestedWorkmateCount > 0 ?
                     R.drawable.ic_marker_green :
                     R.drawable.ic_marker_orange
             );
-            displayedMarkers.put(nearbyRestaurant.getPlaceId(), markerViewState);
+            displayedMarkers.put(mapRestaurant.getPlaceId(), markerViewState);
         }
 
         // Setup FAB color
@@ -165,6 +168,7 @@ class MapViewModel extends ViewModel {
             isGpsEnabled ? R.drawable.ic_gps_on : R.drawable.ic_gps_off,
             fabColor,
             new ArrayList<>(displayedMarkers.values()),
+            mapData.isClearMarkers(),
             moveMapToLocation ? currentLocation.getLatitude() : currentPosition.target.latitude,
             moveMapToLocation ? currentLocation.getLongitude() : currentPosition.target.longitude,
             moveMapToLocation ? Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom) : currentPosition.zoom
