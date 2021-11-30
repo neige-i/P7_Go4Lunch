@@ -9,13 +9,11 @@ import androidx.collection.LruCache;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.List;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-abstract class PlacesRepository<RawData, CleanResponse> {
+abstract class PlacesRepository<Query, RawData, CleanResponse> {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -27,7 +25,7 @@ abstract class PlacesRepository<RawData, CleanResponse> {
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
-    private final LruCache<List<String>, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4 MB cache size
+    private final LruCache<Query, CleanResponse> dataCache = new LruCache<>(4 * 1024 * 1024); // 4 MB cache size
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -42,24 +40,21 @@ abstract class PlacesRepository<RawData, CleanResponse> {
     // ------------------------------------ REPOSITORY METHODS -------------------------------------
 
     @NonNull
-    public LiveData<CleanResponse> getData(@Nullable Object... queryParameter) {
-        if (queryParameter == null) {
+    public LiveData<CleanResponse> getData(@Nullable Query query) {
+        if (query == null) {
             return new MutableLiveData<>();
         }
 
         final MutableLiveData<CleanResponse> responseMutableLiveData = new MutableLiveData<>();
 
-        // Converts the query parameter into a String usable in a HTML request
-        final List<String> queryStrings = toQueryStrings(queryParameter);
-
-        final CleanResponse cachedCleanResponse = dataCache.get(queryStrings);
+        final CleanResponse cachedCleanResponse = dataCache.get(query);
 
         // Check if the request has already been executed
         if (cachedCleanResponse != null) {
             Log.d("Neige", "REPO get " + getNameForLog() + " : from cache");
             responseMutableLiveData.setValue(cachedCleanResponse);
         } else {
-            getRequest(queryStrings).enqueue(new Callback<RawData>() {
+            getRequest(query).enqueue(new Callback<RawData>() {
                 @Override
                 public void onResponse(
                     @NonNull Call<RawData> call,
@@ -70,7 +65,7 @@ abstract class PlacesRepository<RawData, CleanResponse> {
                     if (cleanResponse != null) {
                         Log.d("Neige", "REPO get " + getNameForLog() + " : from API");
                         responseMutableLiveData.setValue(cleanResponse);
-                        dataCache.put(queryStrings, cleanResponse);
+                        dataCache.put(query, cleanResponse);
                     }
                 }
 
@@ -84,10 +79,7 @@ abstract class PlacesRepository<RawData, CleanResponse> {
     }
 
     @NonNull
-    abstract List<String> toQueryStrings(@NonNull Object... queryParameters);
-
-    @NonNull
-    abstract Call<RawData> getRequest(@NonNull List<String> queryParameters);
+    abstract Call<RawData> getRequest(@NonNull Query query);
 
     @NonNull
     abstract String getNameForLog();

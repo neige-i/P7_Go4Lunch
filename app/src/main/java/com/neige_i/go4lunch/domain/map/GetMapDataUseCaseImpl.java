@@ -13,6 +13,7 @@ import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
+import com.neige_i.go4lunch.data.google_places.RawAutocompleteQuery;
 import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
@@ -121,7 +122,8 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
                 clearMarkers = true;
 
                 mapData.addSource(
-                    autocompleteRepository.getData(searchQuery, currentLocation), autocompleteRestaurants -> {
+                    autocompleteRepository.getData(
+                        new RawAutocompleteQuery(searchQuery, currentLocation)), autocompleteRestaurants -> {
                         // Clear collections because the autocomplete request needs fresh data
                         queriedRestaurants.clear();
                         restaurantDetailsMap.clear();

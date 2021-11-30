@@ -9,7 +9,6 @@ import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -18,7 +17,7 @@ import javax.inject.Singleton;
 import retrofit2.Call;
 
 @Singleton
-public class NearbyRepository extends PlacesRepository<RawNearbyResponse, List<NearbyRestaurant>> {
+public class NearbyRepository extends PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> {
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -37,16 +36,8 @@ public class NearbyRepository extends PlacesRepository<RawNearbyResponse, List<N
 
     @NonNull
     @Override
-    List<String> toQueryStrings(@NonNull Object... queryParameters) {
-        return Collections.singletonList(
-            getLocationString((Location) queryParameters[0])
-        );
-    }
-
-    @NonNull
-    @Override
-    Call<RawNearbyResponse> getRequest(@NonNull List<String> queryParameters) {
-        return placesApi.getNearbyRestaurants(queryParameters.get(0));
+    Call<RawNearbyResponse> getRequest(@NonNull Location location) {
+        return placesApi.getNearbyRestaurants(getLocationString(location));
     }
 
     @NonNull
