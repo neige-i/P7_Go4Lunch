@@ -8,6 +8,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
@@ -173,12 +174,15 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
+                Log.d("Neige", "onMenuItemActionExpand: ");
+                viewModel.onSearchMenuExpanded();
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                viewModel.onSearchMenuCollapsed(searchView.getQuery().toString());
+                Log.d("Neige", "onMenuItemActionCollapse: ");
+                viewModel.onSearchMenuCollapsed();
                 return true;
             }
         });

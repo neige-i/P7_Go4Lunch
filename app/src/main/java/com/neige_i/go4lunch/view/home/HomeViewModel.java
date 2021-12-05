@@ -65,7 +65,7 @@ class HomeViewModel extends ViewModel {
     private boolean isLocationPermissionAlreadyDenied;
     @Nullable
     private String currentQuerySearch;
-    private boolean keepQuerySearchInMemory;
+    private boolean isSearViewExpanded;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -187,16 +187,15 @@ class HomeViewModel extends ViewModel {
 
         // Handle the search's visibility and content when navigating with the bottom navigation bar
         if (menuItemId == R.id.action_workmates) {
-            // Collapse the search MenuItem but keep the query String in memory
-            collapseSearchViewEvent.call();
-            keepQuerySearchInMemory = true;
+            if (!isSearViewExpanded) {
+                currentQuerySearch = null; // Reset flag
+            }
 
-        } else if (
-            (menuItemId == R.id.action_map || menuItemId == R.id.action_restaurant) &&
-            keepQuerySearchInMemory
+            collapseSearchViewEvent.call();
+        } else if ((menuItemId == R.id.action_map || menuItemId == R.id.action_restaurant) &&
+            currentQuerySearch != null
         ) {
             // Expand the search MenuItem with the previously saved query String
-            keepQuerySearchInMemory = false; // Reset flag
             expandSearchViewEvent.setValue(currentQuerySearch);
         }
     }
@@ -213,11 +212,21 @@ class HomeViewModel extends ViewModel {
 
     public void onQueryTextChange(@NonNull String queryText) {
         setSearchQueryUseCase.launch(queryText);
+
+        // This method is called with an empty String after the SearchView being
+        // expanded the first time and after being collapsed
+        // The following condition ignores the 'empty String' case when the SearchView is collapsed
+        if (isSearViewExpanded) {
+            currentQuerySearch = queryText;
+        }
     }
 
-    public void onSearchMenuCollapsed(@NonNull String querySearch) {
-        setSearchQueryUseCase.close();
+    public void onSearchMenuExpanded() {
+        isSearViewExpanded = true;
+    }
 
-        currentQuerySearch = keepQuerySearchInMemory ? querySearch : null;
+    public void onSearchMenuCollapsed() {
+        isSearViewExpanded = false;
+        setSearchQueryUseCase.close();
     }
 }
