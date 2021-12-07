@@ -12,8 +12,6 @@ import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
-import com.neige_i.go4lunch.data.google_places.RawAutocompleteQuery;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.data.location.LocationRepository;
@@ -42,8 +40,6 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     @NonNull
     private final FirestoreRepository firestoreRepository;
     @NonNull
-    private final AutocompleteRepository autocompleteRepository;
-    @NonNull
     private final Clock clock;
     @NonNull
     private final Location restaurantLocation;
@@ -62,7 +58,6 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
 
     @NonNull
     private final List<String> queriedRestaurants = new ArrayList<>();
-    private String currentSearchQuery;
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -78,7 +73,6 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
     ) {
         this.detailsRepository = detailsRepository;
         this.firestoreRepository = firestoreRepository;
-        this.autocompleteRepository = autocompleteRepository;
         this.clock = clock;
         this.restaurantLocation = restaurantLocation;
 
@@ -115,66 +109,51 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
 
         final List<NearbyDetail> nearbyDetails = new ArrayList<>();
 
-        if (searchQuery != null) {
-            // Request autocomplete search if it is a new one
-            if (!searchQuery.equals(currentSearchQuery)) {
-                currentSearchQuery = searchQuery;
+        if (nearbyRestaurants != null) {
+            for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
+                final String restaurantId = nearbyRestaurant.getPlaceId();
 
-                nearbyDetailList.addSource(
-                    autocompleteRepository.getData(new RawAutocompleteQuery(searchQuery, currentLocation)), autocompleteRestaurants -> {
-                        // Clear collections because need a fresh request
-                        queriedRestaurants.clear();
-                        restaurantDetailsMap.clear();
-                        interestedWorkmatesMap.clear();
+                if (!queriedRestaurants.contains(restaurantId)) {
+                    queriedRestaurants.add(restaurantId);
 
-                        for (AutocompleteRestaurant autocompleteRestaurant : autocompleteRestaurants) {
-                            queryDetails(autocompleteRestaurant.getPlaceId());
-                            queryWorkmates(autocompleteRestaurant.getPlaceId());
+                    // Query restaurants details
+                    restaurantDetailsMediatorLiveData.addSource(
+                        detailsRepository.getData(restaurantId), restaurantDetails -> {
+
+                            restaurantDetailsMap.put(restaurantId, restaurantDetails);
+                            restaurantDetailsMediatorLiveData.setValue(restaurantDetailsMap);
                         }
-                    }
-                );
-            }
+                    );
 
-            for (RestaurantDetails restaurantDetails : restaurantDetailsMap.values()) {
-                final String restaurantId = restaurantDetails.getPlaceId();
+                    // Query interested workmates count
+                    interestedWorkmatesMediatorLiveData.addSource(
+                        firestoreRepository.getWorkmatesEatingAt(restaurantId), users -> {
 
-                nearbyDetails.add(new NearbyDetail(
-                    restaurantId,
-                    restaurantDetails.getName(),
-                    restaurantDetails.getAddress(),
-                    getDistanceInMeters(currentLocation, restaurantDetails.getLatitude(), restaurantDetails.getLongitude()),
-                    getHourResult(restaurantDetails.getOpeningPeriods()),
-                    getInterestedWorkmateCount(restaurantId),
-                    restaurantDetails.getRating(),
-                    restaurantDetails.getPhotoUrl()
-                ));
-            }
-        } else {
-            if (currentSearchQuery != null) {
-                currentSearchQuery = null;
+                            interestedWorkmatesMap.put(restaurantId, users.size());
+                            interestedWorkmatesMediatorLiveData.setValue(interestedWorkmatesMap);
+                        }
+                    );
+                }
 
-                // Clear collections because need a fresh request
-                queriedRestaurants.clear();
-                restaurantDetailsMap.clear();
-                interestedWorkmatesMap.clear();
-            }
+                final RestaurantDetails restaurantDetails = restaurantDetailsMap.get(restaurantId);
+                final String restaurantName = nearbyRestaurant.getName();
 
-            if (nearbyRestaurants != null) {
-                for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
-                    final String restaurantId = nearbyRestaurant.getPlaceId();
+                if (searchQuery == null ||
+                    restaurantName.toLowerCase().contains(searchQuery.toLowerCase())
+                ) {
+                    // Setup restaurant latitude & longitude
+                    restaurantLocation.setLatitude(nearbyRestaurant.getLatitude());
+                    restaurantLocation.setLongitude(nearbyRestaurant.getLongitude());
 
-                    queryDetails(restaurantId);
-                    queryWorkmates(restaurantId);
-
-                    final RestaurantDetails restaurantDetails = restaurantDetailsMap.get(restaurantId);
+                    final Integer interestedWorkmatesCount = interestedWorkmatesMap.get(restaurantId);
 
                     nearbyDetails.add(new NearbyDetail(
                         restaurantId,
-                        nearbyRestaurant.getName(),
+                        restaurantName,
                         nearbyRestaurant.getAddress(),
-                        getDistanceInMeters(currentLocation, nearbyRestaurant.getLatitude(), nearbyRestaurant.getLongitude()),
+                        currentLocation.distanceTo(restaurantLocation),
                         getHourResult(restaurantDetails != null ? restaurantDetails.getOpeningPeriods() : null),
-                        getInterestedWorkmateCount(restaurantId),
+                        interestedWorkmatesCount != null ? interestedWorkmatesCount : 0,
                         nearbyRestaurant.getRating(),
                         nearbyRestaurant.getPhotoUrl()
                     ));
@@ -183,67 +162,6 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
         }
 
         nearbyDetailList.setValue(nearbyDetails);
-    }
-
-    private void queryDetails(@NonNull String restaurantId) {
-        final Map<String, RestaurantDetails> restaurantDetailsMap = restaurantDetailsMediatorLiveData.getValue();
-
-        if (restaurantDetailsMap == null) {
-            throw new IllegalStateException("Impossible state: maps are initialized in the constructor!");
-        }
-
-        if (!queriedRestaurants.contains(restaurantId)) {
-            queriedRestaurants.add(restaurantId);
-
-            // Query restaurants details
-            restaurantDetailsMediatorLiveData.addSource(
-                detailsRepository.getData(restaurantId), restaurantDetails -> {
-
-                    restaurantDetailsMap.put(restaurantId, restaurantDetails);
-                    restaurantDetailsMediatorLiveData.setValue(restaurantDetailsMap);
-                }
-            );
-        }
-    }
-
-    private void queryWorkmates(@NonNull String restaurantId) {
-        final Map<String, Integer> interestedWorkmatesMap = interestedWorkmatesMediatorLiveData.getValue();
-
-        if (interestedWorkmatesMap == null) {
-            throw new IllegalStateException("Impossible state: maps are initialized in the constructor!");
-        }
-
-        if (!queriedRestaurants.contains(restaurantId)) {
-            queriedRestaurants.add(restaurantId);
-
-            // Query interested workmates count
-            interestedWorkmatesMediatorLiveData.addSource(
-                firestoreRepository.getWorkmatesEatingAt(restaurantId), users -> {
-
-                    interestedWorkmatesMap.put(restaurantId, users.size());
-                    interestedWorkmatesMediatorLiveData.setValue(interestedWorkmatesMap);
-                }
-            );
-        }
-    }
-
-    private float getDistanceInMeters(
-        @NonNull Location currentLocation,
-        double latitude,
-        double longitude
-    ) {
-        restaurantLocation.setLatitude(latitude);
-        restaurantLocation.setLongitude(longitude);
-        return currentLocation.distanceTo(restaurantLocation);
-    }
-
-    private int getInterestedWorkmateCount(@NonNull String restaurantId) {
-        if (interestedWorkmatesMediatorLiveData.getValue() == null) {
-            throw new IllegalStateException("Impossible state: maps are initialized in the constructor!");
-        }
-
-        final Integer interestedWorkmatesCount = interestedWorkmatesMediatorLiveData.getValue().get(restaurantId);
-        return interestedWorkmatesCount != null ? interestedWorkmatesCount : 0;
     }
 
     @NonNull

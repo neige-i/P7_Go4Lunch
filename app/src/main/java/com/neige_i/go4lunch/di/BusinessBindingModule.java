@@ -10,6 +10,8 @@ import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCase;
 import com.neige_i.go4lunch.domain.dispatcher.GetAuthUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
+import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
@@ -70,6 +72,11 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract ShowGpsDialogUseCase bindShowGpsDialogUseCase(
         ShowGpsDialogUseCaseImpl showGpsDialogUseCaseImpl
+    );
+
+    @Binds
+    public abstract GetAutocompleteResultsUseCase bindGetAutocompleteResultsUseCase(
+        GetAutocompleteResultsUseCaseImpl getAutocompleteResultsUseCaseImpl
     );
 
     @Binds

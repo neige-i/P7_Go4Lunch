@@ -130,21 +130,19 @@ public class MapFragment extends Fragment {
         locationBtn.setColorFilter(getResources().getColor(mapViewState.getFabColor()));
 
         // Add markers for all nearby restaurants
-        if (mapViewState.isClearMarkers()) {
-            displayedMarkers.clear();
-            googleMap.clear();
-        }
         for (MarkerViewState markerViewState : mapViewState.getMarkers()) {
             final String placeId = markerViewState.getPlaceId();
 
             final Marker currentMarker = displayedMarkers.get(placeId);
+            final int drawable = markerViewState.getMarkerDrawable();
+            final int size = markerViewState.getSize();
             if (currentMarker == null) {
                 final Marker marker = googleMap.addMarker(
                     new MarkerOptions()
                         .position(new LatLng(markerViewState.getLatitude(), markerViewState.getLongitude()))
                         .title(markerViewState.getName())
                         .snippet(markerViewState.getAddress())
-                        .icon(getSmallerIcon(markerViewState.getMarkerDrawable()))
+                        .icon(getSmallerIcon(drawable, size))
                 );
 
                 if (marker != null) {
@@ -152,7 +150,7 @@ public class MapFragment extends Fragment {
                     displayedMarkers.put(placeId, marker);
                 }
             } else {
-                currentMarker.setIcon(getSmallerIcon(markerViewState.getMarkerDrawable()));
+                currentMarker.setIcon(getSmallerIcon(drawable, size));
             }
         }
 
@@ -163,11 +161,11 @@ public class MapFragment extends Fragment {
         ));
     }
 
-    private BitmapDescriptor getSmallerIcon(@DrawableRes int drawableId) {
+    private BitmapDescriptor getSmallerIcon(@DrawableRes int drawableId, int size) {
         return BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(
             BitmapFactory.decodeResource(getResources(), drawableId),
-            100,
-            100,
+            size,
+            size,
             false
         ));
     }

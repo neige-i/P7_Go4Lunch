@@ -19,22 +19,19 @@ public class MapData {
     private final boolean gpsEnabled;
     @NonNull
     private final Map<String, Integer> interestedWorkmates;
-    private final boolean clearMarkers;
 
     MapData(
         boolean locationPermissionGranted,
         @Nullable Location currentLocation,
         @NonNull List<MapRestaurant> mapRestaurants,
         boolean gpsEnabled,
-        @NonNull Map<String, Integer> interestedWorkmates,
-        boolean clearMarkers
+        @NonNull Map<String, Integer> interestedWorkmates
     ) {
         this.locationPermissionGranted = locationPermissionGranted;
         this.currentLocation = currentLocation;
         this.mapRestaurants = mapRestaurants;
         this.gpsEnabled = gpsEnabled;
         this.interestedWorkmates = interestedWorkmates;
-        this.clearMarkers = clearMarkers;
     }
 
     public boolean isLocationPermissionGranted() {
@@ -60,10 +57,6 @@ public class MapData {
         return interestedWorkmates;
     }
 
-    public boolean isClearMarkers() {
-        return clearMarkers;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -75,7 +68,6 @@ public class MapData {
         MapData mapData = (MapData) o;
         return locationPermissionGranted == mapData.locationPermissionGranted &&
             gpsEnabled == mapData.gpsEnabled &&
-            clearMarkers == mapData.clearMarkers &&
             Objects.equals(currentLocation, mapData.currentLocation) &&
             mapRestaurants.equals(mapData.mapRestaurants) &&
             interestedWorkmates.equals(mapData.interestedWorkmates);
@@ -83,7 +75,7 @@ public class MapData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationPermissionGranted, currentLocation, mapRestaurants, gpsEnabled, interestedWorkmates, clearMarkers);
+        return Objects.hash(locationPermissionGranted, currentLocation, mapRestaurants, gpsEnabled, interestedWorkmates);
     }
 
     @NonNull
@@ -95,7 +87,6 @@ public class MapData {
             ", mapRestaurants=" + mapRestaurants +
             ", gpsEnabled=" + gpsEnabled +
             ", interestedWorkmates=" + interestedWorkmates +
-            ", refreshMarkers=" + clearMarkers +
             '}';
     }
 }

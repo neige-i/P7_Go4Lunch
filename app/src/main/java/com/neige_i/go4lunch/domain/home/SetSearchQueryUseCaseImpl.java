@@ -18,9 +18,7 @@ public class SetSearchQueryUseCaseImpl implements SetSearchQueryUseCase {
 
     @Override
     public void launch(@NonNull String searchQuery) {
-        if (searchQuery.length() >= 3) {
-            autocompleteRepository.setCurrentSearch(searchQuery);
-        }
+        autocompleteRepository.setCurrentSearch(searchQuery);
     }
 
     @Override

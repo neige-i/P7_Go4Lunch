@@ -606,7 +606,8 @@ public class MapViewModelTest {
             EXPECTED_LAT + index,
             EXPECTED_LNG + index,
             EXPECTED_ADDRESS + index,
-            markerDrawable
+            markerDrawable,
+            size
         );
     }
 }
