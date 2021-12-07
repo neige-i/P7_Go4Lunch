@@ -130,13 +130,19 @@ class MapViewModel extends ViewModel {
         }
 
         // Setup markers
-        if (mapData.isClearMarkers()) {
-            displayedMarkers.clear();
-        }
         for (MapRestaurant mapRestaurant : mapData.getMapRestaurants()) {
             final Integer interestedWorkmateCount = mapData
                 .getInterestedWorkmates()
                 .get(mapRestaurant.getPlaceId());
+
+            final boolean isSearched = mapRestaurant.isSearched();
+
+            final int markerDrawable;
+            if (interestedWorkmateCount != null && interestedWorkmateCount > 0) {
+                markerDrawable = isSearched ? R.drawable.ic_marker_green_search : R.drawable.ic_marker_green;
+            } else {
+                markerDrawable = isSearched ? R.drawable.ic_marker_orange_search : R.drawable.ic_marker_orange;
+            }
 
             final MarkerViewState markerViewState = new MarkerViewState(
                 mapRestaurant.getPlaceId(),
@@ -144,9 +150,8 @@ class MapViewModel extends ViewModel {
                 mapRestaurant.getLatitude(),
                 mapRestaurant.getLongitude(),
                 mapRestaurant.getAddress(),
-                interestedWorkmateCount != null && interestedWorkmateCount > 0 ?
-                    R.drawable.ic_marker_green :
-                    R.drawable.ic_marker_orange
+                markerDrawable,
+                isSearched ? 300 : 100
             );
             displayedMarkers.put(mapRestaurant.getPlaceId(), markerViewState);
         }
@@ -168,7 +173,6 @@ class MapViewModel extends ViewModel {
             isGpsEnabled ? R.drawable.ic_gps_on : R.drawable.ic_gps_off,
             fabColor,
             new ArrayList<>(displayedMarkers.values()),
-            mapData.isClearMarkers(),
             moveMapToLocation ? currentLocation.getLatitude() : currentPosition.target.latitude,
             moveMapToLocation ? currentLocation.getLongitude() : currentPosition.target.longitude,
             moveMapToLocation ? Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom) : currentPosition.zoom

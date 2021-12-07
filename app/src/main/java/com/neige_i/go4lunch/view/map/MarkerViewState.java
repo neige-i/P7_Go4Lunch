@@ -17,6 +17,7 @@ class MarkerViewState {
     private final String address;
     @DrawableRes
     private final int markerDrawable;
+    private final int size;
 
     MarkerViewState(
         @NonNull String placeId,
@@ -24,7 +25,8 @@ class MarkerViewState {
         double latitude,
         double longitude,
         @NonNull String address,
-        @DrawableRes int markerDrawable
+        @DrawableRes int markerDrawable,
+        int size
     ) {
         this.placeId = placeId;
         this.name = name;
@@ -32,6 +34,7 @@ class MarkerViewState {
         this.longitude = longitude;
         this.address = address;
         this.markerDrawable = markerDrawable;
+        this.size = size;
     }
 
     @NonNull
@@ -62,6 +65,10 @@ class MarkerViewState {
         return markerDrawable;
     }
 
+    public int getSize() {
+        return size;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -74,6 +81,7 @@ class MarkerViewState {
         return Double.compare(that.latitude, latitude) == 0 &&
             Double.compare(that.longitude, longitude) == 0 &&
             markerDrawable == that.markerDrawable &&
+            size == that.size &&
             placeId.equals(that.placeId) &&
             name.equals(that.name) &&
             address.equals(that.address);
@@ -81,7 +89,7 @@ class MarkerViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, latitude, longitude, address, markerDrawable);
+        return Objects.hash(placeId, name, latitude, longitude, address, markerDrawable, size);
     }
 
     @NonNull
@@ -94,6 +102,7 @@ class MarkerViewState {
             ", longitude=" + longitude +
             ", address='" + address + '\'' +
             ", markerDrawable=" + markerDrawable +
+            ", size=" + size +
             '}';
     }
 }

@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
+import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
@@ -17,7 +19,10 @@ import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
 import com.neige_i.go4lunch.view.MediatorSingleLiveEvent;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -32,6 +37,8 @@ class HomeViewModel extends ViewModel {
     private final GetLocationPermissionUseCase getLocationPermissionUseCase;
     @NonNull
     private final SetLocationUpdatesUseCase setLocationUpdatesUseCase;
+    @NonNull
+    private final GetAutocompleteResultsUseCase getAutocompleteResultsUseCase;
     @NonNull
     private final SetSearchQueryUseCase setSearchQueryUseCase;
     @NonNull
@@ -58,14 +65,20 @@ class HomeViewModel extends ViewModel {
     private final MutableLiveData<Integer> menuItemMutableLiveData = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<Boolean> isSearchMenuItemReadyMutableLiveData = new MutableLiveData<>();
+    @NonNull
+    private final MutableLiveData<String> searchQueryMutableLiveData = new MutableLiveData<>();
+    @NonNull
+    private final MediatorLiveData<List<AutocompleteRestaurant>> autocompleteRestaurantsMediatorLiveData = new MediatorLiveData<>();
 
     /**
      * Flag to avoid requesting the location permission repeatedly if the user denies it.
      */
     private boolean isLocationPermissionAlreadyDenied;
+    private boolean newAutocompleteRequest;
+    private boolean showAutocompleteSuggestions;
     @Nullable
-    private String currentQuerySearch;
-    private boolean isSearViewExpanded;
+    private String savedSearchQuery;
+    private boolean isSearchMenuJustCollapsedOrExpanded;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -74,11 +87,13 @@ class HomeViewModel extends ViewModel {
         @NonNull GetLocationPermissionUseCase getLocationPermissionUseCase,
         @NonNull SetLocationUpdatesUseCase setLocationUpdatesUseCase,
         @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
+        @NonNull GetAutocompleteResultsUseCase getAutocompleteResultsUseCase,
         @NonNull SetSearchQueryUseCase setSearchQueryUseCase,
         @NonNull FreeResourcesUseCase freeResourcesUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
+        this.getAutocompleteResultsUseCase = getAutocompleteResultsUseCase;
         this.setSearchQueryUseCase = setSearchQueryUseCase;
         this.freeResourcesUseCase = freeResourcesUseCase;
 
@@ -87,21 +102,33 @@ class HomeViewModel extends ViewModel {
             showGpsDialogEvent.setValue(resolvableApiException);
         });
 
-        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, isSearchMenuItemReadyMutableLiveData.getValue()));
-        homeViewState.addSource(isSearchMenuItemReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), isViewReady));
+        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue()));
+        homeViewState.addSource(isSearchMenuItemReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), isViewReady, searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue()));
+        homeViewState.addSource(searchQueryMutableLiveData, searchQuery -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQuery, autocompleteRestaurantsMediatorLiveData.getValue()));
+        homeViewState.addSource(autocompleteRestaurantsMediatorLiveData, autocompleteRestaurants -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurants));
 
         // Set default page to display
         onBottomNavigationItemClicked(R.id.action_map);
     }
 
-    private void combine(@Nullable Integer menuItemId, @Nullable Boolean isViewReady) {
-        if (menuItemId == null || !Objects.equals(isViewReady, true)) {
+    private void combine(
+        @Nullable Integer menuItemId,
+        @Nullable Boolean isViewReady,
+        @Nullable String searchQuery,
+        @Nullable List<AutocompleteRestaurant> autocompleteRestaurants
+    ) {
+        if (!Objects.equals(isViewReady, true)) {
+            homeViewState.setValue(null);
             return;
         }
 
+        if (menuItemId == null) {
+            return;
+        }
+
+        // Setup activity title & ViewPager position
         final int titleId;
         final int viewPagerPosition;
-
         if (menuItemId == R.id.action_map) {
             titleId = R.string.title_restaurant;
             viewPagerPosition = 0;
@@ -115,40 +142,79 @@ class HomeViewModel extends ViewModel {
             throw new IllegalArgumentException("onBottomNavigationItemClicked() was called with a wrong MenuItem ID: " + menuItemId);
         }
 
+        // Save the current search query and collapse the SearchView
+        if (menuItemId == R.id.action_workmates && searchQuery != null) {
+            savedSearchQuery = searchQuery;
+            collapseSearchViewEvent.call();
+            return;
+        }
+
+        // Restore the previously saved search query and expand the SearchView
+        if (menuItemId != R.id.action_workmates && savedSearchQuery != null) {
+            searchQuery = savedSearchQuery;
+            savedSearchQuery = null; // Reset flag
+            expandSearchViewEvent.call();
+            searchQueryMutableLiveData.setValue(searchQuery);
+            return;
+        }
+
+        // Setup autocomplete request
+        if (searchQuery != null && newAutocompleteRequest) {
+            newAutocompleteRequest = false; // Reset flag
+
+            autocompleteRestaurantsMediatorLiveData.addSource(
+                getAutocompleteResultsUseCase.get(searchQuery), autocompleteSuggestions -> {
+                    autocompleteRestaurantsMediatorLiveData.setValue(autocompleteSuggestions);
+                }
+            );
+        }
+
+        // Setup autocomplete results
+        final List<String> autocompleteResults;
+        if (searchQuery != null && autocompleteRestaurants != null && showAutocompleteSuggestions) {
+            autocompleteResults = autocompleteRestaurants.stream()
+                .map(autocompleteRestaurant -> autocompleteRestaurant.getRestaurantName())
+                .collect(Collectors.toList());
+        } else {
+            autocompleteResults = new ArrayList<>();
+        }
+
         homeViewState.setValue(new HomeViewState(
             titleId,
             viewPagerPosition,
-            viewPagerPosition != 2
+            viewPagerPosition != 2,
+            searchQuery,
+            autocompleteResults
         ));
     }
 
     @NonNull
-    public LiveData<HomeViewState> getHomeViewState() {
+    LiveData<HomeViewState> getHomeViewState() {
         return homeViewState;
     }
 
     @NonNull
-    public LiveData<Void> getRequestLocationPermissionEvent() {
+    LiveData<Void> getRequestLocationPermissionEvent() {
         return requestLocationPermissionEvent;
     }
 
     @NonNull
-    public LiveData<ResolvableApiException> getShowGpsDialogEvent() {
+    LiveData<ResolvableApiException> getShowGpsDialogEvent() {
         return showGpsDialogEvent;
     }
 
     @NonNull
-    public LiveData<Void> getShowBlockingDialogEvent() {
+    LiveData<Void> getShowBlockingDialogEvent() {
         return showBlockingDialogEvent;
     }
 
     @NonNull
-    public LiveData<Void> getCollapseSearchViewEvent() {
+    LiveData<Void> getCollapseSearchViewEvent() {
         return collapseSearchViewEvent;
     }
 
     @NonNull
-    public LiveData<String> getExpandSearchViewEvent() {
+    LiveData<String> getExpandSearchViewEvent() {
         return expandSearchViewEvent;
     }
 
@@ -163,7 +229,7 @@ class HomeViewModel extends ViewModel {
 
     // ------------------------------------- LOCATION METHODS --------------------------------------
 
-    public void onActivityResumed() {
+    void onActivityResumed() {
         final boolean isLocationPermissionGranted = getLocationPermissionUseCase.isGranted();
 
         // Set location updates (enable it or not)
@@ -182,51 +248,57 @@ class HomeViewModel extends ViewModel {
 
     // --------------------------------- BOTTOM NAVIGATION METHODS ---------------------------------
 
-    public void onBottomNavigationItemClicked(int menuItemId) {
+    void onBottomNavigationItemClicked(int menuItemId) {
         menuItemMutableLiveData.setValue(menuItemId);
-
-        // Handle the search's visibility and content when navigating with the bottom navigation bar
-        if (menuItemId == R.id.action_workmates) {
-            if (!isSearViewExpanded) {
-                currentQuerySearch = null; // Reset flag
-            }
-
-            collapseSearchViewEvent.call();
-        } else if ((menuItemId == R.id.action_map || menuItemId == R.id.action_restaurant) &&
-            currentQuerySearch != null
-        ) {
-            // Expand the search MenuItem with the previously saved query String
-            expandSearchViewEvent.setValue(currentQuerySearch);
-        }
     }
 
     // -------------------------------------- SEARCH METHODS ---------------------------------------
+
+    void onActivityCreated() {
+        isSearchMenuItemReadyMutableLiveData.setValue(false);
+    }
 
     /**
      * Is useful to avoid NullPointerException. Without it, the search MenuItem can be updated while
      * observing the view state in onCreate() before being initialized inside onCreateOptionsMenu().
      */
-    public void onSearchMenuItemInitialized() {
+    void onSearchInitialized() {
         isSearchMenuItemReadyMutableLiveData.setValue(true);
     }
 
-    public void onQueryTextChange(@NonNull String queryText) {
-        setSearchQueryUseCase.launch(queryText);
+    void onQueryTextChange(@NonNull String queryText) {
+        // This method is called with an empty String right after the SearchView being
+        // collapsed or expanded when it previously contained a non-empty input text
+        if (isSearchMenuJustCollapsedOrExpanded && queryText.equals("")) {
+            isSearchMenuJustCollapsedOrExpanded = false; // Reset flag
+            return;
+        }
 
-        // This method is called with an empty String after the SearchView being
-        // expanded the first time and after being collapsed
-        // The following condition ignores the 'empty String' case when the SearchView is collapsed
-        if (isSearViewExpanded) {
-            currentQuerySearch = queryText;
+        // Prevent repeated calls: the SearchView updates the ViewState which updates the SearchView afterwards
+        if (!Objects.equals(searchQueryMutableLiveData.getValue(), queryText)) {
+            newAutocompleteRequest = true;
+            showAutocompleteSuggestions = true;
+            searchQueryMutableLiveData.setValue(queryText);
         }
     }
 
-    public void onSearchMenuExpanded() {
-        isSearViewExpanded = true;
+    void onSearchMenuExpanded() {
+        isSearchMenuJustCollapsedOrExpanded = true;
     }
 
-    public void onSearchMenuCollapsed() {
-        isSearViewExpanded = false;
+    void onSearchMenuCollapsed() {
+        isSearchMenuJustCollapsedOrExpanded = true;
+        searchQueryMutableLiveData.setValue(null);
+
         setSearchQueryUseCase.close();
+    }
+
+    void onAutocompleteResultClick(@NonNull String restaurantName) {
+        // No need to execute a new search, only update the SearchView text field
+        showAutocompleteSuggestions = false;
+        searchQueryMutableLiveData.setValue(restaurantName);
+
+        // Request filtering restaurants according to the restaurant name
+        setSearchQueryUseCase.launch(restaurantName);
     }
 }

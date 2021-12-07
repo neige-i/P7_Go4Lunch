@@ -8,9 +8,9 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
@@ -62,6 +63,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         // Setup UI
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
+        viewModel.onActivityCreated();
 
         binding.viewPager.setUserInputEnabled(false); // Disable page scrolling because the ViewPager contains a scrollable map
         binding.viewPager.setAdapter(new HomePagerAdapter(this));
@@ -70,6 +72,12 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             viewModel.onBottomNavigationItemClicked(item.getItemId());
             return true;
         });
+
+        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(restaurantName -> {
+            viewModel.onAutocompleteResultClick(restaurantName);
+        });
+        binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        binding.searchList.setAdapter(autocompleteAdapter);
 
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
@@ -84,10 +92,15 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
         // Update UI when state is changed
         viewModel.getHomeViewState().observe(this, homeViewState -> {
-            binding.toolbar.setTitle(homeViewState.getTitleId());
-            binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
+            if (homeViewState != null) {
+                binding.toolbar.setTitle(homeViewState.getTitleId());
+                binding.viewPager.setCurrentItem(homeViewState.getViewPagerPosition());
 
-            searchMenuItem.setVisible(homeViewState.isSearchEnabled());
+                searchMenuItem.setVisible(homeViewState.isSearchEnabled());
+                searchView.setQuery(homeViewState.getSearchQuery(), false);
+                binding.searchList.setVisibility(homeViewState.isSearchEnabled() ? View.VISIBLE : View.GONE);
+                autocompleteAdapter.submitList(homeViewState.getAutocompleteResults());
+            }
         });
 
         // Setup actions when events are triggered
@@ -120,7 +133,6 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         });
         viewModel.getExpandSearchViewEvent().observe(this, searchQuery -> {
             searchMenuItem.expandActionView();
-            searchView.setQuery(searchQuery, false); // false to only update text field
         });
 
         // Register GPS receiver in this activity's lifecycle
@@ -152,10 +164,10 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         getMenuInflater().inflate(R.menu.toolbar, menu);
 
         searchMenuItem = menu.findItem(R.id.action_search);
-        viewModel.onSearchMenuItemInitialized();
+        searchView = (SearchView) searchMenuItem.getActionView();
+        viewModel.onSearchInitialized();
 
         // Setup SearchView
-        searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setQueryHint(getString(R.string.search_restaurants_by_name));
         searchView.setImeOptions(EditorInfo.IME_ACTION_DONE); // Close keyboard when clicking on "Return" key
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -174,14 +186,12 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                Log.d("Neige", "onMenuItemActionExpand: ");
                 viewModel.onSearchMenuExpanded();
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                Log.d("Neige", "onMenuItemActionCollapse: ");
                 viewModel.onSearchMenuCollapsed();
                 return true;
             }

@@ -1,8 +1,10 @@
 package com.neige_i.go4lunch.view.home;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
+import java.util.List;
 import java.util.Objects;
 
 class HomeViewState {
@@ -11,15 +13,23 @@ class HomeViewState {
     private final int titleId;
     private final int viewPagerPosition;
     private final boolean isSearchEnabled;
+    @Nullable
+    private final String searchQuery;
+    @NonNull
+    private final List<String> autocompleteResults;
 
     HomeViewState(
         int titleId,
         int viewPagerPosition,
-        boolean isSearchEnabled
+        boolean isSearchEnabled,
+        @Nullable String searchQuery,
+        @NonNull List<String> autocompleteResults
     ) {
         this.titleId = titleId;
         this.viewPagerPosition = viewPagerPosition;
         this.isSearchEnabled = isSearchEnabled;
+        this.searchQuery = searchQuery;
+        this.autocompleteResults = autocompleteResults;
     }
 
     @StringRes
@@ -35,6 +45,16 @@ class HomeViewState {
         return isSearchEnabled;
     }
 
+    @Nullable
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+
+    @NonNull
+    public List<String> getAutocompleteResults() {
+        return autocompleteResults;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -46,12 +66,14 @@ class HomeViewState {
         HomeViewState that = (HomeViewState) o;
         return titleId == that.titleId &&
             viewPagerPosition == that.viewPagerPosition &&
-            isSearchEnabled == that.isSearchEnabled;
+            isSearchEnabled == that.isSearchEnabled &&
+            Objects.equals(searchQuery, that.searchQuery) &&
+            autocompleteResults.equals(that.autocompleteResults);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(titleId, viewPagerPosition, isSearchEnabled);
+        return Objects.hash(titleId, viewPagerPosition, isSearchEnabled, searchQuery, autocompleteResults);
     }
 
     @NonNull
@@ -61,6 +83,8 @@ class HomeViewState {
             "titleId=" + titleId +
             ", viewPagerPosition=" + viewPagerPosition +
             ", isSearchEnabled=" + isSearchEnabled +
+            ", searchQuery='" + searchQuery + '\'' +
+            ", autocompleteResults=" + autocompleteResults +
             '}';
     }
 }
