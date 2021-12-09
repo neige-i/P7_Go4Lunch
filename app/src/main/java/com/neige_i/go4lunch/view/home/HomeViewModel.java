@@ -1,5 +1,6 @@
 package com.neige_i.go4lunch.view.home;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -10,8 +11,10 @@ import androidx.lifecycle.ViewModel;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.domain.home.DrawerInfo;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
+import com.neige_i.go4lunch.domain.home.GetDrawerInfoUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
@@ -89,6 +92,7 @@ class HomeViewModel extends ViewModel {
         @NonNull ShowGpsDialogUseCase showGpsDialogUseCase,
         @NonNull GetAutocompleteResultsUseCase getAutocompleteResultsUseCase,
         @NonNull SetSearchQueryUseCase setSearchQueryUseCase,
+        @NonNull GetDrawerInfoUseCase getDrawerInfoUseCase,
         @NonNull FreeResourcesUseCase freeResourcesUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
@@ -102,10 +106,12 @@ class HomeViewModel extends ViewModel {
             showGpsDialogEvent.setValue(resolvableApiException);
         });
 
-        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue()));
-        homeViewState.addSource(isSearchMenuItemReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), isViewReady, searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue()));
-        homeViewState.addSource(searchQueryMutableLiveData, searchQuery -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQuery, autocompleteRestaurantsMediatorLiveData.getValue()));
-        homeViewState.addSource(autocompleteRestaurantsMediatorLiveData, autocompleteRestaurants -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurants));
+        final LiveData<DrawerInfo> drawerInfoLiveData = getDrawerInfoUseCase.get();
+        homeViewState.addSource(menuItemMutableLiveData, menuItemId -> combine(menuItemId, isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue(), drawerInfoLiveData.getValue()));
+        homeViewState.addSource(isSearchMenuItemReadyMutableLiveData, isViewReady -> combine(menuItemMutableLiveData.getValue(), isViewReady, searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue(), drawerInfoLiveData.getValue()));
+        homeViewState.addSource(searchQueryMutableLiveData, searchQuery -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQuery, autocompleteRestaurantsMediatorLiveData.getValue(), drawerInfoLiveData.getValue()));
+        homeViewState.addSource(autocompleteRestaurantsMediatorLiveData, autocompleteRestaurants -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurants, drawerInfoLiveData.getValue()));
+        homeViewState.addSource(drawerInfoLiveData, drawerInfo -> combine(menuItemMutableLiveData.getValue(), isSearchMenuItemReadyMutableLiveData.getValue(), searchQueryMutableLiveData.getValue(), autocompleteRestaurantsMediatorLiveData.getValue(), drawerInfo));
 
         // Set default page to display
         onBottomNavigationItemClicked(R.id.action_map);
@@ -115,14 +121,15 @@ class HomeViewModel extends ViewModel {
         @Nullable Integer menuItemId,
         @Nullable Boolean isViewReady,
         @Nullable String searchQuery,
-        @Nullable List<AutocompleteRestaurant> autocompleteRestaurants
+        @Nullable List<AutocompleteRestaurant> autocompleteRestaurants,
+        @Nullable DrawerInfo drawerInfo
     ) {
         if (!Objects.equals(isViewReady, true)) {
             homeViewState.setValue(null);
             return;
         }
 
-        if (menuItemId == null) {
+        if (menuItemId == null || drawerInfo == null) {
             return;
         }
 
@@ -184,7 +191,11 @@ class HomeViewModel extends ViewModel {
             viewPagerPosition,
             viewPagerPosition != 2,
             searchQuery,
-            autocompleteResults
+            autocompleteResults,
+            drawerInfo.getPhotoUrl(),
+            drawerInfo.getUsername(),
+            drawerInfo.getUserEmail(),
+            drawerInfo.getSelectedRestaurantId()
         ));
     }
 
@@ -218,7 +229,7 @@ class HomeViewModel extends ViewModel {
         return expandSearchViewEvent;
     }
 
-    // ------------------------------------- LIFECYCLE METHODS -------------------------------------
+    // ---------------------------------- FREE RESOURCES METHODS -----------------------------------
 
     @Override
     protected void onCleared() {
@@ -300,5 +311,12 @@ class HomeViewModel extends ViewModel {
 
         // Request filtering restaurants according to the restaurant name
         setSearchQueryUseCase.launch(restaurantName);
+    }
+
+    public void onDrawerItemSelected(@IdRes int itemId) {
+        if (itemId == R.id.lunch_menu) {
+        } else if (itemId == R.id.settings_menu) {
+        } else if (itemId == R.id.logout_menu) {
+        }
     }
 }

@@ -6,10 +6,13 @@
     <string name="title_workmates">Available workmates</string>
 
     <!-- Menu item -->
-    <string name="menu_search">Search</string>
+    <string name="search_menu">Search</string>
     <string name="bottom_menu_map">Map view</string>
     <string name="bottom_menu_list">List view</string>
     <string name="bottom_menu_workmates">Workmates</string>
+    <string name="lunch_menu">YOUR LUNCH</string>
+    <string name="settings_menu">SETTINGS</string>
+    <string name="logout_menu">LOGOUT</string>
 
     <!-- Image description -->
     <string name="description_restaurant_image">Restaurant image</string>
@@ -20,6 +23,8 @@
     <string name="description_app_logo">App logo</string>
     <string name="description_background_image">Background image</string>
     <string name="description_check_button">Select restaurant button</string>
+    <string name="description_open_drawer">Open drawer</string>
+    <string name="description_close_drawer">Close drawer</string>
 
     <!-- Button text -->
     <string name="sign_in_google">Sign in with Google</string>

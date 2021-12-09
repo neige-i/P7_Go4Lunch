@@ -17,17 +17,23 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
+import com.neige_i.go4lunch.databinding.HeaderDrawerBinding;
+import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
+
+import java.util.Collections;
 
 import javax.inject.Inject;
 
@@ -40,13 +46,18 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
     public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @Inject
+    GpsStateChangeReceiver gpsStateChangeReceiver;
+    @Inject
+    ImageDelegate imageDelegate;
+
     // ---------------------------------------- LOCAL FIELDS ---------------------------------------
 
     private HomeViewModel viewModel;
     private MenuItem searchMenuItem;
     private SearchView searchView;
-    @Inject
-    GpsStateChangeReceiver gpsStateChangeReceiver;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -59,6 +70,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
         // Init view binding
         final ActivityHomeBinding binding = ActivityHomeBinding.inflate(getLayoutInflater());
+        final HeaderDrawerBinding drawerBinding = HeaderDrawerBinding.bind(binding.navigationView.getHeaderView(0));
 
         // Setup UI
         setContentView(binding.getRoot());
@@ -78,6 +90,18 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         });
         binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         binding.searchList.setAdapter(autocompleteAdapter);
+
+        binding.navigationView.setNavigationItemSelectedListener(item -> {
+            viewModel.onDrawerItemSelected(item.getItemId());
+            return true;
+        });
+        new ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.description_open_drawer,
+            R.string.description_close_drawer
+        ).syncState();
 
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
@@ -100,6 +124,18 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
                 searchView.setQuery(homeViewState.getSearchQuery(), false);
                 binding.searchList.setVisibility(homeViewState.isSearchEnabled() ? View.VISIBLE : View.GONE);
                 autocompleteAdapter.submitList(homeViewState.getAutocompleteResults());
+
+                imageDelegate.displayPhotoWithGlide(
+                    drawerBinding.profileImage,
+                    homeViewState.getUserProfilePhoto(),
+                    R.drawable.ic_person,
+                    Collections.singletonList(new CircleCrop())
+                );
+                drawerBinding.profileNameText.setText(homeViewState.getUsername());
+                drawerBinding.profileEmailText.setText(homeViewState.getUserEmail());
+                binding.navigationView.getMenu()
+                    .findItem(R.id.lunch_menu)
+                    .setEnabled(homeViewState.getSelectedRestaurantId() != null);
             }
         });
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/lunch_menu"
+        android:icon="@drawable/ic_restaurant_menu"
+        android:title="@string/lunch_menu"
+        />
+    <item
+        android:id="@+id/settings_menu"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings_menu"
+        />
+    <item
+        android:id="@+id/logout_menu"
+        android:icon="@drawable/ic_power_off"
+        android:title="@string/logout_menu"
+        />
+</menu>
