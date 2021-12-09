@@ -16,6 +16,7 @@ import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;
 import com.neige_i.go4lunch.domain.home.GetDrawerInfoUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
+import com.neige_i.go4lunch.domain.home.LogoutUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
 import com.neige_i.go4lunch.domain.home.ShowGpsDialogUseCase;
@@ -46,6 +47,8 @@ class HomeViewModel extends ViewModel {
     private final SetSearchQueryUseCase setSearchQueryUseCase;
     @NonNull
     private final FreeResourcesUseCase freeResourcesUseCase;
+    @NonNull
+    private final LogoutUseCase logoutUseCase;
 
     // ------------------------------------ LIVE DATA TO EXPOSE ------------------------------------
 
@@ -61,6 +64,16 @@ class HomeViewModel extends ViewModel {
     private final SingleLiveEvent<Void> collapseSearchViewEvent = new SingleLiveEvent<>();
     @NonNull
     private final SingleLiveEvent<String> expandSearchViewEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<String> showLunchEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> showSettingsEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> logoutEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> closeDrawerEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> closeActivityEvent = new SingleLiveEvent<>();
 
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
@@ -82,6 +95,8 @@ class HomeViewModel extends ViewModel {
     @Nullable
     private String savedSearchQuery;
     private boolean isSearchMenuJustCollapsedOrExpanded;
+    @Nullable
+    private String selectedRestaurantId;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -93,13 +108,15 @@ class HomeViewModel extends ViewModel {
         @NonNull GetAutocompleteResultsUseCase getAutocompleteResultsUseCase,
         @NonNull SetSearchQueryUseCase setSearchQueryUseCase,
         @NonNull GetDrawerInfoUseCase getDrawerInfoUseCase,
-        @NonNull FreeResourcesUseCase freeResourcesUseCase
+        @NonNull FreeResourcesUseCase freeResourcesUseCase,
+        @NonNull LogoutUseCase logoutUseCase
     ) {
         this.getLocationPermissionUseCase = getLocationPermissionUseCase;
         this.setLocationUpdatesUseCase = setLocationUpdatesUseCase;
         this.getAutocompleteResultsUseCase = getAutocompleteResultsUseCase;
         this.setSearchQueryUseCase = setSearchQueryUseCase;
         this.freeResourcesUseCase = freeResourcesUseCase;
+        this.logoutUseCase = logoutUseCase;
 
         // Retrieve the GPS dialog from the UseCase and prompt it to the user with a SingleLiveEvent
         showGpsDialogEvent.addSource(showGpsDialogUseCase.getDialog(), resolvableApiException -> {
@@ -195,7 +212,7 @@ class HomeViewModel extends ViewModel {
             drawerInfo.getPhotoUrl(),
             drawerInfo.getUsername(),
             drawerInfo.getUserEmail(),
-            drawerInfo.getSelectedRestaurantId()
+            selectedRestaurantId = drawerInfo.getSelectedRestaurantId()
         ));
     }
 
@@ -227,6 +244,31 @@ class HomeViewModel extends ViewModel {
     @NonNull
     LiveData<String> getExpandSearchViewEvent() {
         return expandSearchViewEvent;
+    }
+
+    @NonNull
+    LiveData<String> getShowLunchEvent() {
+        return showLunchEvent;
+    }
+
+    @NonNull
+    LiveData<Void> getShowSettingsEvent() {
+        return showSettingsEvent;
+    }
+
+    @NonNull
+    LiveData<Void> getLogoutEvent() {
+        return logoutEvent;
+    }
+
+    @NonNull
+    LiveData<Void> getCloseDrawerEvent() {
+        return closeDrawerEvent;
+    }
+
+    @NonNull
+    LiveData<Void> getCloseActivityEvent() {
+        return closeActivityEvent;
     }
 
     // ---------------------------------- FREE RESOURCES METHODS -----------------------------------
@@ -313,10 +355,26 @@ class HomeViewModel extends ViewModel {
         setSearchQueryUseCase.launch(restaurantName);
     }
 
-    public void onDrawerItemSelected(@IdRes int itemId) {
+    // -------------------------------------- DRAWER METHODS ---------------------------------------
+
+    void onDrawerItemSelected(@IdRes int itemId) {
+        closeDrawerEvent.call();
+
         if (itemId == R.id.lunch_menu) {
+            showLunchEvent.setValue(selectedRestaurantId);
         } else if (itemId == R.id.settings_menu) {
+            showSettingsEvent.call();
         } else if (itemId == R.id.logout_menu) {
+            logoutUseCase.logout();
+            logoutEvent.call();
+        }
+    }
+
+    public void onBackPressed(boolean isDrawerOpen) {
+        if (isDrawerOpen) {
+            closeDrawerEvent.call();
+        } else {
+            closeActivityEvent.call();
         }
     }
 }

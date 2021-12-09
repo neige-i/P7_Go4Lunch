@@ -20,6 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
@@ -31,7 +33,9 @@ import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
 import com.neige_i.go4lunch.databinding.HeaderDrawerBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
+import com.neige_i.go4lunch.view.auth.AuthActivity;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
+import com.neige_i.go4lunch.view.settings.SettingsActivity;
 
 import java.util.Collections;
 
@@ -58,6 +62,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
     private HomeViewModel viewModel;
     private MenuItem searchMenuItem;
     private SearchView searchView;
+    private DrawerLayout drawerLayout;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -91,6 +96,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         binding.searchList.setAdapter(autocompleteAdapter);
 
+        drawerLayout = binding.drawerLayout;
         binding.navigationView.setNavigationItemSelectedListener(item -> {
             viewModel.onDrawerItemSelected(item.getItemId());
             return true;
@@ -170,6 +176,22 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         viewModel.getExpandSearchViewEvent().observe(this, searchQuery -> {
             searchMenuItem.expandActionView();
         });
+        viewModel.getShowLunchEvent().observe(this, placeId -> {
+            showDetailedInfo(placeId);
+        });
+        viewModel.getShowSettingsEvent().observe(this, unused -> {
+            startActivity(new Intent(this, SettingsActivity.class));
+        });
+        viewModel.getLogoutEvent().observe(this, unused -> {
+            startActivity(new Intent(this, AuthActivity.class));
+            finish();
+        });
+        viewModel.getCloseDrawerEvent().observe(this, unused -> {
+            binding.drawerLayout.closeDrawers();
+        });
+        viewModel.getCloseActivityEvent().observe(this, unused -> {
+            finish();
+        });
 
         // Register GPS receiver in this activity's lifecycle
         registerReceiver(
@@ -233,6 +255,13 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             }
         });
         return true;
+    }
+
+    // ------------------------------------ NAVIGATION METHODS -------------------------------------
+
+    @Override
+    public void onBackPressed() {
+        viewModel.onBackPressed(drawerLayout.isDrawerOpen(GravityCompat.START));
     }
 
     // ------------------------------------- CALLBACK METHODS --------------------------------------

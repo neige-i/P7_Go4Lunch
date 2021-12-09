@@ -16,6 +16,8 @@ import com.neige_i.go4lunch.domain.home.GetDrawerInfoUseCase;
 import com.neige_i.go4lunch.domain.home.GetDrawerInfoUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCase;
 import com.neige_i.go4lunch.domain.home.GetLocationPermissionUseCaseImpl;
+import com.neige_i.go4lunch.domain.home.LogoutUseCase;
+import com.neige_i.go4lunch.domain.home.LogoutUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCase;
 import com.neige_i.go4lunch.domain.home.SetLocationUpdatesUseCaseImpl;
 import com.neige_i.go4lunch.domain.home.SetSearchQueryUseCase;
@@ -89,6 +91,11 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract GetDrawerInfoUseCase bindGetDrawerInfoUseCase(
         GetDrawerInfoUseCaseImpl getDrawerInfoUseCaseImpl
+    );
+
+    @Binds
+    public abstract LogoutUseCase bindLogoutUseCase(
+        LogoutUseCaseImpl logoutUseCaseImpl
     );
 
     // -------------------------------------------- MAP --------------------------------------------
