@@ -10,9 +10,10 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
+import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.databinding.ItemAutocompleteBinding;
 
-class AutocompleteAdapter extends ListAdapter<String, AutocompleteAdapter.AutocompleteViewHolder> {
+class AutocompleteAdapter extends ListAdapter<AutocompleteRestaurant, AutocompleteAdapter.AutocompleteViewHolder> {
 
     @NonNull
     private final OnAutocompleteResultClickCallback onAutocompleteResultClickCallback;
@@ -49,31 +50,37 @@ class AutocompleteAdapter extends ListAdapter<String, AutocompleteAdapter.Autoco
         }
 
         void bind(
-            @NonNull String restaurantName,
+            @NonNull AutocompleteRestaurant autocompleteRestaurant,
             @NonNull OnAutocompleteResultClickCallback onAutocompleteResultClickCallback
         ) {
-            binding.searchResultLabel.setText(restaurantName);
+            binding.searchResultLabel.setText(autocompleteRestaurant.getRestaurantName());
 
             itemView.setOnClickListener(v -> {
-                onAutocompleteResultClickCallback.onClick(restaurantName);
+                onAutocompleteResultClickCallback.onClick(autocompleteRestaurant);
             });
         }
     }
 
-    static class AutocompleteDiffUtil extends DiffUtil.ItemCallback<String> {
+    static class AutocompleteDiffUtil extends DiffUtil.ItemCallback<AutocompleteRestaurant> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
-            return oldItem.equals(newItem);
+        public boolean areItemsTheSame(
+            @NonNull AutocompleteRestaurant oldItem,
+            @NonNull AutocompleteRestaurant newItem
+        ) {
+            return oldItem.getPlaceId().equals(newItem.getPlaceId());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+        public boolean areContentsTheSame(
+            @NonNull AutocompleteRestaurant oldItem,
+            @NonNull AutocompleteRestaurant newItem
+        ) {
             return oldItem.equals(newItem);
         }
     }
 
     interface OnAutocompleteResultClickCallback {
-        void onClick(@NonNull String restaurantName);
+        void onClick(@NonNull AutocompleteRestaurant restaurantName);
     }
 }

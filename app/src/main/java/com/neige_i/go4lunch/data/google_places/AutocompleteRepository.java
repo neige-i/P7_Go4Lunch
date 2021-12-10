@@ -20,7 +20,7 @@ import retrofit2.Call;
 public class AutocompleteRepository extends PlacesRepository<RawAutocompleteQuery, RawAutocompleteResponse, List<AutocompleteRestaurant>> {
 
     @NonNull
-    private final MutableLiveData<String> currentSearchQueryMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<AutocompleteRestaurant> currentSearchQueryMutableLiveData = new MutableLiveData<>();
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -72,11 +72,11 @@ public class AutocompleteRepository extends PlacesRepository<RawAutocompleteQuer
     }
 
     @NonNull
-    public LiveData<String> getCurrentSearchQuery() {
+    public LiveData<AutocompleteRestaurant> getCurrentSearchQuery() {
         return currentSearchQueryMutableLiveData;
     }
 
-    public void setCurrentSearch(@Nullable String autocompleteRestaurants) {
+    public void setCurrentSearch(@Nullable AutocompleteRestaurant autocompleteRestaurants) {
         currentSearchQueryMutableLiveData.setValue(autocompleteRestaurants);
     }
 }
