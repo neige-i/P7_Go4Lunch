@@ -20,7 +20,7 @@ public class MapData {
     @NonNull
     private final Map<String, Integer> interestedWorkmates;
 
-    MapData(
+    public MapData(
         boolean locationPermissionGranted,
         @Nullable Location currentLocation,
         @NonNull List<MapRestaurant> mapRestaurants,

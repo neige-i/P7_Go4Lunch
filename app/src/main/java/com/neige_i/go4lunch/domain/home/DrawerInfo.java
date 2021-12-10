@@ -16,7 +16,7 @@ public class DrawerInfo {
     @Nullable
     private final String selectedRestaurantId;
 
-    DrawerInfo(
+    public DrawerInfo(
         @Nullable String photoUrl, @NonNull String username,
         @NonNull String userEmail,
         @Nullable String selectedRestaurantId

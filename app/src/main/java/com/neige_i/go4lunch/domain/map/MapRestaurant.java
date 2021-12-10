@@ -16,7 +16,7 @@ public class MapRestaurant {
     private final String address;
     private final boolean searched;
 
-    MapRestaurant(
+    public MapRestaurant(
         @NonNull String placeId,
         @NonNull String name,
         double latitude,
