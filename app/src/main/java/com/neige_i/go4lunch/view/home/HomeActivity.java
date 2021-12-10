@@ -73,8 +73,8 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             return true;
         });
 
-        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(restaurantName -> {
-            viewModel.onAutocompleteResultClick(restaurantName);
+        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(autocompleteRestaurant -> {
+            viewModel.onAutocompleteResultClick(autocompleteRestaurant);
         });
         binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         binding.searchList.setAdapter(autocompleteAdapter);

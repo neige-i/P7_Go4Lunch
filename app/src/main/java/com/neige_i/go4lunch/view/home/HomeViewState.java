@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
+import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -16,14 +18,14 @@ class HomeViewState {
     @Nullable
     private final String searchQuery;
     @NonNull
-    private final List<String> autocompleteResults;
+    private final List<AutocompleteRestaurant> autocompleteResults;
 
     HomeViewState(
         int titleId,
         int viewPagerPosition,
         boolean isSearchEnabled,
         @Nullable String searchQuery,
-        @NonNull List<String> autocompleteResults
+        @NonNull List<AutocompleteRestaurant> autocompleteResults
     ) {
         this.titleId = titleId;
         this.viewPagerPosition = viewPagerPosition;
@@ -51,7 +53,7 @@ class HomeViewState {
     }
 
     @NonNull
-    public List<String> getAutocompleteResults() {
+    public List<AutocompleteRestaurant> getAutocompleteResults() {
         return autocompleteResults;
     }
 
