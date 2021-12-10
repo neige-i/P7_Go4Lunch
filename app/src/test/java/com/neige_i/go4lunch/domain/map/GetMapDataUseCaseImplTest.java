@@ -14,7 +14,9 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.firestore.User;
+import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
+import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
@@ -44,6 +46,7 @@ public class GetMapDataUseCaseImplTest {
     private final NearbyRepository nearbyRepositoryMock = mock(NearbyRepository.class);
     private final GpsStateChangeReceiver gpsStateChangeReceiverMock = mock(GpsStateChangeReceiver.class);
     private final FirestoreRepository firestoreRepositoryMock = mock(FirestoreRepository.class);
+    private final AutocompleteRepository autocompleteRepositoryMock = mock(AutocompleteRepository.class);
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 
@@ -58,13 +61,15 @@ public class GetMapDataUseCaseImplTest {
     private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<NearbyRestaurant>> nearbyRestaurantsMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> gpsStateMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<AutocompleteRestaurant> autocompleteRestaurantMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<User>> interestedWorkmates1MutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<User>> interestedWorkmates2MutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<User>> interestedWorkmates3MutableLiveData = new MutableLiveData<>();
 
     // ------------------------------------------- CONST -------------------------------------------
 
-    private static final String EXPECTED_PLACE_ID = "EXPECTED_PLACE_ID";
+    private static final String PLACE_ID = "PLACE_ID";
+    private static final String RESTAURANT_NAME = "RESTAURANT_NAME";
 
     // ------------------------------------------- SETUP -------------------------------------------
 
@@ -75,9 +80,10 @@ public class GetMapDataUseCaseImplTest {
         doReturn(locationMutableLiveData).when(locationRepositoryMock).getCurrentLocation();
         doReturn(nearbyRestaurantsMutableLiveData).when(nearbyRepositoryMock).getData(locationMock);
         doReturn(gpsStateMutableLiveData).when(gpsStateChangeReceiverMock).getGpsState();
-        doReturn(interestedWorkmates1MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 1);
-        doReturn(interestedWorkmates2MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 2);
-        doReturn(interestedWorkmates3MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(EXPECTED_PLACE_ID + 3);
+        doReturn(autocompleteRestaurantMutableLiveData).when(autocompleteRepositoryMock).getCurrentSearchQuery();
+        doReturn(interestedWorkmates1MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(PLACE_ID + 1);
+        doReturn(interestedWorkmates2MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(PLACE_ID + 2);
+        doReturn(interestedWorkmates3MutableLiveData).when(firestoreRepositoryMock).getWorkmatesEatingAt(PLACE_ID + 3);
 
         // Init UseCase
         getMapDataUseCase = new GetMapDataUseCaseImpl(
@@ -85,7 +91,8 @@ public class GetMapDataUseCaseImplTest {
             locationRepositoryMock,
             nearbyRepositoryMock,
             gpsStateChangeReceiverMock,
-            firestoreRepositoryMock
+            firestoreRepositoryMock,
+            autocompleteRepositoryMock
         );
 
         // Default behaviour
@@ -110,7 +117,7 @@ public class GetMapDataUseCaseImplTest {
             new MapData(
                 true,
                 locationMock,
-                getDefaultRestaurantList(),
+                getDefaultMapRestaurantList(),
                 true,
                 getDefaultInterestedWorkmates()
             ),
@@ -132,7 +139,7 @@ public class GetMapDataUseCaseImplTest {
             new MapData(
                 false, // Denied permission
                 locationMock,
-                getDefaultRestaurantList(),
+                getDefaultMapRestaurantList(),
                 true,
                 getDefaultInterestedWorkmates()
             ),
@@ -195,8 +202,36 @@ public class GetMapDataUseCaseImplTest {
             new MapData(
                 true,
                 locationMock,
-                getDefaultRestaurantList(),
+                getDefaultMapRestaurantList(),
                 false, // Disabled GPS
+                getDefaultInterestedWorkmates()
+            ),
+            mapData
+        );
+    }
+
+    @Test
+    public void returnMapData_when_getValue_with_searchQuery() {
+        // GIVEN
+        autocompleteRestaurantMutableLiveData.setValue(new AutocompleteRestaurant(
+            PLACE_ID + 1,
+            RESTAURANT_NAME + 3
+        ));
+
+        // WHEN
+        final MapData mapData = getValueForTesting(getMapDataUseCase.get());
+
+        // THEN
+        assertEquals(
+            new MapData(
+                true,
+                locationMock,
+                Arrays.asList(
+                    getDefaultMapRestaurant(1, true), // Is selected because same ID
+                    getDefaultMapRestaurant(2, false),
+                    getDefaultMapRestaurant(3, true) // Is selected because same name
+                ),
+                true,
                 getDefaultInterestedWorkmates()
             ),
             mapData
@@ -223,7 +258,8 @@ public class GetMapDataUseCaseImplTest {
             locationRepositoryMock,
             nearbyRepositoryMock,
             gpsStateChangeReceiverMock,
-            firestoreRepositoryMock
+            firestoreRepositoryMock,
+            autocompleteRepositoryMock
         );
 
         // WHEN
@@ -243,11 +279,11 @@ public class GetMapDataUseCaseImplTest {
     @NonNull
     private NearbyRestaurant getDefaultRestaurant(int index) {
         return new NearbyRestaurant(
-            EXPECTED_PLACE_ID + index,
-            "name",
+            PLACE_ID + index,
+            RESTAURANT_NAME + index,
             "address",
-            0,
-            0,
+            index,
+            index,
             -1,
             null
         );
@@ -256,9 +292,30 @@ public class GetMapDataUseCaseImplTest {
     @NonNull
     private Map<String, Integer> getDefaultInterestedWorkmates() {
         return new HashMap<String, Integer>() {{
-            put(EXPECTED_PLACE_ID + 1, 0);
-            put(EXPECTED_PLACE_ID + 2, 1);
-            put(EXPECTED_PLACE_ID + 3, 5);
+            put(PLACE_ID + 1, 0);
+            put(PLACE_ID + 2, 1);
+            put(PLACE_ID + 3, 5);
         }};
+    }
+
+    @NonNull
+    private List<MapRestaurant> getDefaultMapRestaurantList() {
+        return Arrays.asList(
+            getDefaultMapRestaurant(1, false),
+            getDefaultMapRestaurant(2, false),
+            getDefaultMapRestaurant(3, false)
+        );
+    }
+
+    @NonNull
+    private MapRestaurant getDefaultMapRestaurant(int index, boolean isSearched) {
+        return new MapRestaurant(
+            PLACE_ID + index,
+            RESTAURANT_NAME + index,
+            index,
+            index,
+            "address",
+            isSearched
+        );
     }
 }

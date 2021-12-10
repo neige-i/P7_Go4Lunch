@@ -100,7 +100,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
         @Nullable Map<String, Integer> interestedWorkmatesMap,
         @Nullable AutocompleteRestaurant searchQuery
     ) {
-        if (currentLocation == null) {
+        if (currentLocation == null || nearbyRestaurants == null) {
             return;
         }
 
@@ -110,56 +110,54 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
 
         final List<NearbyDetail> nearbyDetails = new ArrayList<>();
 
-        if (nearbyRestaurants != null) {
-            for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
-                final String restaurantId = nearbyRestaurant.getPlaceId();
+        for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
+            final String restaurantId = nearbyRestaurant.getPlaceId();
 
-                if (!queriedRestaurants.contains(restaurantId)) {
-                    queriedRestaurants.add(restaurantId);
+            if (!queriedRestaurants.contains(restaurantId)) {
+                queriedRestaurants.add(restaurantId);
 
-                    // Query restaurants details
-                    restaurantDetailsMediatorLiveData.addSource(
-                        detailsRepository.getData(restaurantId), restaurantDetails -> {
+                // Query restaurants details
+                restaurantDetailsMediatorLiveData.addSource(
+                    detailsRepository.getData(restaurantId), restaurantDetails -> {
 
-                            restaurantDetailsMap.put(restaurantId, restaurantDetails);
-                            restaurantDetailsMediatorLiveData.setValue(restaurantDetailsMap);
-                        }
-                    );
+                        restaurantDetailsMap.put(restaurantId, restaurantDetails);
+                        restaurantDetailsMediatorLiveData.setValue(restaurantDetailsMap);
+                    }
+                );
 
-                    // Query interested workmates count
-                    interestedWorkmatesMediatorLiveData.addSource(
-                        firestoreRepository.getWorkmatesEatingAt(restaurantId), users -> {
+                // Query interested workmates count
+                interestedWorkmatesMediatorLiveData.addSource(
+                    firestoreRepository.getWorkmatesEatingAt(restaurantId), users -> {
 
-                            interestedWorkmatesMap.put(restaurantId, users.size());
-                            interestedWorkmatesMediatorLiveData.setValue(interestedWorkmatesMap);
-                        }
-                    );
-                }
+                        interestedWorkmatesMap.put(restaurantId, users.size());
+                        interestedWorkmatesMediatorLiveData.setValue(interestedWorkmatesMap);
+                    }
+                );
+            }
 
-                final RestaurantDetails restaurantDetails = restaurantDetailsMap.get(restaurantId);
-                final String restaurantName = nearbyRestaurant.getName();
+            final RestaurantDetails restaurantDetails = restaurantDetailsMap.get(restaurantId);
+            final String restaurantName = nearbyRestaurant.getName();
 
-                if (searchQuery == null ||
-                    restaurantName.toLowerCase().contains(searchQuery.getRestaurantName().toLowerCase()) ||
-                    restaurantId.equals(searchQuery.getPlaceId())
-                ) {
-                    // Setup restaurant latitude & longitude
-                    restaurantLocation.setLatitude(nearbyRestaurant.getLatitude());
-                    restaurantLocation.setLongitude(nearbyRestaurant.getLongitude());
+            if (searchQuery == null ||
+                restaurantName.toLowerCase().contains(searchQuery.getRestaurantName().toLowerCase()) ||
+                restaurantId.equals(searchQuery.getPlaceId())
+            ) {
+                // Setup restaurant latitude & longitude
+                restaurantLocation.setLatitude(nearbyRestaurant.getLatitude());
+                restaurantLocation.setLongitude(nearbyRestaurant.getLongitude());
 
-                    final Integer interestedWorkmatesCount = interestedWorkmatesMap.get(restaurantId);
+                final Integer interestedWorkmatesCount = interestedWorkmatesMap.get(restaurantId);
 
-                    nearbyDetails.add(new NearbyDetail(
-                        restaurantId,
-                        restaurantName,
-                        nearbyRestaurant.getAddress(),
-                        currentLocation.distanceTo(restaurantLocation),
-                        getHourResult(restaurantDetails != null ? restaurantDetails.getOpeningPeriods() : null),
-                        interestedWorkmatesCount != null ? interestedWorkmatesCount : 0,
-                        nearbyRestaurant.getRating(),
-                        nearbyRestaurant.getPhotoUrl()
-                    ));
-                }
+                nearbyDetails.add(new NearbyDetail(
+                    restaurantId,
+                    restaurantName,
+                    nearbyRestaurant.getAddress(),
+                    currentLocation.distanceTo(restaurantLocation),
+                    getHourResult(restaurantDetails != null ? restaurantDetails.getOpeningPeriods() : null),
+                    interestedWorkmatesCount != null ? interestedWorkmatesCount : 0,
+                    nearbyRestaurant.getRating(),
+                    nearbyRestaurant.getPhotoUrl()
+                ));
             }
         }
 

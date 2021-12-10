@@ -19,9 +19,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.MapData;
+import com.neige_i.go4lunch.domain.map.MapRestaurant;
 import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
 
 import org.junit.Before;
@@ -298,10 +298,11 @@ public class MapViewModelTest {
                 true,
                 R.drawable.ic_gps_on,
                 R.color.black,
-                Arrays.asList( // No interested workmate for all markers
-                               getDefaultMarker(3, R.drawable.ic_marker_orange),
-                               getDefaultMarker(2, R.drawable.ic_marker_orange),
-                               getDefaultMarker(1, R.drawable.ic_marker_orange)
+                // No interested workmate for all markers
+                Arrays.asList(
+                    getDefaultMarker(3, R.drawable.ic_marker_orange, 100),
+                    getDefaultMarker(2, R.drawable.ic_marker_orange_search, 300),
+                    getDefaultMarker(1, R.drawable.ic_marker_orange_search, 300)
                 ),
                 DEVICE_LAT,
                 DEVICE_LNG,
@@ -501,7 +502,7 @@ public class MapViewModelTest {
         mapDataMutableLiveData.setValue(new MapData(
             true,
             deviceLocationMock,
-            Collections.singletonList(getDefaultRestaurant(3)), // Add the restaurant #3 again
+            Collections.singletonList(getDefaultRestaurant(3, false)), // Add the restaurant #3 again
             true,
             getDefaultInterestedWorkmates()
         ));
@@ -563,20 +564,23 @@ public class MapViewModelTest {
     // --------------------------------------- UTIL METHODS ----------------------------------------
 
     @NonNull
-    private List<NearbyRestaurant> getDefaultRestaurantList() {
-        return Arrays.asList(getDefaultRestaurant(1), getDefaultRestaurant(2), getDefaultRestaurant(3));
+    private List<MapRestaurant> getDefaultRestaurantList() {
+        return Arrays.asList(
+            getDefaultRestaurant(1, true),
+            getDefaultRestaurant(2, true),
+            getDefaultRestaurant(3, false)
+        );
     }
 
     @NonNull
-    private NearbyRestaurant getDefaultRestaurant(int index) {
-        return new NearbyRestaurant(
+    private MapRestaurant getDefaultRestaurant(int index, boolean isSearched) {
+        return new MapRestaurant(
             EXPECTED_PLACE_ID + index,
             EXPECTED_NAME + index,
-            EXPECTED_ADDRESS + index,
             EXPECTED_LAT + index,
             EXPECTED_LNG + index,
-            -1,
-            null
+            EXPECTED_ADDRESS + index,
+            isSearched
         );
     }
 
@@ -592,14 +596,14 @@ public class MapViewModelTest {
     @NonNull
     private List<MarkerViewState> getDefaultMarkerList() {
         return Arrays.asList(
-            getDefaultMarker(3, R.drawable.ic_marker_green),
-            getDefaultMarker(2, R.drawable.ic_marker_green),
-            getDefaultMarker(1, R.drawable.ic_marker_orange)
+            getDefaultMarker(3, R.drawable.ic_marker_green, 100),
+            getDefaultMarker(2, R.drawable.ic_marker_green_search, 300),
+            getDefaultMarker(1, R.drawable.ic_marker_orange_search, 300)
         );
     }
 
     @NonNull
-    private MarkerViewState getDefaultMarker(int index, @DrawableRes int markerDrawable) {
+    private MarkerViewState getDefaultMarker(int index, @DrawableRes int markerDrawable, int size) {
         return new MarkerViewState(
             EXPECTED_PLACE_ID + index,
             EXPECTED_NAME + index,

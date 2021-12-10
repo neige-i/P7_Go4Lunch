@@ -25,10 +25,8 @@ public class PlacesRepositoryTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private final PlacesRepository<RawNearbyResponse, List<NearbyRestaurant>> placesRepository = new NearbyRepository(
-        mock(PlacesApi.class),
-        mapsApiKey
-    );
+    private final PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> placesRepository =
+        new NearbyRepository(mock(PlacesApi.class), mapsApiKey);
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 

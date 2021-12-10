@@ -95,6 +95,8 @@ public class GetRestaurantInfoUseCaseImplTest {
             "RESTAURANT_NAME",
             "ADDRESS",
             0,
+            0,
+            0,
             "PHOTO",
             "+33",
             "https://",
