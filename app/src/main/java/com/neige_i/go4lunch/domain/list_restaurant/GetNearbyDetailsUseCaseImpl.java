@@ -12,6 +12,7 @@ import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.data.google_places.DetailsRepository;
 import com.neige_i.go4lunch.data.google_places.NearbyRepository;
+import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
 import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.data.location.LocationRepository;
@@ -83,7 +84,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
         final LiveData<List<NearbyRestaurant>> nearbyRestaurantsLiveData = Transformations.switchMap(
             currentLocationLiveData, location -> nearbyRepository.getData(location)
         );
-        final LiveData<String> searchQueryLiveData = autocompleteRepository.getCurrentSearchQuery();
+        final LiveData<AutocompleteRestaurant> searchQueryLiveData = autocompleteRepository.getCurrentSearchQuery();
 
         nearbyDetailList.addSource(currentLocationLiveData, location -> combine(location, nearbyRestaurantsLiveData.getValue(), restaurantDetailsMediatorLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue(), searchQueryLiveData.getValue()));
         nearbyDetailList.addSource(nearbyRestaurantsLiveData, nearbyRestaurants -> combine(currentLocationLiveData.getValue(), nearbyRestaurants, restaurantDetailsMediatorLiveData.getValue(), interestedWorkmatesMediatorLiveData.getValue(), searchQueryLiveData.getValue()));
@@ -97,7 +98,7 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
         @Nullable List<NearbyRestaurant> nearbyRestaurants,
         @Nullable Map<String, RestaurantDetails> restaurantDetailsMap,
         @Nullable Map<String, Integer> interestedWorkmatesMap,
-        @Nullable String searchQuery
+        @Nullable AutocompleteRestaurant searchQuery
     ) {
         if (currentLocation == null) {
             return;
@@ -139,7 +140,8 @@ public class GetNearbyDetailsUseCaseImpl implements GetNearbyDetailsUseCase {
                 final String restaurantName = nearbyRestaurant.getName();
 
                 if (searchQuery == null ||
-                    restaurantName.toLowerCase().contains(searchQuery.toLowerCase())
+                    restaurantName.toLowerCase().contains(searchQuery.getRestaurantName().toLowerCase()) ||
+                    restaurantId.equals(searchQuery.getPlaceId())
                 ) {
                     // Setup restaurant latitude & longitude
                     restaurantLocation.setLatitude(nearbyRestaurant.getLatitude());

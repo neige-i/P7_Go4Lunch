@@ -17,17 +17,27 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
+import com.neige_i.go4lunch.databinding.HeaderDrawerBinding;
+import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
+import com.neige_i.go4lunch.view.auth.AuthActivity;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
+import com.neige_i.go4lunch.view.settings.SettingsActivity;
+
+import java.util.Collections;
 
 import javax.inject.Inject;
 
@@ -40,13 +50,19 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
     public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
+    // --------------------------------------- DEPENDENCIES ----------------------------------------
+
+    @Inject
+    GpsStateChangeReceiver gpsStateChangeReceiver;
+    @Inject
+    ImageDelegate imageDelegate;
+
     // ---------------------------------------- LOCAL FIELDS ---------------------------------------
 
     private HomeViewModel viewModel;
     private MenuItem searchMenuItem;
     private SearchView searchView;
-    @Inject
-    GpsStateChangeReceiver gpsStateChangeReceiver;
+    private DrawerLayout drawerLayout;
 
     // ------------------------------------- LIFECYCLE METHODS -------------------------------------
 
@@ -59,6 +75,7 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
 
         // Init view binding
         final ActivityHomeBinding binding = ActivityHomeBinding.inflate(getLayoutInflater());
+        final HeaderDrawerBinding drawerBinding = HeaderDrawerBinding.bind(binding.navigationView.getHeaderView(0));
 
         // Setup UI
         setContentView(binding.getRoot());
@@ -73,11 +90,24 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             return true;
         });
 
-        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(restaurantName -> {
-            viewModel.onAutocompleteResultClick(restaurantName);
+        final AutocompleteAdapter autocompleteAdapter = new AutocompleteAdapter(autocompleteRestaurant -> {
+            viewModel.onAutocompleteResultClick(autocompleteRestaurant);
         });
         binding.searchList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         binding.searchList.setAdapter(autocompleteAdapter);
+
+        drawerLayout = binding.drawerLayout;
+        binding.navigationView.setNavigationItemSelectedListener(item -> {
+            viewModel.onDrawerItemSelected(item.getItemId());
+            return true;
+        });
+        new ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.description_open_drawer,
+            R.string.description_close_drawer
+        ).syncState();
 
         // Setup activity result callbacks
         final ActivityResultLauncher<String> requestLocationPermissionLauncher =
@@ -100,6 +130,18 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
                 searchView.setQuery(homeViewState.getSearchQuery(), false);
                 binding.searchList.setVisibility(homeViewState.isSearchEnabled() ? View.VISIBLE : View.GONE);
                 autocompleteAdapter.submitList(homeViewState.getAutocompleteResults());
+
+                imageDelegate.displayPhotoWithGlide(
+                    drawerBinding.profileImage,
+                    homeViewState.getUserProfilePhoto(),
+                    R.drawable.ic_person,
+                    Collections.singletonList(new CircleCrop())
+                );
+                drawerBinding.profileNameText.setText(homeViewState.getUsername());
+                drawerBinding.profileEmailText.setText(homeViewState.getUserEmail());
+                binding.navigationView.getMenu()
+                    .findItem(R.id.lunch_menu)
+                    .setEnabled(homeViewState.getSelectedRestaurantId() != null);
             }
         });
 
@@ -133,6 +175,22 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         });
         viewModel.getExpandSearchViewEvent().observe(this, searchQuery -> {
             searchMenuItem.expandActionView();
+        });
+        viewModel.getShowLunchEvent().observe(this, placeId -> {
+            showDetailedInfo(placeId);
+        });
+        viewModel.getShowSettingsEvent().observe(this, unused -> {
+            startActivity(new Intent(this, SettingsActivity.class));
+        });
+        viewModel.getLogoutEvent().observe(this, unused -> {
+            startActivity(new Intent(this, AuthActivity.class));
+            finish();
+        });
+        viewModel.getCloseDrawerEvent().observe(this, unused -> {
+            binding.drawerLayout.closeDrawers();
+        });
+        viewModel.getCloseActivityEvent().observe(this, unused -> {
+            finish();
         });
 
         // Register GPS receiver in this activity's lifecycle
@@ -197,6 +255,13 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
             }
         });
         return true;
+    }
+
+    // ------------------------------------ NAVIGATION METHODS -------------------------------------
+
+    @Override
+    public void onBackPressed() {
+        viewModel.onBackPressed(drawerLayout.isDrawerOpen(GravityCompat.START));
     }
 
     // ------------------------------------- CALLBACK METHODS --------------------------------------
