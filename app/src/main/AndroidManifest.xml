@@ -46,12 +46,12 @@
             />
         <activity android:name=".view.home.HomeActivity" />
         <activity android:name=".view.detail.DetailActivity" />
+        <activity android:name=".view.settings.SettingsActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/MAPS_API_KEY"
             />
-
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"
