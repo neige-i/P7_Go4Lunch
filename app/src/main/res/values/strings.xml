@@ -26,6 +26,7 @@
     <string name="description_open_drawer">Open drawer</string>
     <string name="description_close_drawer">Close drawer</string>
     <string name="description_chat_icon">Chat icon</string>
+    <string name="description_send_icon">Send icon</string>
 
     <!-- Button text -->
     <string name="sign_in_google">Sign in with Google</string>
@@ -55,6 +56,7 @@
     <string name="workmate_is_joining">%s is joining!</string>
 
     <string name="search_restaurants_by_name">Search restaurants by name</string>
+    <string name="message">Message</string>
 
     <!-- Snackbar message -->
     <string name="default_login_error">Login failed: an error occurred</string>

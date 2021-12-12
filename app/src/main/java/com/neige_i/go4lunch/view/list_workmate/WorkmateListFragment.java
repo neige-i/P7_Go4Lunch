@@ -1,6 +1,7 @@
 package com.neige_i.go4lunch.view.list_workmate;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.FragmentListBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
+import com.neige_i.go4lunch.view.chat.ChatActivity;
 
 import javax.inject.Inject;
 
@@ -67,6 +69,8 @@ public class WorkmateListFragment extends Fragment {
 
             @Override
             public void onChatButtonClick(@NonNull String userId) {
+                final Intent intent = new Intent(getContext(), ChatActivity.class);
+                startActivity(intent.putExtra(ChatActivity.EXTRA_USER_ID, userId));
             }
         });
         binding.recyclerview.setAdapter(adapter);
