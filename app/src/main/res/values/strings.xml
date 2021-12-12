@@ -55,6 +55,10 @@
 
     <string name="search_restaurants_by_name">Search restaurants by name</string>
 
+    <string name="notification_title">It is lunch time!</string>
+    <string name="notification_big_text_with_workmates">You are going with %s</string>
+    <string name="notification_big_text_without_workmates">You are going by yourself</string>
+
     <!-- Snackbar message -->
     <string name="default_login_error">Login failed: an error occurred</string>
     <string name="no_internet_error">Login failed: no internet connection</string>

@@ -1,5 +1,7 @@
 package com.neige_i.go4lunch.view.home;
 
+import static com.neige_i.go4lunch.view.detail.DetailActivity.EXTRA_PLACE_ID;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -26,7 +28,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
@@ -45,10 +46,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity implements StartDetailActivityCallback {
-
-    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
-
-    public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 

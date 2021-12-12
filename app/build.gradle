@@ -56,6 +56,7 @@ dependencies {
     def retrofit_version = "2.9.0"
     def glide_version = "4.12.0"
     def hilt_version = "2.39.1"
+    def hilt_work_version = "1.0.0"
     def mockito_version = "3.11.2"
 
     implementation 'com.google.android.material:material:1.4.0'
@@ -79,7 +80,11 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:11.1.1'
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
+    implementation "androidx.hilt:hilt-work:$hilt_work_version"
     annotationProcessor "com.google.dagger:hilt-compiler:$hilt_version"
+    annotationProcessor "androidx.hilt:hilt-compiler:$hilt_work_version"
+
+    implementation "androidx.work:work-runtime:2.7.1"
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'android.arch.core:core-testing:1.1.1' // Helps testing LiveData
