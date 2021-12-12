@@ -8,13 +8,11 @@ import static org.mockito.Mockito.mock;
 import android.location.Location;
 
 import androidx.annotation.NonNull;
-
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.RawNearbyResponse;
+import androidx.annotation.Nullable;
 
 import org.junit.Test;
 
-import java.util.List;
+import retrofit2.Call;
 
 public class PlacesRepositoryTest {
 
@@ -25,8 +23,21 @@ public class PlacesRepositoryTest {
 
     // ------------------------------------- OBJECT UNDER TEST -------------------------------------
 
-    private final PlacesRepository<Location, RawNearbyResponse, List<NearbyRestaurant>> placesRepository =
-        new NearbyRepository(mock(PlacesApi.class), mapsApiKey);
+    private final PlacesRepository<Void, Void, Void> placesRepository =
+        new PlacesRepository<Void, Void, Void>(mock(PlacesApi.class), mapsApiKey) {
+            @SuppressWarnings("ConstantConditions")
+            @NonNull
+            @Override
+            Call<Void> getRequest(@NonNull Void unused) {
+                return null;
+            }
+
+            @Nullable
+            @Override
+            Void cleanDataFromRetrofit(@Nullable Void unused) {
+                return null;
+            }
+        };
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 
