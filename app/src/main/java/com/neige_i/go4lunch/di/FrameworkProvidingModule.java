@@ -2,6 +2,7 @@ package com.neige_i.go4lunch.di;
 
 import android.app.Application;
 import android.location.Location;
+import android.os.Looper;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -88,5 +89,12 @@ public class FrameworkProvidingModule {
     @Provides
     public static Location provideLocation() {
         return new Location("");
+    }
+
+    // ---------------------------------------- ANDROID OS -----------------------------------------
+
+    @Provides
+    public static Looper provideMainLooper() {
+        return Looper.getMainLooper();
     }
 }

@@ -40,12 +40,6 @@ public class AutocompleteRepository extends PlacesRepository<RawAutocompleteQuer
         );
     }
 
-    @NonNull
-    @Override
-    String getNameForLog() {
-        return "Autocomplete";
-    }
-
     @Nullable
     @Override
     List<AutocompleteRestaurant> cleanDataFromRetrofit(@Nullable RawAutocompleteResponse rawAutocompleteResponse) {

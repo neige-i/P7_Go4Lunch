@@ -1,7 +1,6 @@
 package com.neige_i.go4lunch.data.google_places;
 
 import android.location.Location;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,7 +50,6 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
 
         // Check if the request has already been executed
         if (cachedCleanResponse != null) {
-            Log.d("Neige", "REPO get " + getNameForLog() + " : from cache");
             responseMutableLiveData.setValue(cachedCleanResponse);
         } else {
             getRequest(query).enqueue(new Callback<RawData>() {
@@ -63,7 +61,6 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
                     final CleanResponse cleanResponse = cleanDataFromRetrofit(response.body());
 
                     if (cleanResponse != null) {
-                        Log.d("Neige", "REPO get " + getNameForLog() + " : from API");
                         responseMutableLiveData.setValue(cleanResponse);
                         dataCache.put(query, cleanResponse);
                     }
@@ -80,9 +77,6 @@ abstract class PlacesRepository<Query, RawData, CleanResponse> {
 
     @NonNull
     abstract Call<RawData> getRequest(@NonNull Query query);
-
-    @NonNull
-    abstract String getNameForLog();
 
     // ---------------------------------- CLEAN RESPONSE METHODS -----------------------------------
 

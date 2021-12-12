@@ -40,12 +40,6 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
         return placesApi.getNearbyRestaurants(getLocationString(location));
     }
 
-    @NonNull
-    @Override
-    String getNameForLog() {
-        return "Nearby";
-    }
-
     @Nullable
     @Override
     List<NearbyRestaurant> cleanDataFromRetrofit(@Nullable RawNearbyResponse rawNearbyResponse) {
@@ -56,7 +50,7 @@ public class NearbyRepository extends PlacesRepository<Location, RawNearbyRespon
         final List<NearbyRestaurant> nearbyRestaurants = new ArrayList<>();
 
         for (RawNearbyResponse.Result result : rawNearbyResponse.getResults()) {
-            if (result != null && result.getPlaceId() != null && result.getBusinessStatus() != null &&
+            if (result.getPlaceId() != null && result.getBusinessStatus() != null &&
                 result.getBusinessStatus().equals("OPERATIONAL") &&
                 result.getGeometry() != null && result.getGeometry().getLocation() != null &&
                 result.getGeometry().getLocation().getLat() != null &&

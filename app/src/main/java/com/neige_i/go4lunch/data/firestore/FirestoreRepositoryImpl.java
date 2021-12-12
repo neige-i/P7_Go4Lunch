@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.data.firestore;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -24,7 +22,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
     @NonNull
-    private static final String USER_COLLECTION = "users";
+    static final String USER_COLLECTION = "users";
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -36,11 +34,11 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @Nullable
-    ListenerRegistration getUserListener;
+    private ListenerRegistration getUserListener;
     @Nullable
-    ListenerRegistration getInterestedWorkmatesListener;
+    private ListenerRegistration getInterestedWorkmatesListener;
     @Nullable
-    ListenerRegistration getAllWorkmatesListener;
+    private ListenerRegistration getAllWorkmatesListener;
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -65,7 +63,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .addSnapshotListener((documentSnapshot, error) -> {
                 if (documentSnapshot != null) {
                     final User user = documentSnapshot.toObject(User.class);
-                    Log.d("Neige", "REPO get Firestore user with ID='" + userId + "': " + user);
                     userMutableLiveData.setValue(user);
                 }
             });
@@ -75,7 +72,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @Override
     public void addUser(@NonNull String userId, @NonNull User user) {
-        Log.d("Neige", "REPO add Firestore user with ID='" + userId + "': " + user);
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .set(user);
@@ -92,7 +88,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
                     final List<User> userList = querySnapshot.toObjects(User.class);
-                    Log.d("Neige", "REPO get workmates eating TODAY at ID='" + restaurantId + "': " + userList.size());
                     usersMutableLiveData.setValue(userList);
                 }
             });
@@ -109,7 +104,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
                     final List<User> userList = querySnapshot.toObjects(User.class);
-                    Log.d("Neige", "REPO get all workmates: " + userList.size());
                     usersMutableLiveData.setValue(userList);
                 }
             });
@@ -119,7 +113,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @Override
     public void addToFavoriteRestaurant(@NonNull String userId, @NonNull String placeId) {
-        Log.d("Neige", "REPO add favorite restaurant with ID='" + placeId + "'");
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update("favoriteRestaurants", FieldValue.arrayUnion(placeId));
@@ -127,7 +120,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @Override
     public void removeFromFavoriteRestaurant(@NonNull String userId, @NonNull String placeId) {
-        Log.d("Neige", "REPO remove favorite restaurant with ID='" + placeId + "'");
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update("favoriteRestaurants", FieldValue.arrayRemove(placeId));
@@ -139,7 +131,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         @NonNull String placeId,
         @NonNull String restaurantName
     ) {
-        Log.d("Neige", "REPO select restaurant with name='" + restaurantName + "'");
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update(
@@ -151,7 +142,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @Override
     public void clearSelectedRestaurant(@NonNull String userId) {
-        Log.d("Neige", "REPO clear selected restaurant");
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update("selectedRestaurant", null);
