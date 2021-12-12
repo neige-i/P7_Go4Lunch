@@ -29,17 +29,17 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
     // --------------------------------------- LOCAL FIELDS ----------------------------------------
 
     @NonNull
-    private final OnWorkmateClickedCallback onWorkmateClickedCallback;
+    private final OnWorkmateClickCallback onWorkmateClickCallback;
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     protected WorkmateAdapter(
         @NonNull ImageDelegate imageDelegate,
-        @NonNull OnWorkmateClickedCallback onWorkmateClickedCallback
+        @NonNull OnWorkmateClickCallback onWorkmateClickCallback
     ) {
         super(new WorkmateDiffCallback());
         this.imageDelegate = imageDelegate;
-        this.onWorkmateClickedCallback = onWorkmateClickedCallback;
+        this.onWorkmateClickCallback = onWorkmateClickCallback;
     }
 
     // ----------------------------------- LIST ADAPTER METHODS ------------------------------------
@@ -48,30 +48,13 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
     @Override
     public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new WorkmateViewHolder(
-            LayoutInflater.from(parent.getContext()).inflate(R.layout.item_workmate, parent, false),
-            onWorkmateClickedCallback
+            LayoutInflater.from(parent.getContext()).inflate(R.layout.item_workmate, parent, false)
         );
     }
 
-    @SuppressLint("WrongConstant")
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
-        final WorkmateViewState viewState = getItem(position);
-        final Context context = holder.itemView.getContext();
-
-        holder.itemView.setTag(viewState.getSelectedRestaurantId());
-        holder.itemView.setEnabled(viewState.getSelectedRestaurantId() != null);
-
-        imageDelegate.displayPhotoWithGlide(
-            holder.binding.profileImg,
-            viewState.getProfileImageUrl(),
-            R.drawable.ic_person,
-            Collections.singletonList(new CircleCrop())
-        );
-
-        holder.binding.workmateRestaurantLbl.setText(viewState.getText());
-        holder.binding.workmateRestaurantLbl.setTypeface(null, viewState.getTextStyle());
-        holder.binding.workmateRestaurantLbl.setTextColor(ContextCompat.getColor(context, viewState.getTextColor()));
+        holder.bind(getItem(position), imageDelegate, onWorkmateClickCallback);
     }
 
     // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
@@ -81,17 +64,40 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
         @NonNull
         private final ItemWorkmateBinding binding;
 
-        WorkmateViewHolder(
-            @NonNull View itemView,
-            @NonNull OnWorkmateClickedCallback onWorkmateClickedCallback
-        ) {
+        WorkmateViewHolder(@NonNull View itemView) {
             super(itemView);
 
             binding = ItemWorkmateBinding.bind(itemView);
+        }
 
-            itemView.setOnClickListener(
-                v -> onWorkmateClickedCallback.onWorkmateClicked(itemView.getTag().toString())
+        @SuppressLint("WrongConstant")
+        void bind(
+            @NonNull WorkmateViewState viewState,
+            @NonNull ImageDelegate imageDelegate,
+            @NonNull OnWorkmateClickCallback onWorkmateClickCallback
+        ) {
+            final Context context = itemView.getContext();
+
+            imageDelegate.displayPhotoWithGlide(
+                binding.profileImg,
+                viewState.getProfileImageUrl(),
+                R.drawable.ic_person,
+                Collections.singletonList(new CircleCrop())
             );
+
+            binding.workmateRestaurantLbl.setText(viewState.getText());
+            binding.workmateRestaurantLbl.setTypeface(null, viewState.getTextStyle());
+            binding.workmateRestaurantLbl.setTextColor(ContextCompat.getColor(context, viewState.getTextColor()));
+
+            itemView.setEnabled(viewState.getSelectedRestaurantId() != null);
+            itemView.setOnClickListener(v -> {
+                onWorkmateClickCallback.onWorkmateClick(viewState.getSelectedRestaurantId());
+            });
+
+            binding.chatImage.setVisibility(viewState.isChatButtonVisible() ? View.VISIBLE : View.GONE);
+            binding.chatImage.setOnClickListener(v -> {
+                onWorkmateClickCallback.onChatButtonClick(viewState.getWorkmateId());
+            });
         }
     }
 
@@ -118,7 +124,10 @@ class WorkmateAdapter extends ListAdapter<WorkmateViewState, WorkmateAdapter.Wor
 
     // -------------------------------------- CUSTOM CALLBACK --------------------------------------
 
-    interface OnWorkmateClickedCallback {
-        void onWorkmateClicked(@NonNull String placeId);
+    interface OnWorkmateClickCallback {
+
+        void onWorkmateClick(@NonNull String placeId);
+
+        void onChatButtonClick(@NonNull String userId);
     }
 }

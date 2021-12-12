@@ -25,6 +25,7 @@
     <string name="description_check_button">Select restaurant button</string>
     <string name="description_open_drawer">Open drawer</string>
     <string name="description_close_drawer">Close drawer</string>
+    <string name="description_chat_icon">Chat icon</string>
 
     <!-- Button text -->
     <string name="sign_in_google">Sign in with Google</string>

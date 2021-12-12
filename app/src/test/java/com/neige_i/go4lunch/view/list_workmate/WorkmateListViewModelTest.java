@@ -77,8 +77,8 @@ public class WorkmateListViewModelTest {
         // THEN
         assertEquals(
             Arrays.asList(
-                new WorkmateViewState("@workmate", "WORKMATE_PHOTO", Typeface.NORMAL, R.color.black, WORKMATE_EATING_AT, "PLACE_ID"),
-                new WorkmateViewState("@me", "MY_PHOTO", Typeface.ITALIC, android.R.color.darker_gray, YOU_NOT_DECIDED, null)
+                new WorkmateViewState("@workmate", "WORKMATE_PHOTO", Typeface.NORMAL, R.color.black, WORKMATE_EATING_AT, "PLACE_ID", true),
+                new WorkmateViewState("@me", "MY_PHOTO", Typeface.ITALIC, android.R.color.darker_gray, YOU_NOT_DECIDED, null, false)
             ),
             workmateViewStates
         );
@@ -98,8 +98,8 @@ public class WorkmateListViewModelTest {
         // THEN
         assertEquals(
             Arrays.asList(
-                new WorkmateViewState("@me", "MY_PHOTO", Typeface.NORMAL, R.color.black, YOU_EATING_AT, "PLACE_ID"),
-                new WorkmateViewState("@workmate", "WORKMATE_PHOTO", Typeface.ITALIC, android.R.color.darker_gray, WORKMATE_NOT_DECIDED, null)
+                new WorkmateViewState("@me", "MY_PHOTO", Typeface.NORMAL, R.color.black, YOU_EATING_AT, "PLACE_ID", false),
+                new WorkmateViewState("@workmate", "WORKMATE_PHOTO", Typeface.ITALIC, android.R.color.darker_gray, WORKMATE_NOT_DECIDED, null, true)
             ),
             workmateViewStates
         );

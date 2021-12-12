@@ -19,6 +19,7 @@ class WorkmateViewState {
     private final String text;
     @Nullable
     private final String selectedRestaurantId;
+    private final boolean chatButtonVisible;
 
     WorkmateViewState(
         @NonNull String workmateId,
@@ -26,7 +27,8 @@ class WorkmateViewState {
         int textStyle,
         @ColorRes int textColor,
         @NonNull String text,
-        @Nullable String selectedRestaurantId
+        @Nullable String selectedRestaurantId,
+        boolean chatButtonVisible
     ) {
         this.workmateId = workmateId;
         this.profileImageUrl = profileImageUrl;
@@ -34,6 +36,7 @@ class WorkmateViewState {
         this.textColor = textColor;
         this.text = text;
         this.selectedRestaurantId = selectedRestaurantId;
+        this.chatButtonVisible = chatButtonVisible;
     }
 
     @NonNull
@@ -65,6 +68,10 @@ class WorkmateViewState {
         return selectedRestaurantId;
     }
 
+    public boolean isChatButtonVisible() {
+        return chatButtonVisible;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -76,6 +83,7 @@ class WorkmateViewState {
         WorkmateViewState viewState = (WorkmateViewState) o;
         return textStyle == viewState.textStyle &&
             textColor == viewState.textColor &&
+            chatButtonVisible == viewState.chatButtonVisible &&
             workmateId.equals(viewState.workmateId) &&
             Objects.equals(profileImageUrl, viewState.profileImageUrl) &&
             text.equals(viewState.text) &&
@@ -84,7 +92,7 @@ class WorkmateViewState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(workmateId, profileImageUrl, textStyle, textColor, text, selectedRestaurantId);
+        return Objects.hash(workmateId, profileImageUrl, textStyle, textColor, text, selectedRestaurantId, chatButtonVisible);
     }
 
     @NonNull
@@ -97,6 +105,7 @@ class WorkmateViewState {
             ", textColor=" + textColor +
             ", text='" + text + '\'' +
             ", selectedRestaurantId='" + selectedRestaurantId + '\'' +
+            ", chatButtonVisible=" + chatButtonVisible +
             '}';
     }
 }
