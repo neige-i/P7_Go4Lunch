@@ -53,6 +53,7 @@ class InterestedWorkmateAdapter extends ListAdapter<WorkmateViewState, Intereste
             Collections.singletonList(new CircleCrop())
         );
 
+        holder.binding.chatImage.setVisibility(View.GONE);
         holder.binding.horizontalLine.setVisibility(View.GONE);
     }
 

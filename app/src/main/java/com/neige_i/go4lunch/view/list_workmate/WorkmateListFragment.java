@@ -59,8 +59,15 @@ public class WorkmateListFragment extends Fragment {
         final FragmentListBinding binding = FragmentListBinding.bind(view);
 
         // Setup UI
-        final WorkmateAdapter adapter = new WorkmateAdapter(imageDelegate, placeId -> {
-            startDetailActivityCallback.showDetailedInfo(placeId);
+        final WorkmateAdapter adapter = new WorkmateAdapter(imageDelegate, new WorkmateAdapter.OnWorkmateClickCallback() {
+            @Override
+            public void onWorkmateClick(@NonNull String placeId) {
+                startDetailActivityCallback.showDetailedInfo(placeId);
+            }
+
+            @Override
+            public void onChatButtonClick(@NonNull String userId) {
+            }
         });
         binding.recyclerview.setAdapter(adapter);
 

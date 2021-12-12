@@ -87,7 +87,8 @@ public class WorkmateListViewModel extends ViewModel {
                     textStyle,
                     textColor,
                     nameAndSelectedRestaurant,
-                    selectedRestaurantId
+                    selectedRestaurantId,
+                    !workmate.isCurrentUser()
                 ));
             }
 
