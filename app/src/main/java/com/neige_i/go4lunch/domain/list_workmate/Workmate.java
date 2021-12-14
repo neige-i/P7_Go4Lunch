@@ -8,7 +8,7 @@ import java.util.Objects;
 public abstract class Workmate {
 
     @NonNull
-    private final String email;
+    private final String id;
     @NonNull
     private final String name;
     @Nullable
@@ -16,20 +16,20 @@ public abstract class Workmate {
     private final boolean isCurrentUser;
 
     private Workmate(
-        @NonNull String email,
+        @NonNull String id,
         @NonNull String name,
         @Nullable String photoUrl,
         boolean isCurrentUser
     ) {
-        this.email = email;
+        this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.isCurrentUser = isCurrentUser;
     }
 
     @NonNull
-    public String getEmail() {
-        return email;
+    public String getId() {
+        return id;
     }
 
     @NonNull
@@ -55,19 +55,19 @@ public abstract class Workmate {
             return false;
         }
         Workmate workmate = (Workmate) o;
-        return isCurrentUser == workmate.isCurrentUser && email.equals(workmate.email) && name.equals(workmate.name) && Objects.equals(photoUrl, workmate.photoUrl);
+        return isCurrentUser == workmate.isCurrentUser && id.equals(workmate.id) && name.equals(workmate.name) && Objects.equals(photoUrl, workmate.photoUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, name, photoUrl, isCurrentUser);
+        return Objects.hash(id, name, photoUrl, isCurrentUser);
     }
 
     @NonNull
     @Override
     public String toString() {
         return "Workmate{" +
-            "email='" + email + '\'' +
+            "email='" + id + '\'' +
             ", name='" + name + '\'' +
             ", photoUrl='" + photoUrl + '\'' +
             ", isCurrentUser=" + isCurrentUser +
@@ -77,12 +77,12 @@ public abstract class Workmate {
     public static class WithoutRestaurant extends Workmate {
 
         public WithoutRestaurant(
-            @NonNull String email,
+            @NonNull String id,
             @NonNull String name,
             @Nullable String photoUrl,
             boolean isCurrentUser
         ) {
-            super(email, name, photoUrl, isCurrentUser);
+            super(id, name, photoUrl, isCurrentUser);
         }
     }
 
@@ -94,14 +94,14 @@ public abstract class Workmate {
         private final String restaurantName;
 
         public WithRestaurant(
-            @NonNull String email,
+            @NonNull String id,
             @NonNull String name,
             @Nullable String photoUrl,
             boolean isCurrentUser,
             @NonNull String restaurantId,
             @NonNull String restaurantName
         ) {
-            super(email, name, photoUrl, isCurrentUser);
+            super(id, name, photoUrl, isCurrentUser);
             this.restaurantId = restaurantId;
             this.restaurantName = restaurantName;
         }

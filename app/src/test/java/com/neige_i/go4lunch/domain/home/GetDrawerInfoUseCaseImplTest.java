@@ -68,6 +68,7 @@ public class GetDrawerInfoUseCaseImplTest {
 
         // Default behaviour
         userMutableLiveData.setValue(new User(
+            USER_ID,
             "email",
             "name",
             "photo",
@@ -121,6 +122,7 @@ public class GetDrawerInfoUseCaseImplTest {
     public void returnDrawerInfoWithoutRestaurant_when_getUserInfo_with_noSelectedRestaurant() {
         // GIVEN
         userMutableLiveData.setValue(new User(
+            USER_ID,
             "email",
             "name",
             "photo",

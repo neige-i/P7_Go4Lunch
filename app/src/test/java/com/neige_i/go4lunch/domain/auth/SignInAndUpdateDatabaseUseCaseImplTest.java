@@ -241,6 +241,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
         verify(firestoreRepositoryMock).addUser(
             USER_ID,
             new User(
+                USER_ID,
                 USER_EMAIL,
                 USER_NAME,
                 USER_PHOTO,
@@ -270,6 +271,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
         verify(firestoreRepositoryMock).addUser(
             USER_ID,
             new User(
+                USER_ID,
                 USER_EMAIL,
                 USER_NAME,
                 null, // No photo

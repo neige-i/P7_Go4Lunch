@@ -2,6 +2,10 @@ package com.neige_i.go4lunch.di;
 
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCase;
 import com.neige_i.go4lunch.domain.auth.SignInAndUpdateDatabaseUseCaseImpl;
+import com.neige_i.go4lunch.domain.chat.AddMessageUseCase;
+import com.neige_i.go4lunch.domain.chat.AddMessageUseCaseImpl;
+import com.neige_i.go4lunch.domain.chat.GetChatInfoUseCase;
+import com.neige_i.go4lunch.domain.chat.GetChatInfoUseCaseImpl;
 import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCase;
 import com.neige_i.go4lunch.domain.detail.GetRestaurantInfoUseCaseImpl;
 import com.neige_i.go4lunch.domain.detail.UpdateRestaurantPrefUseCase;
@@ -134,5 +138,17 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract UpdateRestaurantPrefUseCase bindUpdateRestaurantPrefUseCase(
         UpdateRestaurantPrefUseCaseImpl updateRestaurantPrefUseCaseImpl
+    );
+
+    // ------------------------------------------- CHAT --------------------------------------------
+
+    @Binds
+    public abstract GetChatInfoUseCase bindGetChatInfoUseCase(
+        GetChatInfoUseCaseImpl getChatInfoUseCaseImpl
+    );
+
+    @Binds
+    public abstract AddMessageUseCase bindAddMessageUseCase(
+        AddMessageUseCaseImpl addMessageUseCaseImpl
     );
 }

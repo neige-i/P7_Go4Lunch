@@ -61,6 +61,7 @@ public class SignInAndUpdateDatabaseUseCaseImpl implements SignInAndUpdateDataba
             // Add user to Firestore if it does not exist
             if (user == null && firebaseUser.getEmail() != null && firebaseUser.getDisplayName() != null) {
                 final User userToAdd = new User(
+                    userId,
                     firebaseUser.getEmail(),
                     firebaseUser.getDisplayName(),
                     firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,

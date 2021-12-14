@@ -273,6 +273,7 @@ public class FirestoreRepositoryImplTest {
     @NonNull
     private User getDefaultUser(int index) {
         return new User(
+            USER_ID + index,
             "email" + index,
             "name" + index,
             "photo" + index,

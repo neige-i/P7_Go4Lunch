@@ -49,7 +49,7 @@ public class GetAllWorkmatesUseCaseImpl implements GetAllWorkmatesUseCase {
 
                 if (isRestaurantSelectedToday) {
                     workmates.add(new Workmate.WithRestaurant(
-                        user.getEmail(),
+                        user.getId(),
                         user.getName(),
                         user.getPhotoUrl(),
                         isCurrentUser,
@@ -58,7 +58,7 @@ public class GetAllWorkmatesUseCaseImpl implements GetAllWorkmatesUseCase {
                     ));
                 } else {
                     workmates.add(new Workmate.WithoutRestaurant(
-                        user.getEmail(),
+                        user.getId(),
                         user.getName(),
                         user.getPhotoUrl(),
                         isCurrentUser

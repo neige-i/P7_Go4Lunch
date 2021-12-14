@@ -82,7 +82,7 @@ public class WorkmateListViewModel extends ViewModel {
 
                 // Add the view state to the list
                 viewStates.add(new WorkmateViewState(
-                    workmate.getEmail(),
+                    workmate.getId(),
                     workmate.getPhotoUrl(),
                     textStyle,
                     textColor,

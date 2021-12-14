@@ -10,6 +10,8 @@ public interface FirestoreRepository {
 
     @NonNull
     DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    @NonNull
+    DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @NonNull
     LiveData<User> getUser(@NonNull String userId);
@@ -34,5 +36,22 @@ public interface FirestoreRepository {
 
     void clearSelectedRestaurant(@NonNull String userId);
 
+    @NonNull
+    String getRoomId(@NonNull String userId1, @NonNull String userId2);
+
+    @NonNull
+    LiveData<ChatRoom> getChatRoom(@NonNull String roomId);
+
+    void chatRoomExist(@NonNull String roomId, @NonNull OnChatRoomResult onChatRoomResult);
+
+    void addChatRoom(@NonNull String roomId, @NonNull ChatRoom chatRoom);
+
+    void addMessageToChat(@NonNull String roomId, @NonNull ChatRoom.Message message);
+
     void removeListenerRegistrations();
+
+    interface OnChatRoomResult {
+
+        void onResult(boolean exists);
+    }
 }
