@@ -10,6 +10,8 @@ import java.util.Objects;
 public class User {
 
     @NonNull
+    private final String id;
+    @NonNull
     private final String email;
     @NonNull
     private final String name;
@@ -25,6 +27,7 @@ public class User {
      */
     @SuppressWarnings("ConstantConditions")
     public User() {
+        id = null;
         email = null;
         name = null;
         photoUrl = null;
@@ -33,17 +36,24 @@ public class User {
     }
 
     public User(
+        @NonNull String id,
         @NonNull String email,
         @NonNull String name,
         @Nullable String photoUrl,
         @Nullable SelectedRestaurant selectedRestaurant,
         @Nullable List<String> favoriteRestaurants
     ) {
+        this.id = id;
         this.email = email;
         this.name = name;
         this.photoUrl = photoUrl;
         this.selectedRestaurant = selectedRestaurant;
         this.favoriteRestaurants = favoriteRestaurants;
+    }
+
+    @NonNull
+    public String getId() {
+        return id;
     }
 
     @NonNull
@@ -80,7 +90,8 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return email.equals(user.email) &&
+        return id.equals(user.id) &&
+            email.equals(user.email) &&
             name.equals(user.name) &&
             Objects.equals(photoUrl, user.photoUrl) &&
             Objects.equals(selectedRestaurant, user.selectedRestaurant) &&

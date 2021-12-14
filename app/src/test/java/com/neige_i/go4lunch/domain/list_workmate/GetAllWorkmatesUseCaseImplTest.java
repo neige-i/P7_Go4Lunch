@@ -66,8 +66,8 @@ public class GetAllWorkmatesUseCaseImplTest {
 
         // Default behaviour
         userListMutableLiveData.setValue(Arrays.asList(
-            new User("EMAIL2", "NAME2", "PHOTO2", null, null),
-            new User("EMAIL1", "NAME1", "PHOTO1", new User.SelectedRestaurant("PLACE_ID1", "15/11/2021", "RESTAURANT1"), null)
+            new User("ID2", "EMAIL2", "NAME2", "PHOTO2", null, null),
+            new User("ID1", "EMAIL1", "NAME1", "PHOTO1", new User.SelectedRestaurant("PLACE_ID1", "15/11/2021", "RESTAURANT1"), null)
         ));
     }
 
@@ -86,8 +86,8 @@ public class GetAllWorkmatesUseCaseImplTest {
         assertEquals(
             // None of the users is the current one as FirebaseUser is null
             Arrays.asList(
-                new Workmate.WithoutRestaurant("EMAIL2", "NAME2", "PHOTO2", false),
-                new Workmate.WithRestaurant("EMAIL1", "NAME1", "PHOTO1", false, "PLACE_ID1", "RESTAURANT1")
+                new Workmate.WithoutRestaurant("ID2", "NAME2", "PHOTO2", false),
+                new Workmate.WithRestaurant("ID1", "NAME1", "PHOTO1", false, "PLACE_ID1", "RESTAURANT1")
             ),
             workmateList
         );
@@ -107,8 +107,8 @@ public class GetAllWorkmatesUseCaseImplTest {
         assertEquals(
             // None of the users has selected a restaurant for the day as isToday() returns false
             Arrays.asList(
-                new Workmate.WithoutRestaurant("EMAIL1", "NAME1", "PHOTO1", true), // 1st position
-                new Workmate.WithoutRestaurant("EMAIL2", "NAME2", "PHOTO2", false)
+                new Workmate.WithoutRestaurant("ID1", "NAME1", "PHOTO1", true), // 1st position
+                new Workmate.WithoutRestaurant("ID2", "NAME2", "PHOTO2", false)
             ),
             workmateList
         );

@@ -23,6 +23,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @NonNull
     static final String USER_COLLECTION = "users";
+    @NonNull
+    static final String MESSAGE_COLLECTION = "messages";
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 
@@ -39,6 +41,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     private ListenerRegistration getInterestedWorkmatesListener;
     @Nullable
     private ListenerRegistration getAllWorkmatesListener;
+    @Nullable
+    private ListenerRegistration getChatRoomListener;
 
     // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
@@ -62,8 +66,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .document(userId)
             .addSnapshotListener((documentSnapshot, error) -> {
                 if (documentSnapshot != null) {
-                    final User user = documentSnapshot.toObject(User.class);
-                    userMutableLiveData.setValue(user);
+                    userMutableLiveData.setValue(documentSnapshot.toObject(User.class));
                 }
             });
 
@@ -87,8 +90,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .whereEqualTo("selectedRestaurant.date", LocalDate.now(clock).format(DATE_FORMATTER))
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
-                    final List<User> userList = querySnapshot.toObjects(User.class);
-                    usersMutableLiveData.setValue(userList);
+                    usersMutableLiveData.setValue(querySnapshot.toObjects(User.class));
                 }
             });
 
@@ -103,8 +105,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         getAllWorkmatesListener = firebaseFirestore.collection(USER_COLLECTION)
             .addSnapshotListener((querySnapshot, error) -> {
                 if (querySnapshot != null) {
-                    final List<User> userList = querySnapshot.toObjects(User.class);
-                    usersMutableLiveData.setValue(userList);
+                    usersMutableLiveData.setValue(querySnapshot.toObjects(User.class));
                 }
             });
 
@@ -147,6 +148,58 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             .update("selectedRestaurant", null);
     }
 
+    @NonNull
+    @Override
+    public String getRoomId(@NonNull String userId1, @NonNull String userId2) {
+        // Create a unique room ID from the users' ID. The IDs are sorted in ascending order
+        // to always get the same room ID whoever creates the room
+        if (userId1.compareTo(userId2) < 0) {
+            return userId1 + userId2;
+        } else {
+            return userId2 + userId1;
+        }
+    }
+
+    @NonNull
+    @Override
+    public LiveData<ChatRoom> getChatRoom(@NonNull String roomId) {
+        final MutableLiveData<ChatRoom> chatRoomMutableLiveData = new MutableLiveData<>();
+
+        getChatRoomListener = firebaseFirestore.collection(MESSAGE_COLLECTION)
+            .document(roomId)
+            .addSnapshotListener((documentSnapshot, error) -> {
+                if (documentSnapshot != null) {
+                    chatRoomMutableLiveData.setValue(documentSnapshot.toObject(ChatRoom.class));
+                }
+            });
+
+        return chatRoomMutableLiveData;
+    }
+
+    @Override
+    public void chatRoomExist(@NonNull String roomId, @NonNull OnChatRoomResult onChatRoomResult) {
+        firebaseFirestore.collection(MESSAGE_COLLECTION)
+            .document(roomId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                onChatRoomResult.onResult(documentSnapshot.exists());
+            });
+    }
+
+    @Override
+    public void addChatRoom(@NonNull String roomId, @NonNull ChatRoom chatRoom) {
+        firebaseFirestore.collection(MESSAGE_COLLECTION)
+            .document(roomId)
+            .set(chatRoom);
+    }
+
+    @Override
+    public void addMessageToChat(@NonNull String roomId, @NonNull ChatRoom.Message message) {
+        firebaseFirestore.collection(MESSAGE_COLLECTION)
+            .document(roomId)
+            .update("messages", FieldValue.arrayUnion(message));
+    }
+
     @Override
     public void removeListenerRegistrations() {
         if (getUserListener != null) {
@@ -157,6 +210,9 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         }
         if (getAllWorkmatesListener != null) {
             getAllWorkmatesListener.remove();
+        }
+        if (getChatRoomListener != null) {
+            getChatRoomListener.remove();
         }
     }
 }

@@ -84,6 +84,7 @@ public class GetRestaurantInfoUseCaseImplTest {
 
         // Default behaviour
         final User currentUser = new User(
+            "ID",
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
@@ -107,6 +108,7 @@ public class GetRestaurantInfoUseCaseImplTest {
         ));
         interestedWorkmatesMutableLiveData.setValue(Arrays.asList(
             new User(
+                "ID",
                 "WORKMATE_EMAIL",
                 "WORKMATE_NAME",
                 "WORKMATE_PHOTO",
@@ -149,6 +151,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     public void returnRestaurantInfo_when_getValue_with_noFavoriteRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
+            "ID",
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
@@ -183,6 +186,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     public void returnRestaurantInfo_when_getValue_with_differentFavoriteRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
+            "ID",
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
@@ -217,6 +221,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     public void returnRestaurantInfo_when_getValue_with_noSelectedRestaurant() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
+            "ID",
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
@@ -251,6 +256,7 @@ public class GetRestaurantInfoUseCaseImplTest {
     public void returnRestaurantInfo_when_getValue_with_differentRestaurantSelected() {
         // GIVEN
         currentUserMutableLiveData.setValue(new User(
+            "ID",
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",

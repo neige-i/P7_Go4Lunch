@@ -56,7 +56,9 @@
     <string name="workmate_is_joining">%s is joining!</string>
 
     <string name="search_restaurants_by_name">Search restaurants by name</string>
+
     <string name="message">Message</string>
+    <string name="no_chat_room_messages">No messages yet in this chat room</string>
 
     <!-- Snackbar message -->
     <string name="default_login_error">Login failed: an error occurred</string>
