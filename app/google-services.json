@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "996916511577-ofps1dn01a5mkrej7ubm77bghtqpi63p.apps.googleusercontent.com",
+          "client_id": "996916511577-u8c7rogc8v5kkgh1mbagdse2vdnfnevu.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.neige_i.go4lunch",
-            "certificate_hash": "02886efb94c42d7e565ceff397544b47f97487ed"
+            "certificate_hash": "632238401b8c1a624968a17a2e748bff2ebd1771"
           }
         },
         {
