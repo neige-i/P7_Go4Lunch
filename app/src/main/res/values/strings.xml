@@ -64,6 +64,8 @@
     <string name="notification_big_text_with_workmates">You are going with %s</string>
     <string name="notification_big_text_without_workmates">You are going by yourself</string>
 
+    <string name="enable_midday_notification">Enable midday notification</string>
+
     <!-- Snackbar message -->
     <string name="default_login_error">Login failed: an error occurred</string>
     <string name="no_internet_error">Login failed: no internet connection</string>

@@ -19,7 +19,6 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.WorkerDelegate;
 import com.neige_i.go4lunch.domain.notification.GetNotificationInfoUseCase;
 import com.neige_i.go4lunch.domain.notification.NotificationInfo;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
@@ -33,43 +32,26 @@ import dagger.assisted.AssistedInject;
 @HiltWorker
 public class NotifyTimeToEatWorker extends Worker {
 
-    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
-
     @NonNull
     private static final String CHANNEL_ID = "CHANNEL_ID";
 
-    // --------------------------------------- DEPENDENCIES ----------------------------------------
-
-    @NonNull
-    private final WorkerDelegate workerDelegate;
     @NonNull
     private final GetNotificationInfoUseCase getNotificationInfoUseCase;
-
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     @AssistedInject
     public NotifyTimeToEatWorker(
         @Assisted @NonNull Context context,
         @Assisted @NonNull WorkerParameters workerParams,
-        @NonNull WorkerDelegate workerDelegate,
         @NonNull GetNotificationInfoUseCase getNotificationInfoUseCase
     ) {
         super(context, workerParams);
-        this.workerDelegate = workerDelegate;
         this.getNotificationInfoUseCase = getNotificationInfoUseCase;
     }
-
-    // -------------------------------------- WORKER METHODS ---------------------------------------
 
     @NonNull
     @Override
     public Result doWork() {
-        // Periodic work requests cannot be precise enough to run at a specific time
-        // Instead, use a one-time work request and enqueue a new one once the previous has ended
-        workerDelegate.enqueueOneTimeWorkRequest(getApplicationContext());
-
         sendNotification(getNotificationInfoUseCase.get());
-
         return Result.success();
     }
 
@@ -89,7 +71,7 @@ public class NotifyTimeToEatWorker extends Worker {
             ));
         }
 
-        // Setup PendingIntent
+        // Setup PendingIntent with TaskStackBuilder
         final Intent detailIntent = new Intent(getApplicationContext(), DetailActivity.class);
         detailIntent.putExtra(EXTRA_PLACE_ID, notificationInfo.getRestaurantId());
         final PendingIntent pendingIntent = TaskStackBuilder.create(getApplicationContext())
@@ -123,17 +105,14 @@ public class NotifyTimeToEatWorker extends Worker {
     }
 
     private String getBigText(@NonNull List<String> workmateNames) {
-        final String bigText;
-
         if (workmateNames.isEmpty()) {
-            bigText = getApplicationContext().getString(R.string.notification_big_text_without_workmates);
+            return getApplicationContext().getString(R.string.notification_big_text_without_workmates);
         } else {
-            bigText = getApplicationContext().getString(
+            return getApplicationContext().getString(
                 R.string.notification_big_text_with_workmates,
                 toJoinedString(workmateNames)
             );
         }
-        return bigText;
     }
 
     @NonNull
