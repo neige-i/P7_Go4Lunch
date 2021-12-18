@@ -242,13 +242,19 @@ public class FirestoreRepositoryImplTest {
     @Test
     public void updateSelectedRestaurantWithNonNullValues_when_setSelectedRestaurant() {
         // WHEN
-        firestoreRepository.setSelectedRestaurant(USER_ID, PLACE_ID, "RESTAURANT_NAME");
+        firestoreRepository.setSelectedRestaurant(
+            USER_ID,
+            PLACE_ID,
+            "RESTAURANT_NAME",
+            "RESTAURANT_ADDRESS"
+        );
 
         // THEN
         verify(documentReferenceMock).update(
             "selectedRestaurant.id", PLACE_ID,
             "selectedRestaurant.date", "12/12/2021",
-            "selectedRestaurant.name", "RESTAURANT_NAME"
+            "selectedRestaurant.name", "RESTAURANT_NAME",
+            "selectedRestaurant.address", "RESTAURANT_ADDRESS"
         );
         verifyNoMoreInteractions(documentReferenceMock);
     }
@@ -276,7 +282,7 @@ public class FirestoreRepositoryImplTest {
             "email" + index,
             "name" + index,
             "photo" + index,
-            new User.SelectedRestaurant(PLACE_ID + index, "10/12/2021", "restaurant" + index),
+            new User.SelectedRestaurant(PLACE_ID + index, "10/12/2021", "restaurant" + index, "address" + index),
             Arrays.asList(PLACE_ID + (10 + index), PLACE_ID + (20 + index))
         );
     }

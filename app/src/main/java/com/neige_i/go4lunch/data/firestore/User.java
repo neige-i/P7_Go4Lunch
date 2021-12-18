@@ -112,18 +112,27 @@ public class User {
         private final String date;
         @NonNull
         private final String name;
+        @NonNull
+        private final String address;
 
         @SuppressWarnings("ConstantConditions")
         public SelectedRestaurant() {
             id = null;
             date = null;
             name = null;
+            address = null;
         }
 
-        public SelectedRestaurant(@NonNull String id, @NonNull String date, @NonNull String name) {
+        public SelectedRestaurant(
+            @NonNull String id,
+            @NonNull String date,
+            @NonNull String name,
+            @NonNull String address
+        ) {
             this.id = id;
             this.date = date;
             this.name = name;
+            this.address = address;
         }
 
         @NonNull
@@ -141,6 +150,11 @@ public class User {
             return name;
         }
 
+        @NonNull
+        public String getAddress() {
+            return address;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -152,12 +166,13 @@ public class User {
             SelectedRestaurant that = (SelectedRestaurant) o;
             return id.equals(that.id) &&
                 date.equals(that.date) &&
-                name.equals(that.name);
+                name.equals(that.name) &&
+                address.equals(that.address);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(id, date, name);
+            return Objects.hash(id, date, name, address);
         }
 
         @NonNull
@@ -167,6 +182,7 @@ public class User {
                 "id='" + id + '\'' +
                 ", date='" + date + '\'' +
                 ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
                 '}';
         }
     }

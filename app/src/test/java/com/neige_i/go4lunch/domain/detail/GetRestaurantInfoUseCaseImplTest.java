@@ -87,7 +87,7 @@ public class GetRestaurantInfoUseCaseImplTest {
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
-            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME"),
+            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME", "ADDRESS"),
             Collections.singletonList(PLACE_ID)
         );
         restaurantDetailsMutableLiveData.setValue(new RestaurantDetails(
@@ -152,7 +152,7 @@ public class GetRestaurantInfoUseCaseImplTest {
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
-            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME"),
+            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME", "ADDRESS"),
             null // No favorite restaurants
         ));
 
@@ -186,7 +186,7 @@ public class GetRestaurantInfoUseCaseImplTest {
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
-            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME"),
+            new User.SelectedRestaurant(PLACE_ID, TODAY_DATE, "RESTAURANT_NAME", "ADDRESS"),
             Arrays.asList("OTHER_PLACE_ID", "ANOTHER_PLACE_ID") // Different favorite restaurants
         ));
 
@@ -254,7 +254,7 @@ public class GetRestaurantInfoUseCaseImplTest {
             "MY_EMAIL",
             "MY_NAME",
             "MY_PHOTO",
-            new User.SelectedRestaurant("OTHER_PLACE_ID", TODAY_DATE, "OTHER_RESTAURANT_NAME"), // Other selected restaurant
+            new User.SelectedRestaurant("OTHER_PLACE_ID", TODAY_DATE, "OTHER_RESTAURANT_NAME", "ADDRESS"), // Other selected restaurant
             Collections.singletonList(PLACE_ID)
         ));
 

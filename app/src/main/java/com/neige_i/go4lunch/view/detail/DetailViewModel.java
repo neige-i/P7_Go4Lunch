@@ -42,6 +42,7 @@ public class DetailViewModel extends ViewModel {
     private boolean isSelected;
     private boolean isFavorite;
     private String restaurantName;
+    private String restaurantAddress;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -64,6 +65,7 @@ public class DetailViewModel extends ViewModel {
             isFavorite = restaurantInfo.isFavorite();
             isSelected = restaurantInfo.isSelected();
             restaurantName = restaurantInfo.getName();
+            restaurantAddress = restaurantInfo.getAddress();
 
             // Setup interested workmates
             final List<WorkmateViewState> workmateViewStates = new ArrayList<>();
@@ -111,7 +113,7 @@ public class DetailViewModel extends ViewModel {
         if (isSelected) {
             updateRestaurantPrefUseCase.unselect();
         } else {
-            updateRestaurantPrefUseCase.select(placeId, restaurantName);
+            updateRestaurantPrefUseCase.select(placeId, restaurantName, restaurantAddress);
         }
     }
 

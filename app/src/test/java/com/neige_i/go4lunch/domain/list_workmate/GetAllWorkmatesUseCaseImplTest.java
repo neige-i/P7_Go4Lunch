@@ -67,7 +67,7 @@ public class GetAllWorkmatesUseCaseImplTest {
         // Default behaviour
         userListMutableLiveData.setValue(Arrays.asList(
             new User("EMAIL2", "NAME2", "PHOTO2", null, null),
-            new User("EMAIL1", "NAME1", "PHOTO1", new User.SelectedRestaurant("PLACE_ID1", "15/11/2021", "RESTAURANT1"), null)
+            new User("EMAIL1", "NAME1", "PHOTO1", new User.SelectedRestaurant("PLACE_ID1", "15/11/2021", "RESTAURANT1", "ADDRESS"), null)
         ));
     }
 
