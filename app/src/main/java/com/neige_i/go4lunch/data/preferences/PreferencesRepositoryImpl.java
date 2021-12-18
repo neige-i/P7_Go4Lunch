@@ -14,14 +14,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 public class PreferencesRepositoryImpl implements PreferencesRepository {
 
     @NonNull
-    private static final String KEY_MIDDAY_NOTIFICATION = "middayNotification";
+    static final String FILE_PREFERENCES = "settings";
+    @NonNull
+    static final String KEY_MIDDAY_NOTIFICATION = "middayNotification";
 
     @NonNull
     private final SharedPreferences sharedPreferences;
 
     @Inject
     PreferencesRepositoryImpl(@ApplicationContext @NonNull Context applicationContext) {
-        sharedPreferences = applicationContext.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        sharedPreferences = applicationContext.getSharedPreferences(FILE_PREFERENCES, Context.MODE_PRIVATE);
     }
 
     @Override
