@@ -40,18 +40,9 @@ public interface FirestoreRepository {
     String getRoomId(@NonNull String userId1, @NonNull String userId2);
 
     @NonNull
-    LiveData<ChatRoom> getChatRoom(@NonNull String roomId);
+    LiveData<List<Message>> getMessagesByRoomId(@NonNull String roomId);
 
-    void chatRoomExist(@NonNull String roomId, @NonNull OnChatRoomResult onChatRoomResult);
-
-    void addChatRoom(@NonNull String roomId, @NonNull ChatRoom chatRoom);
-
-    void addMessageToChat(@NonNull String roomId, @NonNull ChatRoom.Message message);
+    void addMessage(@NonNull Message messageToAdd);
 
     void removeListenerRegistrations();
-
-    interface OnChatRoomResult {
-
-        void onResult(boolean exists);
-    }
 }

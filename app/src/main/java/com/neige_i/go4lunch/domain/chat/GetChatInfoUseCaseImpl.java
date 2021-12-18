@@ -8,11 +8,14 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.neige_i.go4lunch.data.firestore.ChatRoom;
 import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.data.firestore.Message;
 import com.neige_i.go4lunch.data.firestore.User;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,7 +27,7 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
     private final MediatorLiveData<ChatInfo> chatInfo = new MediatorLiveData<>();
 
     @NonNull
-    private final MutableLiveData<String> workmateIdMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<String> workmateIdSource = new MutableLiveData<>();
 
     @NonNull
     private final String currentUserId;
@@ -42,33 +45,38 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
 
         currentUserId = firebaseAuth.getCurrentUser().getUid();
 
-        final LiveData<ChatRoom> chatRoomLiveData = Transformations.switchMap(
-            workmateIdMutableLiveData, workmateId -> {
+        final LiveData<List<Message>> messagesLiveData = Transformations.switchMap(
+            workmateIdSource, workmateId -> {
                 final String roomId = firestoreRepository.getRoomId(currentUserId, workmateId);
-                return firestoreRepository.getChatRoom(roomId);
+                return firestoreRepository.getMessagesByRoomId(roomId);
             }
         );
         final LiveData<User> workmateLiveData = Transformations.switchMap(
-            workmateIdMutableLiveData, workmateId -> firestoreRepository.getUser(workmateId)
+            workmateIdSource, workmateId -> firestoreRepository.getUser(workmateId)
         );
 
-        chatInfo.addSource(chatRoomLiveData, chatRoom -> combine(chatRoom, workmateLiveData.getValue()));
-        chatInfo.addSource(workmateLiveData, workmate -> combine(chatRoomLiveData.getValue(), workmate));
+        chatInfo.addSource(messagesLiveData, messages -> combine(messages, workmateLiveData.getValue()));
+        chatInfo.addSource(workmateLiveData, workmate -> combine(messagesLiveData.getValue(), workmate));
     }
 
-    private void combine(@Nullable ChatRoom chatRoom, @Nullable User workmate) {
+    private void combine(@Nullable List<Message> messages, @Nullable User workmate) {
         if (workmate == null) {
             return;
         }
 
         final List<ChatInfo.MessageInfo> messageInfoList;
-        if (chatRoom != null) {
-            messageInfoList = chatRoom.getMessages()
+        if (messages != null) {
+            messageInfoList = messages
                 .stream()
+                .sorted(Comparator.comparingLong(message -> message.getDateTimeMillis()))
                 .map(message -> {
                     return new ChatInfo.MessageInfo(
                         message.getText(),
-                        message.getDateTime(),
+                        Instant
+                            .ofEpochMilli(message.getDateTimeMillis())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime()
+                            .format(FirestoreRepository.DATE_TIME_FORMATTER),
                         message.getSenderId().equals(currentUserId)
                     );
                 })
@@ -84,7 +92,7 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
     @Override
     public LiveData<ChatInfo> get(@NonNull String workmateId) {
         // Trigger chatInfo Mediator's source
-        workmateIdMutableLiveData.setValue(workmateId);
+        workmateIdSource.setValue(workmateId);
 
         return chatInfo;
     }
