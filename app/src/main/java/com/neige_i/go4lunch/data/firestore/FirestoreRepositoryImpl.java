@@ -162,42 +162,26 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     @NonNull
     @Override
-    public LiveData<ChatRoom> getChatRoom(@NonNull String roomId) {
-        final MutableLiveData<ChatRoom> chatRoomMutableLiveData = new MutableLiveData<>();
+    public LiveData<List<Message>> getMessagesByRoomId(@NonNull String roomId) {
+        final MutableLiveData<List<Message>> messagesMutableLiveData = new MutableLiveData<>();
 
-        getChatRoomListener = firebaseFirestore.collection(MESSAGE_COLLECTION)
-            .document(roomId)
-            .addSnapshotListener((documentSnapshot, error) -> {
-                if (documentSnapshot != null) {
-                    chatRoomMutableLiveData.setValue(documentSnapshot.toObject(ChatRoom.class));
+        getChatRoomListener = firebaseFirestore
+            .collection(MESSAGE_COLLECTION)
+            .whereEqualTo("roomId", roomId)
+            .addSnapshotListener((querySnapshot, error) -> {
+                if (querySnapshot != null) {
+                    messagesMutableLiveData.setValue(querySnapshot.toObjects(Message.class));
                 }
             });
 
-        return chatRoomMutableLiveData;
+        return messagesMutableLiveData;
     }
 
     @Override
-    public void chatRoomExist(@NonNull String roomId, @NonNull OnChatRoomResult onChatRoomResult) {
-        firebaseFirestore.collection(MESSAGE_COLLECTION)
-            .document(roomId)
-            .get()
-            .addOnSuccessListener(documentSnapshot -> {
-                onChatRoomResult.onResult(documentSnapshot.exists());
-            });
-    }
-
-    @Override
-    public void addChatRoom(@NonNull String roomId, @NonNull ChatRoom chatRoom) {
-        firebaseFirestore.collection(MESSAGE_COLLECTION)
-            .document(roomId)
-            .set(chatRoom);
-    }
-
-    @Override
-    public void addMessageToChat(@NonNull String roomId, @NonNull ChatRoom.Message message) {
-        firebaseFirestore.collection(MESSAGE_COLLECTION)
-            .document(roomId)
-            .update("messages", FieldValue.arrayUnion(message));
+    public void addMessage(@NonNull Message messageToAdd) {
+        firebaseFirestore
+            .collection(MESSAGE_COLLECTION)
+            .add(messageToAdd);
     }
 
     @Override
