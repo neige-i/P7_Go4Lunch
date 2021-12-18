@@ -1,7 +1,5 @@
 package com.neige_i.go4lunch.view.detail;
 
-import static com.neige_i.go4lunch.view.home.HomeActivity.EXTRA_PLACE_ID;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.R;
 import com.neige_i.go4lunch.databinding.ActivityDetailBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
@@ -25,6 +24,10 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class DetailActivity extends AppCompatActivity {
+
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
+
+    public static final String EXTRA_PLACE_ID = BuildConfig.APPLICATION_ID + ".placeId";
 
     // --------------------------------------- DEPENDENCIES ----------------------------------------
 

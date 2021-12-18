@@ -32,6 +32,8 @@ import com.neige_i.go4lunch.domain.map.GetMapDataUseCase;
 import com.neige_i.go4lunch.domain.map.GetMapDataUseCaseImpl;
 import com.neige_i.go4lunch.domain.map.RequestGpsUseCase;
 import com.neige_i.go4lunch.domain.map.RequestGpsUseCaseImpl;
+import com.neige_i.go4lunch.domain.settings.HandleSettingsPreferencesUseCase;
+import com.neige_i.go4lunch.domain.settings.HandleSettingsPreferencesUseCaseImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -134,5 +136,12 @@ public abstract class BusinessBindingModule {
     @Binds
     public abstract UpdateRestaurantPrefUseCase bindUpdateRestaurantPrefUseCase(
         UpdateRestaurantPrefUseCaseImpl updateRestaurantPrefUseCaseImpl
+    );
+
+    // ----------------------------------------- SETTINGS ------------------------------------------
+
+    @Binds
+    public abstract HandleSettingsPreferencesUseCase bindHandleNotificationPreferencesUseCase(
+        HandleSettingsPreferencesUseCaseImpl handleNotificationPreferencesUseCaseImpl
     );
 }
