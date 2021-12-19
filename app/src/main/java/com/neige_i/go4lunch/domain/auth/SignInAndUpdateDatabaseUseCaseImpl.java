@@ -41,7 +41,6 @@ public class SignInAndUpdateDatabaseUseCaseImpl implements SignInAndUpdateDataba
 
         firebaseAuth.signInWithCredential(authCredential)
             .addOnSuccessListener(authResult -> {
-                signInResultMediatorLiveData.setValue(new SignInResult.Success());
                 addUserToFirestore(signInResultMediatorLiveData);
             })
             .addOnFailureListener(e -> {
@@ -70,6 +69,8 @@ public class SignInAndUpdateDatabaseUseCaseImpl implements SignInAndUpdateDataba
                 );
                 firestoreRepository.addUser(userId, userToAdd);
             }
+
+            mediatorLiveData.setValue(new SignInResult.Success());
         });
     }
 }
