@@ -8,14 +8,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
-import com.neige_i.go4lunch.data.google_places.DetailsRepository;
-import com.neige_i.go4lunch.data.google_places.NearbyRepository;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
+import com.neige_i.go4lunch.repository.google_places.DetailsRepository;
+import com.neige_i.go4lunch.repository.google_places.NearbyRepository;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.NearbyRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.RestaurantDetails;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import java.time.Clock;
 import java.time.DayOfWeek;

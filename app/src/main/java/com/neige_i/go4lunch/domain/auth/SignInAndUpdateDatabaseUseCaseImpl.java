@@ -7,8 +7,8 @@ import androidx.lifecycle.MediatorLiveData;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.User;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.User;
 
 import javax.inject.Inject;
 

@@ -10,7 +10,7 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.neige_i.go4lunch.BuildConfig;
-import com.neige_i.go4lunch.data.google_places.PlacesApi;
+import com.neige_i.go4lunch.data.PlacesApi;
 
 import java.time.Clock;
 import java.time.ZoneId;

@@ -5,39 +5,29 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.neige_i.go4lunch.view.list_restaurant.RestaurantListFragment;
-import com.neige_i.go4lunch.view.list_workmate.WorkmateListFragment;
-import com.neige_i.go4lunch.view.map.MapFragment;
+import java.util.List;
 
 class HomePagerAdapter extends FragmentStateAdapter {
 
-    // --------------------------------------- LOCAL FIELDS ----------------------------------------
+    @NonNull
+    private final List<Fragment> fragmentsToDisplay;
 
-    /**
-     * Fragments to put in the {@code ViewPager}.
-     */
-    private static final Fragment[] FRAGMENTS_TO_DISPLAY = new Fragment[]{
-        new MapFragment(),
-        new RestaurantListFragment(),
-        new WorkmateListFragment()
-    };
-
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
-
-    HomePagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+    HomePagerAdapter(
+        @NonNull FragmentActivity fragmentActivity,
+        @NonNull List<Fragment> fragmentsToDisplay
+    ) {
         super(fragmentActivity);
+        this.fragmentsToDisplay = fragmentsToDisplay;
     }
-
-    // -------------------------------------- ADAPTER METHODS --------------------------------------
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return FRAGMENTS_TO_DISPLAY[position];
+        return fragmentsToDisplay.get(position);
     }
 
     @Override
     public int getItemCount() {
-        return FRAGMENTS_TO_DISPLAY.length;
+        return fragmentsToDisplay.size();
     }
 }

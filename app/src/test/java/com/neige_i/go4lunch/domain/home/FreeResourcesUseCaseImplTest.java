@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import org.junit.Rule;
 import org.junit.Test;

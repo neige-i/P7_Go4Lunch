@@ -3,7 +3,7 @@ package com.neige_i.go4lunch.domain;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
 
 import java.time.Clock;
 import java.time.LocalDate;

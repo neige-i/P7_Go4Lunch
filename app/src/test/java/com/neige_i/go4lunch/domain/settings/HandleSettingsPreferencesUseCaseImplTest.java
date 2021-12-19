@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import com.neige_i.go4lunch.data.preferences.PreferencesRepository;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
 
 import org.junit.Test;
 

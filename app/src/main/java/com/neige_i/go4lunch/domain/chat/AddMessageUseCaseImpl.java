@@ -3,8 +3,8 @@ package com.neige_i.go4lunch.domain.chat;
 import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.Message;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.Message;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;

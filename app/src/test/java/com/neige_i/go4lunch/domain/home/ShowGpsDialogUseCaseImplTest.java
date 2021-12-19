@@ -9,7 +9,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import org.junit.Before;
 import org.junit.Rule;

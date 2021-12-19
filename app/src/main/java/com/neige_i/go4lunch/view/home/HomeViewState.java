@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 
 import java.util.List;
 import java.util.Objects;

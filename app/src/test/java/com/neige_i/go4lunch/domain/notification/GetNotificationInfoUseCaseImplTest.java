@@ -9,9 +9,9 @@ import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.User;
-import com.neige_i.go4lunch.data.preferences.PreferencesRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.User;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
 import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 
 import org.junit.Before;
@@ -101,6 +101,7 @@ public class GetNotificationInfoUseCaseImplTest {
     public void returnNull_when_getInfo_withNoSelectedRestaurant() {
         // GIVEN
         doReturn(new User(
+            USER_ID,
             "@me",
             "myName",
             "myPhoto",
@@ -174,6 +175,7 @@ public class GetNotificationInfoUseCaseImplTest {
     @NonNull
     private User getCurrentUser() {
         return new User(
+            USER_ID,
             "@me",
             "myName",
             "myPhoto",
@@ -195,6 +197,7 @@ public class GetNotificationInfoUseCaseImplTest {
     @NonNull
     private User getDefaultWorkmate(int index) {
         return new User(
+            USER_ID + index,
             "email",
             NAME + index,
             "photo",

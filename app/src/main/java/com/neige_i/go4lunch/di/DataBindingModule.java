@@ -1,13 +1,13 @@
 package com.neige_i.go4lunch.di;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepositoryImpl;
-import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
-import com.neige_i.go4lunch.data.location.LocationPermissionRepositoryImpl;
-import com.neige_i.go4lunch.data.location.LocationRepository;
-import com.neige_i.go4lunch.data.location.LocationRepositoryImpl;
-import com.neige_i.go4lunch.data.preferences.PreferencesRepository;
-import com.neige_i.go4lunch.data.preferences.PreferencesRepositoryImpl;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepositoryImpl;
+import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
+import com.neige_i.go4lunch.repository.location.LocationPermissionRepositoryImpl;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
+import com.neige_i.go4lunch.repository.location.LocationRepositoryImpl;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepositoryImpl;
 
 import dagger.Binds;
 import dagger.Module;

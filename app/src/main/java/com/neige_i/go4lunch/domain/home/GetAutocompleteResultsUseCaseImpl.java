@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
-import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
-import com.neige_i.go4lunch.data.google_places.RawAutocompleteQuery;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
+import com.neige_i.go4lunch.repository.google_places.RawAutocompleteQuery;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import java.util.List;
 

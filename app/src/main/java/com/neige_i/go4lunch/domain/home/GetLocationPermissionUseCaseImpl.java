@@ -2,7 +2,7 @@ package com.neige_i.go4lunch.domain.home;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
+import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
 
 import javax.inject.Inject;
 

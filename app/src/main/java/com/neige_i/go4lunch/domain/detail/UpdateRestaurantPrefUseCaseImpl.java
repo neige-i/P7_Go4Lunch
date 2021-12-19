@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
 
 import javax.inject.Inject;
 

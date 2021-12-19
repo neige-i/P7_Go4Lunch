@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.databinding.ItemAutocompleteBinding;
 
 class AutocompleteAdapter extends ListAdapter<AutocompleteRestaurant, AutocompleteAdapter.AutocompleteViewHolder> {

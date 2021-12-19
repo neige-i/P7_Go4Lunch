@@ -9,14 +9,14 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
-import com.neige_i.go4lunch.data.google_places.NearbyRepository;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
-import com.neige_i.go4lunch.data.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
-import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
+import com.neige_i.go4lunch.repository.google_places.NearbyRepository;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.NearbyRestaurant;
+import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
+import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;

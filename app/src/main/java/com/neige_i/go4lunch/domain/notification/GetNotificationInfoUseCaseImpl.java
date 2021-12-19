@@ -4,9 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.User;
-import com.neige_i.go4lunch.data.preferences.PreferencesRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.User;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
 import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 
 import java.util.List;

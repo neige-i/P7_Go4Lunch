@@ -2,8 +2,8 @@ package com.neige_i.go4lunch.domain.home;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 
 import javax.inject.Inject;
 

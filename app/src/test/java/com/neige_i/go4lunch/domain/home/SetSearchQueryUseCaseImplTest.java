@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
-import com.neige_i.go4lunch.data.google_places.AutocompleteRepository;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 
 import org.junit.Rule;
 import org.junit.Test;

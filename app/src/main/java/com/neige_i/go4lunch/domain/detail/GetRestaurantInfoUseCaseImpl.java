@@ -7,10 +7,10 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.firestore.User;
-import com.neige_i.go4lunch.data.google_places.DetailsRepository;
-import com.neige_i.go4lunch.data.google_places.model.RestaurantDetails;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.firestore.User;
+import com.neige_i.go4lunch.repository.google_places.DetailsRepository;
+import com.neige_i.go4lunch.repository.google_places.model.RestaurantDetails;
 import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 
 import java.util.ArrayList;

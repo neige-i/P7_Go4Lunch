@@ -29,15 +29,19 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.gps.GpsStateChangeReceiver;
+import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.databinding.ActivityHomeBinding;
 import com.neige_i.go4lunch.databinding.HeaderDrawerBinding;
 import com.neige_i.go4lunch.view.ImageDelegate;
 import com.neige_i.go4lunch.view.StartDetailActivityCallback;
 import com.neige_i.go4lunch.view.auth.AuthActivity;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
+import com.neige_i.go4lunch.view.list_restaurant.RestaurantListFragment;
+import com.neige_i.go4lunch.view.list_workmate.WorkmateListFragment;
+import com.neige_i.go4lunch.view.map.MapFragment;
 import com.neige_i.go4lunch.view.settings.SettingsActivity;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import javax.inject.Inject;
@@ -80,7 +84,14 @@ public class HomeActivity extends AppCompatActivity implements StartDetailActivi
         viewModel.onActivityCreated();
 
         binding.viewPager.setUserInputEnabled(false); // Disable page scrolling because the ViewPager contains a scrollable map
-        binding.viewPager.setAdapter(new HomePagerAdapter(this));
+        binding.viewPager.setAdapter(new HomePagerAdapter(
+            this,
+            Arrays.asList(
+                new MapFragment(),
+                new RestaurantListFragment(),
+                new WorkmateListFragment()
+            )
+        ));
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             viewModel.onBottomNavigationItemClicked(item.getItemId());

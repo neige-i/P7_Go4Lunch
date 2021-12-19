@@ -2,7 +2,7 @@ package com.neige_i.go4lunch.domain.settings;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.preferences.PreferencesRepository;
+import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
 
 import javax.inject.Inject;
 

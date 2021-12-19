@@ -2,8 +2,8 @@ package com.neige_i.go4lunch.domain.home;
 
 import androidx.annotation.NonNull;
 
-import com.neige_i.go4lunch.data.firestore.FirestoreRepository;
-import com.neige_i.go4lunch.data.location.LocationRepository;
+import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
+import com.neige_i.go4lunch.repository.location.LocationRepository;
 
 import javax.inject.Inject;
 

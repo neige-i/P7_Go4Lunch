@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.neige_i.go4lunch.R;
-import com.neige_i.go4lunch.data.google_places.model.AutocompleteRestaurant;
+import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.domain.home.DrawerInfo;
 import com.neige_i.go4lunch.domain.home.FreeResourcesUseCase;
 import com.neige_i.go4lunch.domain.home.GetAutocompleteResultsUseCase;

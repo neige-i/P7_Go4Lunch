@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
-import com.neige_i.go4lunch.data.location.LocationPermissionRepository;
+import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
 
 import org.junit.Rule;
 import org.junit.Test;
