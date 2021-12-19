@@ -61,6 +61,8 @@ class ChatViewModel extends ViewModel {
     ) {
         this.addMessageUseCase = addMessageUseCase;
 
+        isMessageEmptyMutableLiveData.setValue(true);
+
         final LiveData<ChatInfo> chatInfoLiveData = Transformations.switchMap(
             workmateIdMutableLiveData, workmateId -> getChatInfoUseCase.get(workmateId)
         );
@@ -126,7 +128,6 @@ class ChatViewModel extends ViewModel {
 
     void onActivityCreated(@NonNull String workmateId) {
         workmateIdMutableLiveData.setValue(workmateId);
-        isMessageEmptyMutableLiveData.setValue(true);
     }
 
     void onMessageChanged(@NonNull String message) {
@@ -150,7 +151,6 @@ class ChatViewModel extends ViewModel {
                 scrollToLastMessage();
             }
         }
-
     }
 
     void onMessageListScrolled(int lastVisibleItemPosition) {

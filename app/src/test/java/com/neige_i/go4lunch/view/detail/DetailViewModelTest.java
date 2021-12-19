@@ -221,7 +221,7 @@ public class DetailViewModelTest {
         detailViewModel.onSelectedRestaurantClicked(PLACE_ID);
 
         // THEN
-        verify(updateRestaurantPrefUseCaseMock).select(PLACE_ID, "NAME"); // Select it
+        verify(updateRestaurantPrefUseCaseMock).select(PLACE_ID, "NAME", "ADDRESS"); // Select it
         verifyNoMoreInteractions(updateRestaurantPrefUseCaseMock);
     }
 

@@ -8,7 +8,11 @@ public interface UpdateRestaurantPrefUseCase {
 
     void unlike(@NonNull String placeId);
 
-    void select(@NonNull String placeId, @NonNull String restaurantName);
+    void select(
+        @NonNull String placeId,
+        @NonNull String restaurantName,
+        @NonNull String restaurantAddress
+    );
 
     void unselect();
 }

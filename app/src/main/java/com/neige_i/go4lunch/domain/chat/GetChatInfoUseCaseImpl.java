@@ -25,6 +25,8 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
 
     @NonNull
     private final MediatorLiveData<ChatInfo> chatInfo = new MediatorLiveData<>();
+    @NonNull
+    private final ZoneId systemDefaultZoneId;
 
     @NonNull
     private final MutableLiveData<String> workmateIdSource = new MutableLiveData<>();
@@ -35,8 +37,10 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
     @Inject
     GetChatInfoUseCaseImpl(
         @NonNull FirestoreRepository firestoreRepository,
-        @NonNull FirebaseAuth firebaseAuth
+        @NonNull FirebaseAuth firebaseAuth,
+        @NonNull ZoneId systemDefaultZoneId
     ) {
+        this.systemDefaultZoneId = systemDefaultZoneId;
 
         if (firebaseAuth.getCurrentUser() == null) {
             currentUserId = "";
@@ -74,7 +78,7 @@ public class GetChatInfoUseCaseImpl implements GetChatInfoUseCase {
                         message.getText(),
                         Instant
                             .ofEpochMilli(message.getDateTimeMillis())
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(systemDefaultZoneId)
                             .toLocalDateTime()
                             .format(FirestoreRepository.DATE_TIME_FORMATTER),
                         message.getSenderId().equals(currentUserId)

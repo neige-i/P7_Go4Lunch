@@ -13,6 +13,7 @@ import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.data.google_places.PlacesApi;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.util.Locale;
 
 import dagger.Module;
@@ -31,6 +32,11 @@ public class FrameworkProvidingModule {
     @Provides
     public static Clock provideClock() {
         return Clock.systemDefaultZone();
+    }
+
+    @Provides
+    public static ZoneId provideSystemDefaultZoneId() {
+        return ZoneId.systemDefault();
     }
 
     // ----------------------------------------- RETROFIT ------------------------------------------

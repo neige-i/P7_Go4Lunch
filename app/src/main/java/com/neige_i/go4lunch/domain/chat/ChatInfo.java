@@ -12,7 +12,7 @@ public class ChatInfo {
     @NonNull
     private final List<MessageInfo> messageInfoList;
 
-    ChatInfo(@NonNull String workmateName, @NonNull List<MessageInfo> messageInfoList) {
+    public ChatInfo(@NonNull String workmateName, @NonNull List<MessageInfo> messageInfoList) {
         this.workmateName = workmateName;
         this.messageInfoList = messageInfoList;
     }

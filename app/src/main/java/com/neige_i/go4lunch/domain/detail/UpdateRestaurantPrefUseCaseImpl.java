@@ -39,9 +39,18 @@ public class UpdateRestaurantPrefUseCaseImpl implements UpdateRestaurantPrefUseC
     }
 
     @Override
-    public void select(@NonNull String placeId, @NonNull String restaurantName) {
+    public void select(
+        @NonNull String placeId,
+        @NonNull String restaurantName,
+        @NonNull String restaurantAddress
+    ) {
         if (getCurrentUserId() != null) {
-            firestoreRepository.setSelectedRestaurant(getCurrentUserId(), placeId, restaurantName);
+            firestoreRepository.setSelectedRestaurant(
+                getCurrentUserId(),
+                placeId,
+                restaurantName,
+                restaurantAddress
+            );
         }
     }
 

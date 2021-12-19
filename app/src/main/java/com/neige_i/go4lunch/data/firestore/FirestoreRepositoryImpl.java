@@ -5,13 +5,18 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -73,6 +78,28 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         return userMutableLiveData;
     }
 
+    @Nullable
+    @Override
+    public User getUserByIdSync(@NonNull String userId) {
+        try {
+            final DocumentSnapshot documentSnapshot = Tasks.await(
+                firebaseFirestore
+                    .collection(USER_COLLECTION)
+                    .document(userId)
+                    .get()
+            );
+
+            if (documentSnapshot == null) {
+                return null;
+            }
+
+            return documentSnapshot.toObject(User.class);
+
+        } catch (ExecutionException | InterruptedException e) {
+            return null;
+        }
+    }
+
     @Override
     public void addUser(@NonNull String userId, @NonNull User user) {
         firebaseFirestore.collection(USER_COLLECTION)
@@ -95,6 +122,28 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
             });
 
         return usersMutableLiveData;
+    }
+
+    @NonNull
+    @Override
+    public List<User> getWorkmatesEatingAtSync(@NonNull String restaurantId) {
+        try {
+            final QuerySnapshot querySnapshot = Tasks.await(
+                firebaseFirestore
+                    .collection(USER_COLLECTION)
+                    .whereEqualTo("selectedRestaurant.id", restaurantId)
+                    .whereEqualTo("selectedRestaurant.date", LocalDate.now(clock).format(DATE_FORMATTER))
+                    .get()
+            );
+
+            if (querySnapshot == null) {
+                return new ArrayList<>();
+            } else {
+                return querySnapshot.toObjects(User.class);
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            return new ArrayList<>();
+        }
     }
 
     @NonNull
@@ -130,14 +179,16 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     public void setSelectedRestaurant(
         @NonNull String userId,
         @NonNull String placeId,
-        @NonNull String restaurantName
+        @NonNull String restaurantName,
+        @NonNull String restaurantAddress
     ) {
         firebaseFirestore.collection(USER_COLLECTION)
             .document(userId)
             .update(
                 "selectedRestaurant.id", placeId,
                 "selectedRestaurant.date", LocalDate.now(clock).format(DATE_FORMATTER),
-                "selectedRestaurant.name", restaurantName
+                "selectedRestaurant.name", restaurantName,
+                "selectedRestaurant.address", restaurantAddress
             );
     }
 
