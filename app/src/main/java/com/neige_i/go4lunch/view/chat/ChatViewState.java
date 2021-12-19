@@ -15,19 +15,22 @@ class ChatViewState {
     private final boolean textViewVisible;
     private final boolean fabEnabled;
     private final float fabAlpha;
+    private final boolean scrollBottomButtonVisible;
 
     ChatViewState(
         @NonNull String workmateName,
         @NonNull List<MessageViewState> messageViewStates,
         boolean textViewVisible,
         boolean fabEnabled,
-        float fabAlpha
+        float fabAlpha,
+        boolean scrollBottomButtonVisible
     ) {
         this.workmateName = workmateName;
         this.messageViewStates = messageViewStates;
         this.textViewVisible = textViewVisible;
         this.fabEnabled = fabEnabled;
         this.fabAlpha = fabAlpha;
+        this.scrollBottomButtonVisible = scrollBottomButtonVisible;
     }
 
     @NonNull
@@ -52,6 +55,10 @@ class ChatViewState {
         return fabAlpha;
     }
 
+    public boolean isScrollBottomButtonVisible() {
+        return scrollBottomButtonVisible;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -64,13 +71,14 @@ class ChatViewState {
         return textViewVisible == that.textViewVisible &&
             fabEnabled == that.fabEnabled &&
             fabAlpha == that.fabAlpha &&
+            scrollBottomButtonVisible == that.scrollBottomButtonVisible &&
             workmateName.equals(that.workmateName) &&
             messageViewStates.equals(that.messageViewStates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(workmateName, messageViewStates, textViewVisible, fabEnabled, fabAlpha);
+        return Objects.hash(workmateName, messageViewStates, textViewVisible, fabEnabled, fabAlpha, scrollBottomButtonVisible);
     }
 
     @NonNull
@@ -82,6 +90,7 @@ class ChatViewState {
             ", textViewVisible='" + textViewVisible + '\'' +
             ", fabEnabled='" + fabEnabled + '\'' +
             ", fabAlpha='" + fabAlpha + '\'' +
+            ", scrollBottomButtonVisible='" + scrollBottomButtonVisible + '\'' +
             '}';
     }
 

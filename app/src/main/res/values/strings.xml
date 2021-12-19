@@ -27,6 +27,7 @@
     <string name="description_close_drawer">Close drawer</string>
     <string name="description_chat_icon">Chat icon</string>
     <string name="description_send_icon">Send icon</string>
+    <string name="description_scroll_to_bottom_button">Scroll to bottom button</string>
 
     <!-- Button text -->
     <string name="sign_in_google">Sign in with Google</string>
