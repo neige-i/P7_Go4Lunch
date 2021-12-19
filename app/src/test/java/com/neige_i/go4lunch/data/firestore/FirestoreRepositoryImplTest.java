@@ -54,11 +54,13 @@ public class FirestoreRepositoryImplTest {
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 
-    private final CollectionReference collectionReferenceMock = mock(CollectionReference.class);
+    private final CollectionReference userCollectionReferenceMock = mock(CollectionReference.class);
+    private final CollectionReference messageCollectionReferenceMock = mock(CollectionReference.class);
     private final DocumentReference documentReferenceMock = mock(DocumentReference.class);
     private final Query queryMock = mock(Query.class);
     private final DocumentSnapshot documentSnapshotMock = mock(DocumentSnapshot.class);
-    private final QuerySnapshot querySnapshotMock = mock(QuerySnapshot.class);
+    private final QuerySnapshot userQuerySnapshotMock = mock(QuerySnapshot.class);
+    private final QuerySnapshot messageQuerySnapshotMock = mock(QuerySnapshot.class);
 
     // ------------------------------------- ARGUMENT CAPTORS --------------------------------------
 
@@ -69,17 +71,20 @@ public class FirestoreRepositoryImplTest {
 
     private static final String USER_ID = "user ID";
     private static final String PLACE_ID = "PLACE_ID";
+    private static final String ROOM_ID = "ROOM_ID";
 
     // ------------------------------------------- SETUP -------------------------------------------
 
     @Before
     public void setUp() {
         // Setup mocks
-        doReturn(collectionReferenceMock).when(firebaseFirestoreMock).collection(FirestoreRepositoryImpl.USER_COLLECTION);
-        doReturn(documentReferenceMock).when(collectionReferenceMock).document(USER_ID);
+        doReturn(userCollectionReferenceMock).when(firebaseFirestoreMock).collection(FirestoreRepositoryImpl.USER_COLLECTION);
+        doReturn(messageCollectionReferenceMock).when(firebaseFirestoreMock).collection(FirestoreRepositoryImpl.MESSAGE_COLLECTION);
+        doReturn(documentReferenceMock).when(userCollectionReferenceMock).document(USER_ID);
         doReturn(getDefaultUser(0)).when(documentSnapshotMock).toObject(User.class);
-        doReturn(queryMock).when(collectionReferenceMock).whereEqualTo("selectedRestaurant.id", PLACE_ID);
+        doReturn(queryMock).when(userCollectionReferenceMock).whereEqualTo("selectedRestaurant.id", PLACE_ID);
         doReturn(queryMock).when(queryMock).whereEqualTo("selectedRestaurant.date", "12/12/2021");
+        doReturn(queryMock).when(messageCollectionReferenceMock).whereEqualTo("roomId", ROOM_ID);
 
         // Init repository
         firestoreRepository = new FirestoreRepositoryImpl(
@@ -139,9 +144,9 @@ public class FirestoreRepositoryImplTest {
     // ------------------------------------ MULTIPLE USER TESTS ------------------------------------
 
     @Test
-    public void returnFilteredUserCollection_when_getWorkmates_with_nonNullSnapshot() {
+    public void returnFilteredUsers_when_getWorkmates_with_nonNullSnapshot() {
         // GIVEN
-        doReturn(Arrays.asList(getDefaultUser(4), getDefaultUser(5))).when(querySnapshotMock).toObjects(User.class);
+        doReturn(Arrays.asList(getDefaultUser(4), getDefaultUser(5))).when(userQuerySnapshotMock).toObjects(User.class);
         final List<User>[] actualUsers = new List[1];
 
         // WHEN
@@ -151,7 +156,7 @@ public class FirestoreRepositoryImplTest {
 
         // Capture SnapshotListener
         verify(queryMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
-        querySnapshotListenerCaptor.getValue().onEvent(querySnapshotMock, null);
+        querySnapshotListenerCaptor.getValue().onEvent(userQuerySnapshotMock, null);
 
         // THEN
         assertEquals(
@@ -163,7 +168,7 @@ public class FirestoreRepositoryImplTest {
     @Test
     public void returnNullUserCollection_when_getWorkmates_with_nullSnapshot() {
         // GIVEN
-        doReturn(Arrays.asList(getDefaultUser(4), getDefaultUser(5))).when(querySnapshotMock).toObjects(User.class);
+        doReturn(Arrays.asList(getDefaultUser(4), getDefaultUser(5))).when(userQuerySnapshotMock).toObjects(User.class);
         final List<User>[] actualUsers = new List[1];
 
         // WHEN
@@ -182,7 +187,7 @@ public class FirestoreRepositoryImplTest {
     @Test
     public void returnUserCollection_when_getAllUsers_with_nonNullSnapshot() {
         // GIVEN
-        doReturn(getDefaultUserList()).when(querySnapshotMock).toObjects(User.class);
+        doReturn(getDefaultUserList()).when(userQuerySnapshotMock).toObjects(User.class);
         final List<User>[] actualUsers = new List[1];
 
         // WHEN
@@ -191,8 +196,8 @@ public class FirestoreRepositoryImplTest {
         });
 
         // Capture SnapshotListener
-        verify(collectionReferenceMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
-        querySnapshotListenerCaptor.getValue().onEvent(querySnapshotMock, null);
+        verify(userCollectionReferenceMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
+        querySnapshotListenerCaptor.getValue().onEvent(userQuerySnapshotMock, null);
 
         // THEN
         assertEquals(getDefaultUserList(), actualUsers[0]);
@@ -201,7 +206,7 @@ public class FirestoreRepositoryImplTest {
     @Test
     public void returnNullUserCollection_when_getAllUsers_with_nullSnapshot() {
         // GIVEN
-        doReturn(getDefaultUserList()).when(querySnapshotMock).toObjects(User.class);
+        doReturn(getDefaultUserList()).when(userQuerySnapshotMock).toObjects(User.class);
         final List<User>[] actualUsers = new List[1];
 
         // WHEN
@@ -210,7 +215,7 @@ public class FirestoreRepositoryImplTest {
         });
 
         // Capture SnapshotListener
-        verify(collectionReferenceMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
+        verify(userCollectionReferenceMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
         querySnapshotListenerCaptor.getValue().onEvent(null, null); // Null snapshot
 
         // THEN
@@ -263,6 +268,77 @@ public class FirestoreRepositoryImplTest {
         verifyNoMoreInteractions(documentReferenceMock);
     }
 
+    // --------------------------------------- MESSAGE TESTS ---------------------------------------
+
+    @Test
+    public void returnRoomId_when_getValue_with_firstUserIdIsLowerThanSecondUserId() {
+        // WHEN
+        final String roomId = firestoreRepository.getRoomId("aaa", "bbb");
+
+        // THEN
+        assertEquals("aaabbb", roomId);
+    }
+
+    @Test
+    public void returnRoomId_when_getValue_with_firstUserIdIsGreaterThanSecondUserId() {
+        // WHEN
+        final String roomId = firestoreRepository.getRoomId("bbb", "aaa");
+
+        // THEN
+        assertEquals("aaabbb", roomId);
+    }
+
+    @Test
+    public void returnFilteredMessages_when_getMessagesById_with_nonNullSnapshot() {
+        // GIVEN
+        doReturn(Arrays.asList(getDefaultMessage(4), getDefaultMessage(5))).when(messageQuerySnapshotMock).toObjects(Message.class);
+        final List<Message>[] actualMessages = new List[1];
+
+        // WHEN
+        firestoreRepository.getMessagesByRoomId(ROOM_ID).observeForever(messages -> {
+            actualMessages[0] = messages;
+        });
+
+        // Capture SnapshotListener
+        verify(queryMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
+        querySnapshotListenerCaptor.getValue().onEvent(messageQuerySnapshotMock, null);
+
+        // THEN
+        assertEquals(
+            Arrays.asList(getDefaultMessage(4), getDefaultMessage(5)),
+            actualMessages[0]
+        );
+    }
+
+    @Test
+    public void returnNullMessageCollection_when_getMessagesById_with_nullSnapshot() {
+        // GIVEN
+        doReturn(Arrays.asList(getDefaultMessage(3), getDefaultMessage(2))).when(userQuerySnapshotMock).toObjects(Message.class);
+        final List<Message>[] actualMessages = new List[1];
+
+        // WHEN
+        firestoreRepository.getMessagesByRoomId(ROOM_ID).observeForever(messages -> {
+            actualMessages[0] = messages;
+        });
+
+        // Capture SnapshotListener
+        verify(queryMock).addSnapshotListener(querySnapshotListenerCaptor.capture());
+        querySnapshotListenerCaptor.getValue().onEvent(null, null); // Null snapshot
+
+        // THEN
+        assertNull(actualMessages[0]);
+    }
+
+    @Test
+    public void addMessageToCollection_when_addMessage() {
+        // WHEN
+        firestoreRepository.addMessage(getDefaultMessage(0));
+
+        // THEN
+        verify(messageCollectionReferenceMock).add(new Message(ROOM_ID + 0, "text0", 0, "ID0"));
+        verifyNoMoreInteractions(messageCollectionReferenceMock);
+    }
+
     // --------------------------------------- UTIL METHODS ----------------------------------------
 
     @NonNull
@@ -279,6 +355,16 @@ public class FirestoreRepositoryImplTest {
             "photo" + index,
             new User.SelectedRestaurant(PLACE_ID + index, "10/12/2021", "restaurant" + index),
             Arrays.asList(PLACE_ID + (10 + index), PLACE_ID + (20 + index))
+        );
+    }
+
+    @NonNull
+    private Message getDefaultMessage(int index) {
+        return new Message(
+            ROOM_ID + index,
+            "text" + index,
+            index,
+            "ID" + index
         );
     }
 }
