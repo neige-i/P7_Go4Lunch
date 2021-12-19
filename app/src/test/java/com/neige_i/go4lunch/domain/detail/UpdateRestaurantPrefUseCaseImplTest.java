@@ -77,10 +77,10 @@ public class UpdateRestaurantPrefUseCaseImplTest {
     @Test
     public void setSelected_when_selectRestaurant() {
         // WHEN
-        updateRestaurantPrefUseCase.select("PLACE_ID", "NAME");
+        updateRestaurantPrefUseCase.select("PLACE_ID", "NAME", "ADDRESS");
 
         // THEN
-        verify(firestoreRepositoryMock).setSelectedRestaurant(USER_ID, "PLACE_ID", "NAME");
+        verify(firestoreRepositoryMock).setSelectedRestaurant(USER_ID, "PLACE_ID", "NAME", "ADDRESS");
         verifyNoMoreInteractions(firestoreRepositoryMock);
     }
 
@@ -126,10 +126,10 @@ public class UpdateRestaurantPrefUseCaseImplTest {
         doReturn(null).when(firebaseAuthMock).getCurrentUser();
 
         // WHEN
-        updateRestaurantPrefUseCase.select("PLACE_ID", "NAME");
+        updateRestaurantPrefUseCase.select("PLACE_ID", "NAME", "ADDRESS");
 
         // THEN
-        verify(firestoreRepositoryMock, never()).setSelectedRestaurant(USER_ID, "PLACE_ID", "NAME");
+        verify(firestoreRepositoryMock, never()).setSelectedRestaurant(USER_ID, "PLACE_ID", "NAME", "ADDRESS");
         verifyNoMoreInteractions(firestoreRepositoryMock);
     }
 

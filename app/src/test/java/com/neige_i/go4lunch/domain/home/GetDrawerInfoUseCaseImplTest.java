@@ -72,7 +72,7 @@ public class GetDrawerInfoUseCaseImplTest {
             "email",
             "name",
             "photo",
-            new User.SelectedRestaurant("placeId", TODAY, "restaurantName"),
+            new User.SelectedRestaurant("placeId", TODAY, "restaurantName", "ADDRESS"),
             null
         ));
     }
