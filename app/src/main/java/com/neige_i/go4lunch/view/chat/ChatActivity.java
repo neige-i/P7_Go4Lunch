@@ -9,6 +9,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.neige_i.go4lunch.BuildConfig;
 import com.neige_i.go4lunch.databinding.ActivityChatBinding;
@@ -47,8 +49,18 @@ public class ChatActivity extends AppCompatActivity {
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final MessageAdapter messageAdapter = new MessageAdapter();
+        final MessageAdapter messageAdapter = new MessageAdapter(itemCount -> {
+            viewModel.onMessageListItemCountCalled(itemCount);
+        });
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         binding.messageList.setAdapter(messageAdapter);
+        binding.messageList.setLayoutManager(linearLayoutManager);
+        binding.messageList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                viewModel.onMessageListScrolled(linearLayoutManager.findLastVisibleItemPosition());
+            }
+        });
 
         binding.messageInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -69,6 +81,10 @@ public class ChatActivity extends AppCompatActivity {
             viewModel.onSendButtonClick(workmateId, binding.messageInput.getText().toString());
         });
 
+        binding.scrollBottomButton.setOnClickListener(v -> {
+            viewModel.onScrollBottomButtonClicked();
+        });
+
         // Update UI when state is changed
         viewModel.getViewState().observe(this, chatViewState -> {
             binding.toolbar.setTitle(chatViewState.getWorkmateName());
@@ -78,9 +94,14 @@ public class ChatActivity extends AppCompatActivity {
 
             binding.sendMessageButton.setEnabled(chatViewState.isFabEnabled());
             binding.sendMessageButton.setAlpha(chatViewState.getFabAlpha());
+
+            binding.scrollBottomButton.setVisibility(chatViewState.isScrollBottomButtonVisible() ? View.VISIBLE : View.GONE);
         });
 
         // Setup actions when events are triggered
+        viewModel.getScrollToPositionEvent().observe(this, scrollPosition -> {
+            binding.messageList.scrollToPosition(scrollPosition);
+        });
         viewModel.getClearInputEvent().observe(this, unused -> binding.messageInput.setText(null));
         viewModel.getGoBackEvent().observe(this, unused -> finish());
     }

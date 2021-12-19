@@ -32,11 +32,26 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="5dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:scrollbars="vertical"
             app:layout_constraintBottom_toTopOf="@id/bottom_barrier"
             app:layout_constraintTop_toTopOf="parent"
             tools:itemCount="20"
             tools:listitem="@layout/item_chat"
+            />
+
+        <ImageView
+            android:id="@+id/scroll_bottom_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="15dp"
+            android:background="@drawable/dark_rounded_background"
+            android:contentDescription="@string/description_scroll_to_bottom_button"
+            android:padding="5dp"
+            android:src="@drawable/ic_double_arrow_down"
+            android:visibility="gone"
+            app:elevation="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/message_list"
+            app:layout_constraintEnd_toEndOf="@id/message_list"
             />
 
         <TextView

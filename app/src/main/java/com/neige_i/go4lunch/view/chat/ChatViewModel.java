@@ -15,6 +15,7 @@ import com.neige_i.go4lunch.domain.chat.GetChatInfoUseCase;
 import com.neige_i.go4lunch.view.SingleLiveEvent;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -34,6 +35,8 @@ class ChatViewModel extends ViewModel {
     @NonNull
     private final MediatorLiveData<ChatViewState> viewState = new MediatorLiveData<>();
     @NonNull
+    private final SingleLiveEvent<Integer> scrollToPositionEvent = new SingleLiveEvent<>();
+    @NonNull
     private final SingleLiveEvent<Void> goBackEvent = new SingleLiveEvent<>();
     @NonNull
     private final SingleLiveEvent<Void> clearInputEvent = new SingleLiveEvent<>();
@@ -44,6 +47,10 @@ class ChatViewModel extends ViewModel {
     private final MutableLiveData<String> workmateIdMutableLiveData = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<Boolean> isMessageEmptyMutableLiveData = new MutableLiveData<>();
+    @NonNull
+    private final MutableLiveData<Boolean> scrollBottomButtonVisibilityMutableLiveData = new MutableLiveData<>();
+    private int currentItemCount;
+    private boolean isScrollBottomButtonVisible;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -57,11 +64,16 @@ class ChatViewModel extends ViewModel {
         final LiveData<ChatInfo> chatInfoLiveData = Transformations.switchMap(
             workmateIdMutableLiveData, workmateId -> getChatInfoUseCase.get(workmateId)
         );
-        viewState.addSource(chatInfoLiveData, chatInfo -> combine(chatInfo, isMessageEmptyMutableLiveData.getValue()));
-        viewState.addSource(isMessageEmptyMutableLiveData, isMessageEmpty -> combine(chatInfoLiveData.getValue(), isMessageEmpty));
+        viewState.addSource(chatInfoLiveData, chatInfo -> combine(chatInfo, isMessageEmptyMutableLiveData.getValue(), scrollBottomButtonVisibilityMutableLiveData.getValue()));
+        viewState.addSource(isMessageEmptyMutableLiveData, isMessageEmpty -> combine(chatInfoLiveData.getValue(), isMessageEmpty, scrollBottomButtonVisibilityMutableLiveData.getValue()));
+        viewState.addSource(Transformations.distinctUntilChanged(scrollBottomButtonVisibilityMutableLiveData), isScrollBottomVisible -> combine(chatInfoLiveData.getValue(), isMessageEmptyMutableLiveData.getValue(), isScrollBottomVisible));
     }
 
-    private void combine(@Nullable ChatInfo chatInfo, @Nullable Boolean isMessageEmpty) {
+    private void combine(
+        @Nullable ChatInfo chatInfo,
+        @Nullable Boolean isMessageEmpty,
+        @Nullable Boolean isScrollBottomButtonVisible
+    ) {
         if (chatInfo == null || isMessageEmpty == null) {
             return;
         }
@@ -85,13 +97,19 @@ class ChatViewModel extends ViewModel {
             messageViewStates,
             messageViewStates.isEmpty(),
             !isMessageEmpty,
-            !isMessageEmpty ? 1f : .75f
+            !isMessageEmpty ? 1f : .75f,
+            Objects.equals(isScrollBottomButtonVisible, true)
         ));
     }
 
     @NonNull
     LiveData<ChatViewState> getViewState() {
         return viewState;
+    }
+
+    @NonNull
+    public LiveData<Integer> getScrollToPositionEvent() {
+        return scrollToPositionEvent;
     }
 
     @NonNull
@@ -111,7 +129,7 @@ class ChatViewModel extends ViewModel {
         isMessageEmptyMutableLiveData.setValue(true);
     }
 
-    public void onMessageChanged(@NonNull String message) {
+    void onMessageChanged(@NonNull String message) {
         isMessageEmptyMutableLiveData.setValue(isMessageEmpty(message));
     }
 
@@ -120,6 +138,28 @@ class ChatViewModel extends ViewModel {
             addMessageUseCase.add(workmateId, messageToSend);
             clearInputEvent.call();
         }
+    }
+
+    void onMessageListItemCountCalled(int itemCount) {
+        if (itemCount != currentItemCount) {
+            currentItemCount = itemCount; // Update flag
+
+            if (!isScrollBottomButtonVisible) {
+                // Auto scrolling only if the message list is already at the bottom
+                // when the scroll bottom button is not visible
+                scrollToLastMessage();
+            }
+        }
+
+    }
+
+    void onMessageListScrolled(int lastVisibleItemPosition) {
+        isScrollBottomButtonVisible = lastVisibleItemPosition != currentItemCount - 1;
+        scrollBottomButtonVisibilityMutableLiveData.setValue(isScrollBottomButtonVisible);
+    }
+
+    void onScrollBottomButtonClicked() {
+        scrollToLastMessage();
     }
 
     // ------------------------------------ NAVIGATION METHODS -------------------------------------
@@ -134,5 +174,9 @@ class ChatViewModel extends ViewModel {
 
     private boolean isMessageEmpty(@NonNull String message) {
         return message.trim().isEmpty();
+    }
+
+    private void scrollToLastMessage() {
+        scrollToPositionEvent.setValue(currentItemCount - 1);
     }
 }

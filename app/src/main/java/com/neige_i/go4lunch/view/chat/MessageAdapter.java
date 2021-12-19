@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,8 +18,12 @@ import com.neige_i.go4lunch.databinding.ItemChatBinding;
 
 class MessageAdapter extends ListAdapter<ChatViewState.MessageViewState, MessageAdapter.MessageViewHolder> {
 
-    MessageAdapter() {
+    @NonNull
+    private final OnGetItemCountCallback onGetItemCountCallback;
+
+    MessageAdapter(@NonNull OnGetItemCountCallback onGetItemCountCallback) {
         super(new MessageDiffUtil());
+        this.onGetItemCountCallback = onGetItemCountCallback;
     }
 
     @NonNull
@@ -34,27 +39,40 @@ class MessageAdapter extends ListAdapter<ChatViewState.MessageViewState, Message
         holder.bind(getItem(position));
     }
 
+    @Override
+    public int getItemCount() {
+        final int itemCount = super.getItemCount();
+        onGetItemCountCallback.onGetItemCount(itemCount);
+        return itemCount;
+    }
+
     static class MessageViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemChatBinding binding;
 
-        public MessageViewHolder(@NonNull View itemView) {
+        MessageViewHolder(@NonNull View itemView) {
             super(itemView);
 
             binding = ItemChatBinding.bind(itemView);
         }
 
         void bind(@NonNull ChatViewState.MessageViewState viewState) {
-            final ConstraintLayout.LayoutParams layoutParams =
-                (ConstraintLayout.LayoutParams) binding.card.getLayoutParams();
+            final ConstraintLayout.LayoutParams dateTimeLayoutParams =
+                (ConstraintLayout.LayoutParams) binding.dateTimeText.getLayoutParams();
+            final ConstraintLayout.LayoutParams messageLayoutParams =
+                (ConstraintLayout.LayoutParams) binding.messageText.getLayoutParams();
 
-            layoutParams.horizontalBias = viewState.getHorizontalBias();
-            layoutParams.setMarginStart(getPixelSize(viewState.getMarginStart()));
-            layoutParams.setMarginEnd(getPixelSize(viewState.getMarginEnd()));
+            dateTimeLayoutParams.horizontalBias = viewState.getHorizontalBias();
+            messageLayoutParams.horizontalBias = viewState.getHorizontalBias();
+            messageLayoutParams.setMarginStart(getPixelSize(viewState.getMarginStart()));
+            messageLayoutParams.setMarginEnd(getPixelSize(viewState.getMarginEnd()));
 
-            binding.card.setLayoutParams(layoutParams);
-            binding.card.setCardBackgroundColor(
-                ContextCompat.getColor(itemView.getContext(), viewState.getBackgroundColor())
+            binding.dateTimeText.setLayoutParams(dateTimeLayoutParams);
+            binding.messageText.setLayoutParams(messageLayoutParams);
+
+            ViewCompat.setBackgroundTintList(
+                binding.messageText,
+                ContextCompat.getColorStateList(itemView.getContext(), viewState.getBackgroundColor())
             );
 
             binding.messageText.setText(viewState.getMessage());
@@ -87,5 +105,10 @@ class MessageAdapter extends ListAdapter<ChatViewState.MessageViewState, Message
         ) {
             return oldItem.equals(newItem);
         }
+    }
+
+    interface OnGetItemCountCallback {
+
+        void onGetItemCount(int itemCount);
     }
 }
