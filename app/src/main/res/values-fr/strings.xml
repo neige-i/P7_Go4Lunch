@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4Lunch</string>
+
+    <string name="title_restaurant">J\'ai une fringale !</string>
+    <string name="title_workmates">Collègues disponibles</string>
+
+    <string name="search_menu">Recherche</string>
+    <string name="bottom_menu_map">Vue carte</string>
+    <string name="bottom_menu_list">Vue liste</string>
+    <string name="bottom_menu_workmates">Collègues</string>
+    <string name="lunch_menu">VOTRE DÉJEUNER</string>
+    <string name="settings_menu">PARAMÈTRES</string>
+    <string name="logout_menu">DÉCONNEXION</string>
+
+    <string name="description_restaurant_image">Image du restaurant</string>
+    <string name="description_person_icon">Icône d\'une personne</string>
+    <string name="description_star_icon">Icône d\'une étoile</string>
+    <string name="description_profile_image">Image de profil</string>
+    <string name="description_location_button">Bouton de géolocalisation</string>
+    <string name="description_app_logo">Logo de l\'application</string>
+    <string name="description_background_image">Image d\'arrière-plan</string>
+    <string name="description_check_button">Bouton de sélection de restaurant</string>
+    <string name="description_open_drawer">Ouvrir le volet</string>
+    <string name="description_close_drawer">Fermer le volet</string>
+    <string name="description_chat_icon">Icône de convesation</string>
+    <string name="description_send_icon">Icône d\'envoi</string>
+    <string name="description_scroll_to_bottom_button">Bouton de défilement vers le bas</string>
+
+    <string name="sign_in_google">Se connecter avec Google</string>
+    <string name="sign_in_facebook">Se connecter avec Facebook</string>
+    <string name="button_call">Appeler</string>
+    <string name="button_like">Aimer</string>
+    <string name="button_website">Site web</string>
+
+    <string name="slogan">Trouvez un chouette restaurant et inviter vos collègues à déjeuner !</string>
+
+    <string name="workmate_count">(%d)</string>
+    <string name="unknown_hours">Horaires inconnues</string>
+    <string name="open_until">Ouvert jusqu\'à %s%s</string>
+    <string name="always_open">Ouvert 24h/24 7j7</string>
+    <string name="closing_soon">Ferme dans moins d\'une heure</string>
+    <string name="closed_until">Fermé. Ouvre %sà %s</string>
+    <string name="tomorrow">demain</string>
+    <string name="no_rating_available">Aucune note disponible</string>
+
+    <string name="workmate_eating_at">%s mange au %s</string>
+    <string name="you_eating_at">Vous mangez au %s</string>
+    <string name="workmate_not_decided">%s n\'a pas encore décidé</string>
+    <string name="you_not_decided">Vous n\'avez pas encore décidé</string>
+
+    <string name="you_are_joining">Vous y allez !</string>
+    <string name="workmate_is_joining">% y va !</string>
+
+    <string name="search_restaurants_by_name">Rechercher par nom</string>
+
+    <string name="message">Message</string>
+    <string name="no_chat_room_messages">Aucun message dans cette conversation</string>
+    <string name="notification_title">C\'est l\'heure du déjeuner !</string>
+    <string name="notification_big_text_with_workmates">Vous y allez avec %s</string>
+    <string name="notification_big_text_without_workmates">Vous y allez tout seul</string>
+
+    <string name="enable_midday_notification">Activer les notifications à midi</string>
+
+    <string name="default_login_error">Échec de connexion : une erreur est survenue</string>
+    <string name="no_internet_error">Échec de connexion : pas de connexion internet</string>
+    <string name="invalid_account_error">Échec de connexion : nom du compte incorrect</string>
+    <string name="invalid_user_error">Échec de connexion : le compte a été désactivé</string>
+    <string name="timeout_error">Échec de connexion : connexion expiré</string>
+    <string name="invalid_credentials_error">Échec de connexion : identifiants malformés ou expirés</string>
+    <string name="user_collision_error">Échec de connexion : ce compte existe déjà</string>
+
+    <string name="mandatory_permission_title">La permission de géolocalisation a été refusée</string>
+    <string name="mandatory_permission_message">Cette application a besoin d\'accéder à votre géolocalisation pour s\'exécuter correctement. Voulez-vous être redirigé vers les paramètres pour autoriser la permission ?</string>
+    <string name="positive_button_text">Oui, aller aux paramètres</string>
+    <string name="negative_button_text">Non, quitter l\'application</string>
+</resources>

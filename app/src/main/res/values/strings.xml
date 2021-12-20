@@ -56,7 +56,7 @@
     <string name="you_are_joining">You are joining!</string>
     <string name="workmate_is_joining">%s is joining!</string>
 
-    <string name="search_restaurants_by_name">Search restaurants by name</string>
+    <string name="search_restaurants_by_name">Search by name</string>
 
     <string name="message">Message</string>
     <string name="no_chat_room_messages">No messages yet in this chat room</string>
@@ -77,11 +77,11 @@
 
     <!-- Alert dialog -->
     <string name="mandatory_permission_title">The location permission is denied</string>
-    <string name="mandatory_permission_message">This app requires the location permission to run. Do you want to go to the settings to grant it?</string>
+    <string name="mandatory_permission_message">This app requires the location permission to run. Do you want to be redirected to the settings to grant the permission?</string>
     <string name="positive_button_text">Yes, go to settings</string>
     <string name="negative_button_text">No, exit the app</string>
 
     <!-- Third part ID -->
-    <string name="facebook_app_id">5020438924692715</string>
-    <string name="fb_login_protocol_scheme">fb5020438924692715</string>
+    <string name="facebook_app_id" translatable="false">5020438924692715</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb5020438924692715</string>
 </resources>
