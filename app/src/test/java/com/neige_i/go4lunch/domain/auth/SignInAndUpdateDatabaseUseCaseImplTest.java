@@ -101,6 +101,7 @@ public class SignInAndUpdateDatabaseUseCaseImplTest {
     @Test
     public void returnSuccess_when_signIn_withSuccess() {
         // GIVEN
+        firestoreUserMutableLiveData.setValue(null); // Arbitrary value
         final SignInResult[] actualSignInResult = new SignInResult[1];
 
         // WHEN

@@ -142,9 +142,12 @@ public class LocationRepositoryImpl implements LocationRepository {
     public void requestGpsDialog() {
         settingsClient.checkLocationSettings(locationSettingsRequest)
             .addOnFailureListener(e -> {
-                final ResolvableApiException exception = (ResolvableApiException) e;
-                if (exception.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                    gpsDialogMutableLiveData.setValue(exception);
+                try {
+                    final ResolvableApiException exception = (ResolvableApiException) e;
+                    if (exception.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                        gpsDialogMutableLiveData.setValue(exception);
+                    }
+                } catch (ClassCastException ignored) {
                 }
             });
     }

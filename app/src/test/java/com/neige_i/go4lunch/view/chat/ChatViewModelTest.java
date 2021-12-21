@@ -138,6 +138,28 @@ public class ChatViewModelTest {
     }
 
     @Test
+    public void returnState_when_getViewState_with_emptyInputText() {
+        // GIVEN
+        chatViewModel.onMessageChanged("      ");
+
+        // WHEN
+        final ChatViewState chatViewState = getValueForTesting(chatViewModel.getViewState());
+
+        // THEN
+        assertEquals(
+            new ChatViewState(
+                WORKMATE_NAME,
+                getDefaultMessageViewStateList(),
+                false,
+                false, // Send button is disabled
+                .75f, // Send button is partially transparent
+                false
+            ),
+            chatViewState
+        );
+    }
+
+    @Test
     public void returnState_when_getViewState_with_lastMessageNotVisible() {
         // GIVEN
         chatViewModel.onMessageListItemCountCalled(10); // 10 messages are in the list

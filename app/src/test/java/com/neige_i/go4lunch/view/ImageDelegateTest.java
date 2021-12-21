@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class ImageDelegateTest {
@@ -20,10 +19,6 @@ public class ImageDelegateTest {
     private final ImageView star1Mock = mock(ImageView.class);
     private final ImageView star2Mock = mock(ImageView.class);
     private final ImageView star3Mock = mock(ImageView.class);
-
-    @Before
-    public void setUp() throws Exception {
-    }
 
     @Test
     public void showNoStars_when_set0Star() {

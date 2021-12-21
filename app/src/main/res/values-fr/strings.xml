@@ -50,7 +50,7 @@
     <string name="you_not_decided">Vous n\'avez pas encore décidé</string>
 
     <string name="you_are_joining">Vous y allez !</string>
-    <string name="workmate_is_joining">% y va !</string>
+    <string name="workmate_is_joining">%s y va !</string>
 
     <string name="search_restaurants_by_name">Rechercher par nom</string>
 

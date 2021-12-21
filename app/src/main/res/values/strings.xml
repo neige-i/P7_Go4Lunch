@@ -83,5 +83,4 @@
 
     <!-- Third part ID -->
     <string name="facebook_app_id" translatable="false">5020438924692715</string>
-    <string name="fb_login_protocol_scheme" translatable="false">fb5020438924692715</string>
 </resources>
