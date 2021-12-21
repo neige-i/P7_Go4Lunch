@@ -12,13 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
+import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.repository.firestore.User;
 import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.repository.google_places.NearbyRepository;
 import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.repository.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.repository.location.LocationRepository;
 
@@ -28,9 +28,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GetMapDataUseCaseImplTest {
 
@@ -47,6 +45,7 @@ public class GetMapDataUseCaseImplTest {
     private final GpsStateChangeReceiver gpsStateChangeReceiverMock = mock(GpsStateChangeReceiver.class);
     private final FirestoreRepository firestoreRepositoryMock = mock(FirestoreRepository.class);
     private final AutocompleteRepository autocompleteRepositoryMock = mock(AutocompleteRepository.class);
+    private final Location searchedRestaurantLocationMock = mock(Location.class);
 
     // ----------------------------------- OTHER MOCKED OBJECTS ------------------------------------
 
@@ -92,7 +91,8 @@ public class GetMapDataUseCaseImplTest {
             nearbyRepositoryMock,
             gpsStateChangeReceiverMock,
             firestoreRepositoryMock,
-            autocompleteRepositoryMock
+            autocompleteRepositoryMock,
+            searchedRestaurantLocationMock
         );
 
         // Default behaviour
@@ -119,7 +119,7 @@ public class GetMapDataUseCaseImplTest {
                 locationMock,
                 getDefaultMapRestaurantList(),
                 true,
-                getDefaultInterestedWorkmates()
+                null
             ),
             mapData
         );
@@ -141,7 +141,7 @@ public class GetMapDataUseCaseImplTest {
                 locationMock,
                 getDefaultMapRestaurantList(),
                 true,
-                getDefaultInterestedWorkmates()
+                null
             ),
             mapData
         );
@@ -162,7 +162,7 @@ public class GetMapDataUseCaseImplTest {
                 null, // Unavailable location
                 Collections.emptyList(), // Even nearby restaurant list is empty
                 true,
-                Collections.emptyMap() // If no restaurant, then no workmates
+                null
             ),
             mapData
         );
@@ -183,7 +183,7 @@ public class GetMapDataUseCaseImplTest {
                 locationMock,
                 Collections.emptyList(), // Unavailable restaurants
                 true,
-                Collections.emptyMap() // If no restaurant, then no workmates
+                null
             ),
             mapData
         );
@@ -204,7 +204,7 @@ public class GetMapDataUseCaseImplTest {
                 locationMock,
                 getDefaultMapRestaurantList(),
                 false, // Disabled GPS
-                getDefaultInterestedWorkmates()
+                null
             ),
             mapData
         );
@@ -215,7 +215,7 @@ public class GetMapDataUseCaseImplTest {
         // GIVEN
         autocompleteRestaurantMutableLiveData.setValue(new AutocompleteRestaurant(
             PLACE_ID + 1,
-            RESTAURANT_NAME + 3
+            RESTAURANT_NAME + 1
         ));
 
         // WHEN
@@ -227,12 +227,12 @@ public class GetMapDataUseCaseImplTest {
                 true,
                 locationMock,
                 Arrays.asList(
-                    getDefaultMapRestaurant(1, true), // Is selected because same ID
-                    getDefaultMapRestaurant(2, false),
-                    getDefaultMapRestaurant(3, true) // Is selected because same name
+                    getDefaultMapRestaurant(1, true, 0), // Is selected because same ID
+                    getDefaultMapRestaurant(2, false, 1),
+                    getDefaultMapRestaurant(3, false, 5)
                 ),
                 true,
-                getDefaultInterestedWorkmates()
+                searchedRestaurantLocationMock
             ),
             mapData
         );
@@ -259,7 +259,8 @@ public class GetMapDataUseCaseImplTest {
             nearbyRepositoryMock,
             gpsStateChangeReceiverMock,
             firestoreRepositoryMock,
-            autocompleteRepositoryMock
+            autocompleteRepositoryMock,
+            searchedRestaurantLocationMock
         );
 
         // WHEN
@@ -290,32 +291,28 @@ public class GetMapDataUseCaseImplTest {
     }
 
     @NonNull
-    private Map<String, Integer> getDefaultInterestedWorkmates() {
-        return new HashMap<String, Integer>() {{
-            put(PLACE_ID + 1, 0);
-            put(PLACE_ID + 2, 1);
-            put(PLACE_ID + 3, 5);
-        }};
-    }
-
-    @NonNull
     private List<MapRestaurant> getDefaultMapRestaurantList() {
         return Arrays.asList(
-            getDefaultMapRestaurant(1, false),
-            getDefaultMapRestaurant(2, false),
-            getDefaultMapRestaurant(3, false)
+            getDefaultMapRestaurant(1, false, 0),
+            getDefaultMapRestaurant(2, false, 1),
+            getDefaultMapRestaurant(3, false, 5)
         );
     }
 
     @NonNull
-    private MapRestaurant getDefaultMapRestaurant(int index, boolean isSearched) {
+    private MapRestaurant getDefaultMapRestaurant(
+        int index,
+        boolean isSearched,
+        int interestedWorkmateCount
+    ) {
         return new MapRestaurant(
             PLACE_ID + index,
             RESTAURANT_NAME + index,
             index,
             index,
             "address",
-            isSearched
+            isSearched,
+            interestedWorkmateCount
         );
     }
 }

@@ -83,6 +83,7 @@ class MapViewModel extends ViewModel {
      * Current zoom level. Used to compute the scale when comparing latitudes and longitudes.
      */
     private float currentZoom;
+    private boolean mapDataPing;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
@@ -96,7 +97,10 @@ class MapViewModel extends ViewModel {
 
         final LiveData<MapData> mapDataLiveData = getMapDataUseCase.get();
 
-        mapViewState.addSource(mapDataLiveData, mapData -> combine(mapData, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue()));
+        mapViewState.addSource(mapDataLiveData, mapData -> {
+            mapDataPing = true;
+            combine(mapData, currentPositionMutableLiveData.getValue(), onLocationButtonClickedPing.getValue());
+        });
         mapViewState.addSource(currentPositionMutableLiveData, currentPosition -> combine(mapDataLiveData.getValue(), currentPosition, onLocationButtonClickedPing.getValue()));
         mapViewState.addSource(onLocationButtonClickedPing, locationButtonPing -> combine(mapDataLiveData.getValue(), currentPositionMutableLiveData.getValue(), locationButtonPing));
     }
@@ -131,21 +135,19 @@ class MapViewModel extends ViewModel {
 
         // Setup markers
         for (MapRestaurant mapRestaurant : mapData.getMapRestaurants()) {
-            final Integer interestedWorkmateCount = mapData
-                .getInterestedWorkmates()
-                .get(mapRestaurant.getPlaceId());
+            final String restaurantId = mapRestaurant.getPlaceId();
 
             final boolean isSearched = mapRestaurant.isSearched();
 
             final int markerDrawable;
-            if (interestedWorkmateCount != null && interestedWorkmateCount > 0) {
+            if (mapRestaurant.getInterestedWorkmateCount() > 0) {
                 markerDrawable = isSearched ? R.drawable.ic_marker_green_search : R.drawable.ic_marker_green;
             } else {
                 markerDrawable = isSearched ? R.drawable.ic_marker_orange_search : R.drawable.ic_marker_orange;
             }
 
             final MarkerViewState markerViewState = new MarkerViewState(
-                mapRestaurant.getPlaceId(),
+                restaurantId,
                 mapRestaurant.getName(),
                 mapRestaurant.getLatitude(),
                 mapRestaurant.getLongitude(),
@@ -153,7 +155,7 @@ class MapViewModel extends ViewModel {
                 markerDrawable,
                 isSearched ? 300 : 100
             );
-            displayedMarkers.put(mapRestaurant.getPlaceId(), markerViewState);
+            displayedMarkers.put(restaurantId, markerViewState);
         }
 
         // Setup FAB color
@@ -166,6 +168,28 @@ class MapViewModel extends ViewModel {
             fabColor = R.color.black;
         }
 
+        // Setup CameraPosition
+        final double cameraLat;
+        final double cameraLng;
+        final float cameraZoom;
+        if (mapData.getSearchedRestaurantLocation() != null && mapDataPing) {
+            mapDataPing = false; // Reset flag
+
+            keepMapCenteredOnLocation = false;
+
+            cameraLat = mapData.getSearchedRestaurantLocation().getLatitude();
+            cameraLng = mapData.getSearchedRestaurantLocation().getLongitude();
+            cameraZoom = Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom);
+        } else if (moveMapToLocation) {
+            cameraLat = currentLocation.getLatitude();
+            cameraLng = currentLocation.getLongitude();
+            cameraZoom = Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom);
+        } else {
+            cameraLat = currentPosition.target.latitude;
+            cameraLng = currentPosition.target.longitude;
+            cameraZoom = currentPosition.zoom;
+        }
+
         // Set view state
         mapViewState.setValue(new MapViewState(
             isLocationPermissionGranted && isGpsEnabled,
@@ -173,9 +197,9 @@ class MapViewModel extends ViewModel {
             isGpsEnabled ? R.drawable.ic_gps_on : R.drawable.ic_gps_off,
             fabColor,
             new ArrayList<>(displayedMarkers.values()),
-            moveMapToLocation ? currentLocation.getLatitude() : currentPosition.target.latitude,
-            moveMapToLocation ? currentLocation.getLongitude() : currentPosition.target.longitude,
-            moveMapToLocation ? Math.max(DEFAULT_ZOOM_LEVEL, currentPosition.zoom) : currentPosition.zoom
+            cameraLat,
+            cameraLng,
+            cameraZoom
         ));
     }
 

@@ -15,6 +15,7 @@ public class MapRestaurant {
     @NonNull
     private final String address;
     private final boolean searched;
+    private final int interestedWorkmateCount;
 
     public MapRestaurant(
         @NonNull String placeId,
@@ -22,7 +23,8 @@ public class MapRestaurant {
         double latitude,
         double longitude,
         @NonNull String address,
-        boolean searched
+        boolean searched,
+        int interestedWorkmateCount
     ) {
         this.placeId = placeId;
         this.name = name;
@@ -30,6 +32,7 @@ public class MapRestaurant {
         this.longitude = longitude;
         this.address = address;
         this.searched = searched;
+        this.interestedWorkmateCount = interestedWorkmateCount;
     }
 
     @NonNull
@@ -59,6 +62,10 @@ public class MapRestaurant {
         return searched;
     }
 
+    public int getInterestedWorkmateCount() {
+        return interestedWorkmateCount;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -71,6 +78,7 @@ public class MapRestaurant {
         return Double.compare(that.latitude, latitude) == 0 &&
             Double.compare(that.longitude, longitude) == 0 &&
             searched == that.searched &&
+            interestedWorkmateCount == that.interestedWorkmateCount &&
             placeId.equals(that.placeId) &&
             name.equals(that.name) &&
             address.equals(that.address);
@@ -78,7 +86,7 @@ public class MapRestaurant {
 
     @Override
     public int hashCode() {
-        return Objects.hash(placeId, name, latitude, longitude, address, searched);
+        return Objects.hash(placeId, name, latitude, longitude, address, searched, interestedWorkmateCount);
     }
 
     @NonNull
@@ -91,6 +99,7 @@ public class MapRestaurant {
             ", longitude=" + longitude +
             ", address='" + address + '\'' +
             ", searched=" + searched +
+            ", interestedWorkmateCount=" + interestedWorkmateCount +
             '}';
     }
 }

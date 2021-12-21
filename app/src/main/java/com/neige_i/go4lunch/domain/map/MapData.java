@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class MapData {
@@ -17,21 +16,21 @@ public class MapData {
     @NonNull
     private final List<MapRestaurant> mapRestaurants;
     private final boolean gpsEnabled;
-    @NonNull
-    private final Map<String, Integer> interestedWorkmates;
+    @Nullable
+    private final Location searchedRestaurantLocation;
 
     public MapData(
         boolean locationPermissionGranted,
         @Nullable Location currentLocation,
         @NonNull List<MapRestaurant> mapRestaurants,
         boolean gpsEnabled,
-        @NonNull Map<String, Integer> interestedWorkmates
+        @Nullable Location searchedRestaurantLocation
     ) {
         this.locationPermissionGranted = locationPermissionGranted;
         this.currentLocation = currentLocation;
         this.mapRestaurants = mapRestaurants;
         this.gpsEnabled = gpsEnabled;
-        this.interestedWorkmates = interestedWorkmates;
+        this.searchedRestaurantLocation = searchedRestaurantLocation;
     }
 
     public boolean isLocationPermissionGranted() {
@@ -52,9 +51,9 @@ public class MapData {
         return gpsEnabled;
     }
 
-    @NonNull
-    public Map<String, Integer> getInterestedWorkmates() {
-        return interestedWorkmates;
+    @Nullable
+    public Location getSearchedRestaurantLocation() {
+        return searchedRestaurantLocation;
     }
 
     @Override
@@ -69,13 +68,13 @@ public class MapData {
         return locationPermissionGranted == mapData.locationPermissionGranted &&
             gpsEnabled == mapData.gpsEnabled &&
             Objects.equals(currentLocation, mapData.currentLocation) &&
-            mapRestaurants.equals(mapData.mapRestaurants) &&
-            interestedWorkmates.equals(mapData.interestedWorkmates);
+            Objects.equals(searchedRestaurantLocation, mapData.searchedRestaurantLocation) &&
+            mapRestaurants.equals(mapData.mapRestaurants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(locationPermissionGranted, currentLocation, mapRestaurants, gpsEnabled, interestedWorkmates);
+        return Objects.hash(locationPermissionGranted, currentLocation, mapRestaurants, gpsEnabled, searchedRestaurantLocation);
     }
 
     @NonNull
@@ -86,7 +85,7 @@ public class MapData {
             ", currentLocation=" + currentLocation +
             ", mapRestaurants=" + mapRestaurants +
             ", gpsEnabled=" + gpsEnabled +
-            ", interestedWorkmates=" + interestedWorkmates +
+            ", searchedRestaurantLocation=" + searchedRestaurantLocation +
             '}';
     }
 }

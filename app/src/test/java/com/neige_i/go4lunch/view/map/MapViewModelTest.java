@@ -30,9 +30,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MapViewModelTest {
 
@@ -96,7 +94,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             getDefaultRestaurantList(),
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // Retrieve initial map's CameraPosition when displayed for the first time
@@ -134,7 +132,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             getDefaultRestaurantList(),
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -164,7 +162,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             getDefaultRestaurantList(),
             false, // Disabled GPS
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -194,7 +192,7 @@ public class MapViewModelTest {
             null, // Unavailable location
             getDefaultRestaurantList(),
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -225,7 +223,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             getDefaultRestaurantList(),
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -255,7 +253,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             Collections.emptyList(), // Unavailable restaurants
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -269,41 +267,6 @@ public class MapViewModelTest {
                 R.drawable.ic_gps_on,
                 R.color.black,
                 Collections.emptyList(), // No markers
-                DEVICE_LAT,
-                DEVICE_LNG,
-                MapViewModel.DEFAULT_ZOOM_LEVEL
-            ),
-            mapViewState
-        );
-    }
-
-    @Test
-    public void returnViewState_when_getValue_with_noInterestedWorkmates() {
-        // GIVEN
-        mapDataMutableLiveData.setValue(new MapData(
-            true,
-            deviceLocationMock,
-            getDefaultRestaurantList(),
-            true,
-            Collections.emptyMap() // No interested workmates
-        ));
-
-        // WHEN
-        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
-
-        // THEN
-        assertEquals(
-            new MapViewState(
-                true,
-                true,
-                R.drawable.ic_gps_on,
-                R.color.black,
-                // No interested workmate for all markers
-                Arrays.asList(
-                    getDefaultMarker(3, R.drawable.ic_marker_orange, 100),
-                    getDefaultMarker(2, R.drawable.ic_marker_orange_search, 300),
-                    getDefaultMarker(1, R.drawable.ic_marker_orange_search, 300)
-                ),
                 DEVICE_LAT,
                 DEVICE_LNG,
                 MapViewModel.DEFAULT_ZOOM_LEVEL
@@ -397,7 +360,7 @@ public class MapViewModelTest {
             null, // Unavailable location
             getDefaultRestaurantList(),
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -428,7 +391,7 @@ public class MapViewModelTest {
             deviceLocationMock,
             getDefaultRestaurantList(),
             false, // Disabled GPS
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -502,9 +465,9 @@ public class MapViewModelTest {
         mapDataMutableLiveData.setValue(new MapData(
             true,
             deviceLocationMock,
-            Collections.singletonList(getDefaultRestaurant(3, false)), // Add the restaurant #3 again
+            Collections.singletonList(getDefaultRestaurant(3, false, 5)), // Add the restaurant #3 again
             true,
-            getDefaultInterestedWorkmates()
+            null
         ));
 
         // WHEN
@@ -566,31 +529,27 @@ public class MapViewModelTest {
     @NonNull
     private List<MapRestaurant> getDefaultRestaurantList() {
         return Arrays.asList(
-            getDefaultRestaurant(1, true),
-            getDefaultRestaurant(2, true),
-            getDefaultRestaurant(3, false)
+            getDefaultRestaurant(1, true, 0),
+            getDefaultRestaurant(2, true, 1),
+            getDefaultRestaurant(3, false, 5)
         );
     }
 
     @NonNull
-    private MapRestaurant getDefaultRestaurant(int index, boolean isSearched) {
+    private MapRestaurant getDefaultRestaurant(
+        int index,
+        boolean isSearched,
+        int interestedWorkmates
+    ) {
         return new MapRestaurant(
             EXPECTED_PLACE_ID + index,
             EXPECTED_NAME + index,
             EXPECTED_LAT + index,
             EXPECTED_LNG + index,
             EXPECTED_ADDRESS + index,
-            isSearched
+            isSearched,
+            interestedWorkmates
         );
-    }
-
-    @NonNull
-    private Map<String, Integer> getDefaultInterestedWorkmates() {
-        return new HashMap<String, Integer>() {{
-            put(EXPECTED_PLACE_ID + 1, 0);
-            put(EXPECTED_PLACE_ID + 2, 1);
-            put(EXPECTED_PLACE_ID + 3, 5);
-        }};
     }
 
     @NonNull

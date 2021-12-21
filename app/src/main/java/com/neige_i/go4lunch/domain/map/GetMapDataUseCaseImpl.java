@@ -9,12 +9,12 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.repository.google_places.AutocompleteRepository;
 import com.neige_i.go4lunch.repository.google_places.NearbyRepository;
 import com.neige_i.go4lunch.repository.google_places.model.AutocompleteRestaurant;
 import com.neige_i.go4lunch.repository.google_places.model.NearbyRestaurant;
-import com.neige_i.go4lunch.background.GpsStateChangeReceiver;
 import com.neige_i.go4lunch.repository.location.LocationPermissionRepository;
 import com.neige_i.go4lunch.repository.location.LocationRepository;
 
@@ -33,6 +33,8 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
     private final LocationPermissionRepository locationPermissionRepository;
     @NonNull
     private final FirestoreRepository firestoreRepository;
+    @NonNull
+    private final Location searchedRestaurantLocation;
 
     // ----------------------------------- LIVE DATA TO OBSERVE ------------------------------------
 
@@ -58,10 +60,12 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
         @NonNull NearbyRepository nearbyRepository,
         @NonNull GpsStateChangeReceiver gpsStateChangeReceiver,
         @NonNull FirestoreRepository firestoreRepository,
-        @NonNull AutocompleteRepository autocompleteRepository
+        @NonNull AutocompleteRepository autocompleteRepository,
+        @NonNull Location searchedRestaurantLocation
     ) {
         this.locationPermissionRepository = locationPermissionRepository;
         this.firestoreRepository = firestoreRepository;
+        this.searchedRestaurantLocation = searchedRestaurantLocation;
 
         interestedWorkmatesMediatorLiveData.setValue(new HashMap<>());
 
@@ -98,6 +102,7 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
 
         final List<MapRestaurant> mapRestaurants = new ArrayList<>();
 
+        boolean isOneRestaurantSearched = false;
         if (nearbyRestaurants != null) {
             for (NearbyRestaurant nearbyRestaurant : nearbyRestaurants) {
                 final String placeId = nearbyRestaurant.getPlaceId();
@@ -124,13 +129,22 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
                         restaurantName.toLowerCase().contains(searchQuery.getRestaurantName().toLowerCase());
                 }
 
+                if (isSearched) {
+                    isOneRestaurantSearched = true;
+                    searchedRestaurantLocation.setLatitude(nearbyRestaurant.getLatitude());
+                    searchedRestaurantLocation.setLongitude(nearbyRestaurant.getLongitude());
+                }
+
+                final Integer interestedWorkmateCount = interestedWorkmatesMap.get(placeId);
+
                 mapRestaurants.add(new MapRestaurant(
                     placeId,
                     restaurantName,
                     nearbyRestaurant.getLatitude(),
                     nearbyRestaurant.getLongitude(),
                     nearbyRestaurant.getAddress(),
-                    isSearched
+                    isSearched,
+                    interestedWorkmateCount != null ? interestedWorkmateCount : 0
                 ));
             }
         }
@@ -140,7 +154,7 @@ public class GetMapDataUseCaseImpl implements GetMapDataUseCase {
             currentLocation,
             mapRestaurants,
             isGpsEnabled,
-            interestedWorkmatesMap
+            isOneRestaurantSearched ? searchedRestaurantLocation : null
         ));
     }
 
