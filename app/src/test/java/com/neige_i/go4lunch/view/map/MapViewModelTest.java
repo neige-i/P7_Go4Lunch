@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.neige_i.go4lunch.R;
@@ -215,37 +214,6 @@ public class MapViewModelTest {
     }
 
     @Test
-    public void returnViewState_when_getValue_with_sameLatitudeButDifferentLongitude() {
-        // GIVEN
-        doReturn(DEFAULT_LAT).when(deviceLocationMock).getLatitude();
-        mapDataMutableLiveData.setValue(new MapData(
-            true,
-            deviceLocationMock,
-            getDefaultRestaurantList(),
-            true,
-            null
-        ));
-
-        // WHEN
-        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
-
-        // THEN
-        assertEquals(
-            new MapViewState(
-                true,
-                true,
-                R.drawable.ic_gps_on,
-                R.color.black,
-                getDefaultMarkerList(),
-                DEFAULT_LAT, // Same latitude
-                DEVICE_LNG,
-                MapViewModel.DEFAULT_ZOOM_LEVEL
-            ),
-            mapViewState
-        );
-    }
-
-    @Test
     public void returnViewState_when_getValue_with_unavailableRestaurants() {
         // GIVEN
         mapDataMutableLiveData.setValue(new MapData(
@@ -425,32 +393,6 @@ public class MapViewModelTest {
                 DEVICE_LAT,
                 DEVICE_LNG,
                 20 // Zoom is unchanged
-            ),
-            mapViewState
-        );
-    }
-
-    // ----------------------------- MAP NOT FOLLOWING LOCATION TESTS ------------------------------
-
-    @Test
-    public void doNotMoveMap_when_getValue_with_mapCameraManuallyMoved() {
-        // GIVEN
-        mapViewModel.onCameraMoved(GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE); // Or REASON_API_ANIMATION
-
-        // WHEN
-        final MapViewState mapViewState = getValueForTesting(mapViewModel.getMapViewState());
-
-        // THEN
-        assertEquals(
-            new MapViewState(
-                true,
-                true,
-                R.drawable.ic_gps_on,
-                R.color.black,
-                getDefaultMarkerList(),
-                DEFAULT_LAT, // No camera movement
-                DEFAULT_LNG, // No camera movement
-                DEFAULT_ZOOM // No camera movement
             ),
             mapViewState
         );

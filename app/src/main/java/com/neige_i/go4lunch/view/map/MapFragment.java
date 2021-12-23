@@ -109,7 +109,6 @@ public class MapFragment extends Fragment {
         });
 
         // Setup camera move events
-        googleMap.setOnCameraMoveStartedListener(reason -> viewModel.onCameraMoved(reason));
         googleMap.setOnCameraIdleListener(() -> {
             viewModel.onCameraStopped(googleMap.getCameraPosition());
         });
