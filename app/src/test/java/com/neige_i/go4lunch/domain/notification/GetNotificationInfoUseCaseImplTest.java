@@ -9,10 +9,10 @@ import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 import com.neige_i.go4lunch.repository.firestore.FirestoreRepository;
 import com.neige_i.go4lunch.repository.firestore.User;
 import com.neige_i.go4lunch.repository.preferences.PreferencesRepository;
-import com.neige_i.go4lunch.domain.WorkmatesDelegate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -143,7 +143,7 @@ public class GetNotificationInfoUseCaseImplTest {
                 PLACE_ID,
                 RESTAURANT_NAME,
                 RESTAURANT_ADDRESS,
-                Collections.emptyList()
+                ""
             ),
             notificationInfo
         );
@@ -160,11 +160,7 @@ public class GetNotificationInfoUseCaseImplTest {
                 PLACE_ID,
                 RESTAURANT_NAME,
                 RESTAURANT_ADDRESS,
-                Arrays.asList(
-                    NAME + 0,
-                    NAME + 1,
-                    NAME + 2
-                )
+                NAME + 0 + ", " + NAME + 1 + ", " + NAME + 2
             ),
             notificationInfo
         );

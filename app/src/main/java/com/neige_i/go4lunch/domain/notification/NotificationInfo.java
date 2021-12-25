@@ -2,7 +2,6 @@ package com.neige_i.go4lunch.domain.notification;
 
 import androidx.annotation.NonNull;
 
-import java.util.List;
 import java.util.Objects;
 
 public class NotificationInfo {
@@ -14,12 +13,12 @@ public class NotificationInfo {
     @NonNull
     private final String restaurantAddress;
     @NonNull
-    private final List<String> workmateNames;
+    private final String workmateNames;
 
     NotificationInfo(
         @NonNull String restaurantId, @NonNull String restaurantName,
         @NonNull String restaurantAddress,
-        @NonNull List<String> workmateNames
+        @NonNull String workmateNames
     ) {
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
@@ -43,7 +42,7 @@ public class NotificationInfo {
     }
 
     @NonNull
-    public List<String> getWorkmateNames() {
+    public String getWorkmateNames() {
         return workmateNames;
     }
 
@@ -74,7 +73,7 @@ public class NotificationInfo {
             "restaurantId='" + restaurantId + '\'' +
             ", restaurantName='" + restaurantName + '\'' +
             ", restaurantAddress='" + restaurantAddress + '\'' +
-            ", workmateNames=" + workmateNames +
+            ", workmateNames='" + workmateNames + '\'' +
             '}';
     }
 }

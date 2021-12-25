@@ -71,7 +71,7 @@ public class GetNotificationInfoUseCaseImpl implements GetNotificationInfoUseCas
                 .stream()
                 .filter(user -> !user.getEmail().equals(currentUser.getEmail()))
                 .map(workmate -> workmate.getName())
-                .collect(Collectors.toList())
+                .collect(Collectors.joining(", "))
         );
     }
 }

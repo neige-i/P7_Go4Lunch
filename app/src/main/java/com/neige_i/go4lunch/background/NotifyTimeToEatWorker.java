@@ -23,9 +23,6 @@ import com.neige_i.go4lunch.domain.notification.GetNotificationInfoUseCase;
 import com.neige_i.go4lunch.domain.notification.NotificationInfo;
 import com.neige_i.go4lunch.view.detail.DetailActivity;
 
-import java.util.List;
-import java.util.StringJoiner;
-
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 
@@ -104,25 +101,14 @@ public class NotifyTimeToEatWorker extends Worker {
             notificationInfo.getRestaurantAddress();
     }
 
-    private String getBigText(@NonNull List<String> workmateNames) {
+    private String getBigText(@NonNull String workmateNames) {
         if (workmateNames.isEmpty()) {
             return getApplicationContext().getString(R.string.notification_big_text_without_workmates);
         } else {
             return getApplicationContext().getString(
                 R.string.notification_big_text_with_workmates,
-                toJoinedString(workmateNames)
+                workmateNames
             );
         }
-    }
-
-    @NonNull
-    private String toJoinedString(@NonNull List<String> stringList) {
-        final StringJoiner joiner = new StringJoiner(", ");
-
-        for (String string : stringList) {
-            joiner.add(string);
-        }
-
-        return joiner.toString();
     }
 }
